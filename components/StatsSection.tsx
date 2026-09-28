@@ -206,25 +206,29 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
         <div className={`absolute -top-20 end-0 w-72 h-72 rounded-full ${config.orb} blur-[90px] pointer-events-none`} aria-hidden="true" />
         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-white/40 to-transparent" aria-hidden="true" />
 
-        {/* Header — modern horizontal */}
-        <div className="relative p-4 sm:p-5 md:p-6 pb-4 flex items-center gap-3.5 md:gap-4 border-b border-white/[0.07] z-10">
-          <div className="w-12 h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center border border-white/20 shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6"
-            style={{ background: config.medalBg, boxShadow: `0 12px 32px -8px rgba(${config.glowColor},0.6), inset 0 1px 0 rgba(255,255,255,0.5)` }}>
-            {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'w-6 h-6 md:w-7 md:h-7 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]' }) : icon}
+        {/* Header — stacks vertically on narrow/mobile cards, single row on desktop */}
+        <div className="relative p-4 sm:p-5 md:p-6 pb-4 flex flex-col md:flex-row md:items-center gap-3 border-b border-white/[0.07] z-10">
+          <div className="flex items-center gap-3 md:gap-3.5 min-w-0 flex-1">
+            <div className="w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center border border-white/20 shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6"
+              style={{ background: config.medalBg, boxShadow: `0 12px 32px -8px rgba(${config.glowColor},0.6), inset 0 1px 0 rgba(255,255,255,0.5)` }}>
+              {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'w-6 h-6 md:w-7 md:h-7 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]' }) : icon}
+            </div>
+            <div className="min-w-0 flex-1">
+              <h3 className={`text-base sm:text-lg md:text-xl font-black text-white tracking-tight leading-tight truncate ${lang === 'ar' ? 'font-arabic' : ''}`}>{title}</h3>
+              <span className={`block text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] md:tracking-[0.24em] bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent mt-1 truncate`}>{subtitle}</span>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <h3 className={`text-base sm:text-lg md:text-xl font-black text-white tracking-tight leading-none mb-1 ${lang === 'ar' ? 'font-arabic' : ''}`}>{title}</h3>
-            <span className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.24em] bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent`}>{subtitle}</span>
-          </div>
-          <div className="text-end shrink-0 rounded-2xl bg-black/40 border border-white/10 px-3 py-2">
+          <div className="flex items-center justify-between md:justify-end gap-3 rounded-2xl bg-black/40 border border-white/10 px-3.5 py-2 md:px-3 md:py-2 shrink-0">
             <p className="text-base md:text-lg font-black text-white leading-none" dir="ltr">{formatNumber(totalQ)}</p>
-            <p className={`text-[8px] font-bold uppercase tracking-[0.2em] mt-1 ${config.subText}`}>{t.gift} • {sorted.length}</p>
+            <p className={`text-[8px] font-bold uppercase tracking-[0.18em] ${config.subText} whitespace-nowrap`}>{t.gift} • {sorted.length}</p>
           </div>
         </div>
 
-        {/* Champion spotlight — glowing hero */}
+        {/* Champion spotlight — biggest supporter, breathing room below header */}
         {champ && (
-          <div className="mx-3 md:mx-4 mt-3.5 rounded-2xl p-[1.5px] transition-transform duration-500 hover:scale-[1.01]" style={{ background: `linear-gradient(120deg, ${config.barBright}, ${config.barDeep}, ${config.barBright})` }}>
+          <div className="mx-3 md:mx-4 mt-5">
+            <p className="text-[9px] font-black tracking-[0.24em] text-white/30 uppercase mb-2 px-1">{lang === 'ar' ? 'أكبر الداعمين' : 'TOP SUPPORTER'}</p>
+            <div className="rounded-2xl p-[1.5px] transition-transform duration-500 hover:scale-[1.01]" style={{ background: `linear-gradient(120deg, ${config.barBright}, ${config.barDeep}, ${config.barBright})` }}>
             <div className="card-sheen rounded-[14.5px] bg-black/85 backdrop-blur px-3 py-2.5 flex items-center gap-2.5 overflow-hidden">
               <span className="relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 font-black text-black text-sm" style={{ background: config.medalBg }}>
                 {(champ.username || '?').charAt(0).toUpperCase()}
@@ -232,6 +236,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
               </span>
               <p className="flex-1 min-w-0 text-xs sm:text-sm md:text-[15px] font-black text-white truncate" dir="auto">{champ.username}</p>
               <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${config.bgIcon} ${config.text} border border-white/15`} dir="ltr">{formatNumber(champ.quantity)}</span>
+            </div>
             </div>
           </div>
         )}
@@ -248,7 +253,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
                   <div className="shrink-0 flex justify-center">
                     {renderRankBadge(rank)}
                   </div>
-                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-black text-white/70 bg-white/[0.06] border border-white/10 shrink-0">
+                  <span className="w-8 h-8 rounded-full hidden sm:flex items-center justify-center text-[11px] font-black text-white/70 bg-white/[0.06] border border-white/10 shrink-0">
                     {(entry.username || '?').charAt(0).toUpperCase()}
                   </span>
                   <span className="flex-1 min-w-0 text-[13px] md:text-sm font-bold text-white/90 truncate group-hover/row:text-white transition-colors" dir="auto">
@@ -258,7 +263,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
                     {formatNumber(entry.quantity)}
                   </span>
                 </div>
-                <div className="mt-2 ms-[76px] h-1 rounded-full bg-white/[0.06] overflow-hidden" dir="ltr">
+                <div className="mt-2 ms-[52px] sm:ms-[76px] h-1 rounded-full bg-white/[0.06] overflow-hidden" dir="ltr">
                   <div className="bar-grow h-full rounded-full" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${config.barBright}, ${config.barDeep})`, boxShadow: `0 0 10px rgba(${config.glowColor},0.6)`, animationDelay: `${idx * 80}ms` }} />
                 </div>
               </div>
