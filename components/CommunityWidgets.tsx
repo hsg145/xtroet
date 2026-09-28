@@ -308,8 +308,15 @@ export const DiscordWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
      • Subscribers   → Mixerno counter, Piped fallback */
 const CLAN_CHANNEL_ID = 'UCD7EpD4o6bw24c5o5vu4hGQ';
 const CLAN_CHANNEL_URL = 'https://www.youtube.com/@leveloneclan';
+// Level One orange identity — team photo banner + orange logo mark.
+// ضع صور الفريق هنا بهذين الاسمين بالضبط داخل مجلد public/
+const CLAN_BANNER = '/levelone-banner.jpg';
+const CLAN_BANNER_FALLBACK = '/youtube-banner.png';
+const CLAN_MARK = '/levelone-mark.png';
 const CLAN_AVATAR =
    'https://yt3.googleusercontent.com/EG_-83Wmqr7vL5GJ6qzHJqPhyrdDaApGhGByDXfPFW0CL0j5eKP4LSKr_S8DvXAN4A-uZwWNGYI=s176-c-k-c0x00ffffff-no-rj';
+const CLAN_ORANGE = '#FF6A00';
+const CLAN_ORANGE_DEEP = '#E04E00';
 
 export const YoutubeWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
    const [video, setVideo] = useState<YoutubeData | null>(null);
@@ -347,12 +354,12 @@ export const YoutubeWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
          } catch (err) {
             console.error('YouTube fetch error:', err);
             if (!dead) {
-               setVideo({
-                  title: lang === 'en' ? 'LEVEL ONE CLAN — OFFICIAL VIDEOS' : 'كلان لفل ون — الفيديوهات الرسمية',
-                  link: channelUrl,
-                  date: 'LEVEL ONE',
-                  thumbnail: '/youtube-banner.png'
-               });
+                setVideo({
+                   title: lang === 'en' ? 'LEVEL ONE CLAN — OFFICIAL VIDEOS' : 'كلان لفل ون — الفيديوهات الرسمية',
+                   link: channelUrl,
+                   date: 'LEVEL ONE',
+                   thumbnail: CLAN_BANNER_FALLBACK
+                });
             }
          } finally {
             if (!dead) setLoading(false);
@@ -383,116 +390,134 @@ export const YoutubeWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [lang]);
 
-   if (loading && !video) return <CardSkeleton glow="rgba(255,0,0,0.25)" />;
+    if (loading && !video) return <CardSkeleton glow="rgba(255,106,0,0.35)" />;
 
-   return (
-      <div className="perspective-1000 h-full">
-         <div
-            ref={ref}
-            onPointerMove={move}
-            onPointerLeave={leave}
-            style={tiltStyle(tilt)}
-            className="group relative h-full rounded-[26px] p-[1.5px] bg-gradient-to-b from-[#C9A24B]/70 via-[#C9A24B]/15 to-white/[0.06] shadow-[0_24px_70px_-20px_rgba(201,162,75,0.45)]"
-         >
-            <div className="relative h-full rounded-[24.5px] bg-[#0d0505]/95 backdrop-blur-xl overflow-hidden flex flex-col">
-               <div
-                  className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-10"
-                  style={{
-                     opacity: tilt.on ? 1 : 0,
-                     background: `radial-gradient(420px circle at ${tilt.gx}% ${tilt.gy}%, rgba(201,162,75,0.2), transparent 65%)`,
-                  }}
-               />
-               {/* color bleed — banner tones wash down the whole card, no boundary */}
-               <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-                  <img
-                     src="/youtube-banner.png"
-                     alt=""
-                     className="absolute top-0 inset-x-0 h-[48%] w-full object-cover blur-3xl opacity-30"
-                     style={{ maskImage: 'linear-gradient(to bottom, black 25%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 25%, transparent 100%)' }}
-                  />
-               </div>
-               <div className="absolute -top-24 end-1/4 w-72 h-72 rounded-full bg-[#C9A24B]/20 blur-[90px] animate-aurora pointer-events-none" />
-               {/* banner — single seamless melt, no edge lines */}
-               <div className="relative h-28 sm:h-32 overflow-hidden shrink-0">
-                  <img
-                     src="/youtube-banner.png"
-                     alt="Firas clan YouTube banner"
-                     className="absolute inset-0 w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-[2.5s] ease-out"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-b from-[#0d0505]/50 via-transparent to-transparent" />
-                  <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-[#0d0505] via-[#0d0505]/55 to-transparent" />
-                  <span className="absolute top-3 start-3 inline-flex items-center gap-2 px-3 py-1.5 bg-black/55 backdrop-blur border border-white/15 text-white/85">
-                     <span className="led bg-red-500 animate-pulse shadow-[0_0_8px_#ef4444]" />
-                     <span className="kicker" dir="ltr">YouTube // Clan</span>
-                  </span>
-                  <span className="absolute top-3 end-3 inline-flex items-center gap-1.5 text-[9px] font-black tracking-[0.2em] px-2.5 py-1 rounded-full bg-[#C9A24B]/20 backdrop-blur border border-[#C9A24B]/50 text-white" dir="ltr">
-                     <span className="w-1.5 h-1.5 rounded-full bg-[#C9A24B] animate-pulse" /> CLAN
-                  </span>
-               </div>
+    return (
+       <div className="perspective-1000 h-full">
+          <div
+             ref={ref}
+             onPointerMove={move}
+             onPointerLeave={leave}
+             style={tiltStyle(tilt)}
+             className="group relative h-full rounded-[26px] p-[1.5px] bg-gradient-to-b from-[#FF6A00]/80 via-[#FF3D00]/20 to-white/[0.06] shadow-[0_24px_70px_-20px_rgba(255,106,0,0.5)]"
+          >
+             <div className="relative h-full rounded-[24.5px] bg-[#150803]/95 backdrop-blur-xl overflow-hidden flex flex-col">
+                <div
+                   className="absolute inset-0 pointer-events-none transition-opacity duration-300 z-10"
+                   style={{
+                      opacity: tilt.on ? 1 : 0,
+                      background: `radial-gradient(420px circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,106,0,0.24), transparent 65%)`,
+                   }}
+                />
+                {/* color bleed — team-photo tones wash down the whole card, no boundary */}
+                <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+                   <img
+                      src={CLAN_BANNER}
+                      alt=""
+                      onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('youtube-banner')) t.src = CLAN_BANNER_FALLBACK; }}
+                      className="absolute top-0 inset-x-0 h-[48%] w-full object-cover blur-3xl opacity-35"
+                      style={{ maskImage: 'linear-gradient(to bottom, black 25%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 25%, transparent 100%)' }}
+                   />
+                </div>
+                <div className="absolute -top-24 end-1/4 w-72 h-72 rounded-full bg-[#FF6A00]/25 blur-[90px] animate-aurora pointer-events-none" />
+                <div className="absolute -bottom-28 start-1/4 w-72 h-72 rounded-full bg-[#FF3D00]/15 blur-[100px] animate-aurora pointer-events-none" style={{ animationDelay: '-8s' }} />
+                {/* banner — team champions photo, seamless melt, no edge lines */}
+                <div className="relative h-36 sm:h-44 overflow-hidden shrink-0">
+                   <img
+                      src={CLAN_BANNER}
+                      alt="Level One clan champions — team photo with trophy"
+                      onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('youtube-banner')) t.src = CLAN_BANNER_FALLBACK; }}
+                      className="absolute inset-0 w-full h-full object-cover object-center scale-105 group-hover:scale-110 transition-transform duration-[2.5s] ease-out"
+                   />
+                   <div className="absolute inset-0 bg-gradient-to-b from-[#150803]/60 via-transparent to-transparent" />
+                   <div className="absolute inset-0 bg-gradient-to-tr from-[#FF6A00]/25 via-transparent to-transparent mix-blend-overlay" />
+                   <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-[#150803] via-[#150803]/60 to-transparent" />
+                   <span className="absolute top-3 start-3 inline-flex items-center gap-2 px-3 py-1.5 bg-black/55 backdrop-blur border border-white/15 text-white/85">
+                      <span className="led bg-[#FF6A00] animate-pulse shadow-[0_0_8px_#FF6A00]" />
+                      <span className="kicker" dir="ltr">YouTube // Champions</span>
+                   </span>
+                   <span className="absolute top-3 end-3 inline-flex items-center gap-1.5 text-[9px] font-black tracking-[0.2em] px-2.5 py-1 rounded-full bg-[#FF6A00] text-black shadow-[0_0_18px_rgba(255,106,0,0.7)]" dir="ltr">
+                      <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M5 3h14v2h3v4a5 5 0 01-5 5h-.42A6 6 0 0113 17.92V20H8v2H4v-2h4v-3.08A6 6 0 014.42 14H4a5 5 0 01-5-5V5h3V3h3zm0 4H2v2a3 3 0 003 3V7zm14 0v5a3 3 0 003-3V7h-3z" /></svg>
+                      LEVEL ONE
+                   </span>
+                </div>
                 {/* crest + title — straddles the melt */}
                 <div className="relative px-5 -mt-10 flex items-end gap-3.5">
-                   <div aria-hidden="true" className="absolute -top-8 inset-x-8 h-14 bg-[#C9A24B]/15 blur-2xl pointer-events-none" />
+                   <div aria-hidden="true" className="absolute -top-8 inset-x-8 h-14 bg-[#FF6A00]/20 blur-2xl pointer-events-none" />
                    <div className="relative shrink-0" style={{ transform: 'translateZ(45px)' }}>
-                      <div className="absolute -inset-3 bg-[#C9A24B]/50 blur-2xl opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full" />
-                      <div className="relative w-[72px] h-[72px] rounded-[22px] overflow-hidden border-2 border-[#C9A24B]/60 ring-4 ring-[#0d0505]/90 bg-[#0d0505] shadow-[0_16px_36px_rgba(0,0,0,0.65)] transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-105">
-                        <img src={CLAN_AVATAR} alt="Level One Clan channel" className="w-full h-full object-cover"
-                           onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('firas-mark.webp')) t.src = '/firas-mark.webp'; }} />
+                      <div className="absolute -inset-3 bg-[#FF6A00]/60 blur-2xl opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full" />
+                      <div className="relative w-[72px] h-[72px] rounded-[22px] overflow-hidden border-2 border-[#FF6A00]/70 ring-4 ring-[#150803]/90 bg-[#FF6A00] shadow-[0_16px_36px_rgba(0,0,0,0.65),0_0_28px_rgba(255,106,0,0.45)] transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-105">
+                        <img src={CLAN_MARK} alt="Level One clan logo" className="w-full h-full object-cover"
+                           onError={(e) => { const t = e.target as HTMLImageElement; if (!t.src.includes('googleusercontent') && !t.src.includes('firas-mark')) t.src = CLAN_AVATAR; else if (!t.src.includes('firas-mark')) t.src = '/firas-mark.webp'; }} />
                      </div>
-                     <span className="absolute -bottom-1 -end-1 w-7 h-7 rounded-full bg-[#C9A24B] border-4 border-[#0d0505] flex items-center justify-center">
-                        <svg className="w-2.5 h-2.5 text-white fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                     </span>
-                  </div>
-                  <div className="min-w-0 pb-1">
-                     <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-none" dir="ltr">LEVEL ONE CLAN</h3>
-                     <p className="text-[11px] text-white/45 font-bold mt-1">{lang === 'en' ? 'Firas clan — official channel' : 'كلان فراس — القناة الرسمية'}</p>
-                  </div>
-                  <p className="ms-auto text-end shrink-0 pb-1">
-                     <span className="jersey block text-3xl sm:text-4xl text-white leading-none" dir="ltr">{subs}</span>
-                     <span className="kicker block text-[#D9C08A] mt-1">{lang === 'en' ? 'subs' : 'مشترك'}</span>
-                  </p>
-               </div>
-               {/* latest video — fused into the flow */}
-               <div className="px-5 mt-4 relative">
-                  <p className="kicker text-white/30 mb-2" dir="ltr">// Latest transmission</p>
-                  <a
-                     href={video?.link || channelUrl}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     aria-label={video?.title || 'Latest video'}
-                     className="group/vid relative block rounded-2xl overflow-hidden border border-white/10 bg-black shadow-[0_18px_44px_-16px_rgba(201,162,75,0.35)]"
-                  >
-                     <div className="relative aspect-video">
-                        <img
-                           src={video?.thumbnail || '/youtube-banner.png'}
-                           alt={video?.title || 'Latest video'}
-                           loading="lazy"
-                           className="w-full h-full object-cover opacity-85 group-hover/vid:opacity-100 group-hover/vid:scale-105 transition-all duration-700"
-                           onError={(e) => {
-                              const target = e.target as HTMLImageElement;
-                              if (target.src.includes('maxresdefault')) target.src = target.src.replace('maxresdefault', 'hqdefault');
-                              else target.src = '/youtube-banner.png';
-                           }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
-                        <span className="absolute top-2.5 start-2.5 text-[8px] font-black tracking-[0.2em] px-2 py-1 rounded-lg bg-[#C9A24B] text-white shadow-[0_0_16px_rgba(201,162,75,0.6)]">
-                           {lang === 'en' ? 'LATEST' : 'الأحدث'}
-                        </span>
-                        <span className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-black/45 backdrop-blur-md border border-white/40 flex items-center justify-center transition-transform duration-300 group-hover/vid:scale-125 shadow-[0_0_28px_rgba(201,162,75,0.5)]">
-                           <svg className="w-5 h-5 text-white fill-current translate-x-[1px] rtl:-translate-x-[1px] rtl:rotate-180" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                        </span>
-                        <span className="absolute bottom-2.5 start-2.5 end-2.5 text-[11px] sm:text-xs font-black text-white leading-snug line-clamp-2 text-start">{video?.title}</span>
-                     </div>
-                  </a>
-               </div>
-               {/* CTA */}
-               <div className="px-5 pb-5 mt-4 flex-1 flex items-end">
-                  <a
-                     href={channelUrl}
-                     target="_blank"
-                     rel="noopener noreferrer"
-                     aria-label={lang === 'en' ? 'Visit YouTube channel' : 'زيارة قناة اليوتيوب'}
-                     className="btn-arena card-sheen cut-btn relative w-full min-h-[54px] inline-flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#D9C08A] to-[#8A6A3A] text-white font-black text-sm tracking-wide shadow-[0_14px_36px_-10px_rgba(255,0,0,0.7)] overflow-hidden"
-                  >
+                      <span className="absolute -bottom-1 -end-1 w-7 h-7 rounded-full bg-[#FF6A00] border-4 border-[#150803] flex items-center justify-center shadow-[0_0_14px_rgba(255,106,0,0.8)]">
+                         <svg className="w-2.5 h-2.5 text-black fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                      </span>
+                   </div>
+                   <div className="min-w-0 pb-1">
+                      <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-none" dir="ltr">LEVEL ONE <span style={{ color: CLAN_ORANGE }}>CLAN</span></h3>
+                      <p className="text-[11px] text-white/45 font-bold mt-1">{lang === 'en' ? 'Firas clan — official channel' : 'كلان فراس — القناة الرسمية'}</p>
+                   </div>
+                   <p className="ms-auto text-end shrink-0 pb-1">
+                      <span className="jersey block text-3xl sm:text-4xl text-white leading-none" dir="ltr">{subs}</span>
+                      <span className="kicker block mt-1" style={{ color: CLAN_ORANGE }}>{lang === 'en' ? 'subs' : 'مشترك'}</span>
+                   </p>
+                </div>
+                {/* champions ribbon — trophy line */}
+                <div className="px-5 mt-3.5 relative">
+                   <div className="rounded-2xl border border-[#FF6A00]/35 bg-gradient-to-l from-[#FF6A00]/15 via-[#FF3D00]/[0.07] to-transparent backdrop-blur-md px-3.5 py-2.5 flex items-center gap-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+                      <span className="w-9 h-9 rounded-xl bg-gradient-to-b from-[#FF8A1F] to-[#E04E00] border border-white/25 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(255,106,0,0.55)]">
+                         <svg className="w-5 h-5 text-black fill-current" viewBox="0 0 24 24"><path d="M5 3h14v2h3v4a5 5 0 01-5 5h-.42A6 6 0 0113 17.92V20H8v2H4v-2h4v-3.08A6 6 0 014.42 14H4a5 5 0 01-5-5V5h3V3h3zm0 4H2v2a3 3 0 003 3V7zm14 0v5a3 3 0 003-3V7h-3z" /></svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                         <p className="text-[12px] font-black text-white truncate">{lang === 'en' ? 'Best Crowd Award — Level One Cup' : 'جائزة أفضل جمهور — كأس لفل ون'}</p>
+                         <p className="text-[10px] font-bold text-[#FFB25C] mt-0.5" dir="ltr">CHAMPIONS • TROPHY ROOM</p>
+                      </div>
+                      <span className="shrink-0 text-[9px] font-black tracking-[0.2em] px-2.5 py-1.5 rounded-lg bg-[#FF6A00] text-black" dir="ltr">1ST</span>
+                   </div>
+                </div>
+                {/* latest video — fused into the flow */}
+                <div className="px-5 mt-4 relative">
+                   <p className="kicker text-white/30 mb-2" dir="ltr">// Latest transmission</p>
+                   <a
+                      href={video?.link || channelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={video?.title || 'Latest video'}
+                      className="group/vid relative block rounded-2xl overflow-hidden border border-white/10 bg-black shadow-[0_18px_44px_-16px_rgba(255,106,0,0.4)] transition-all duration-500 hover:border-[#FF6A00]/60 hover:-translate-y-1 hover:shadow-[0_24px_60px_-16px_rgba(255,106,0,0.55)]"
+                   >
+                      <div className="relative aspect-video">
+                         <img
+                            src={video?.thumbnail || CLAN_BANNER_FALLBACK}
+                            alt={video?.title || 'Latest video'}
+                            loading="lazy"
+                            className="w-full h-full object-cover opacity-85 group-hover/vid:opacity-100 group-hover/vid:scale-105 transition-all duration-700"
+                            onError={(e) => {
+                               const target = e.target as HTMLImageElement;
+                               if (target.src.includes('maxresdefault')) target.src = target.src.replace('maxresdefault', 'hqdefault');
+                               else target.src = CLAN_BANNER_FALLBACK;
+                            }}
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+                         <span className="absolute top-2.5 start-2.5 text-[8px] font-black tracking-[0.2em] px-2 py-1 rounded-lg bg-[#FF6A00] text-black shadow-[0_0_16px_rgba(255,106,0,0.7)]">
+                            {lang === 'en' ? 'LATEST' : 'الأحدث'}
+                         </span>
+                         <span className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-black/45 backdrop-blur-md border border-[#FF6A00]/60 flex items-center justify-center transition-transform duration-300 group-hover/vid:scale-125 shadow-[0_0_28px_rgba(255,106,0,0.6)]">
+                            <svg className="w-5 h-5 text-white fill-current translate-x-[1px] rtl:-translate-x-[1px] rtl:rotate-180" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                         </span>
+                         <span className="absolute bottom-2.5 start-2.5 end-2.5 text-[11px] sm:text-xs font-black text-white leading-snug line-clamp-2 text-start">{video?.title}</span>
+                      </div>
+                   </a>
+                </div>
+                {/* CTA */}
+                <div className="px-5 pb-5 mt-4 flex-1 flex items-end">
+                   <a
+                      href={channelUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={lang === 'en' ? 'Visit YouTube channel' : 'زيارة قناة اليوتيوب'}
+                      className="btn-arena card-sheen cut-btn relative w-full min-h-[54px] inline-flex items-center justify-center gap-2.5 bg-gradient-to-b from-[#FF8A1F] to-[#E04E00] text-white font-black text-sm tracking-wide shadow-[0_14px_36px_-10px_rgba(255,106,0,0.75)] overflow-hidden"
+                   >
                      <YoutubeIcon className="w-5 h-5 shrink-0" />
                      {lang === 'en' ? 'SUBSCRIBE NOW' : 'اشترك الآن'}
                      <svg className={`w-4 h-4 shrink-0 ${isRTL ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
