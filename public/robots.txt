@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://kick.com/firas/sitemap.xml
+Sitemap: https://firasx.vercel.app/sitemap.xml
