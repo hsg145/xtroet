@@ -917,10 +917,10 @@ export default function App() {
                                         <>
                                             {t.nameAr}
                                             <span className="gold-text"> • </span>
-                                            <span dir="ltr" className="gold-text">FIRAS</span>
+                                            <span dir="ltr" className="hero-firas">FIRAS</span>
                                         </>
                                     ) : (
-                                        <span dir="ltr" className="gold-text">FIRAS</span>
+                                        <span dir="ltr" className="hero-firas">FIRAS</span>
                                     )}
                                 </h1>
                                 <p className="animate-fade-in-up font-gaming text-lg sm:text-xl md:text-3xl gold-text tracking-[0.12em] mt-2" dir="ltr" style={{ animationDelay: '240ms' }} aria-hidden="true">RISE WITH FIRE</p>
