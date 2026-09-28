@@ -1,13 +1,13 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/HSG116/iABS_AR/main/public/channels4_banner.jpg" alt="iABS Stream Hub Banner" width="100%" style="border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);" />
+  <img src="https://raw.githubusercontent.com/HSG116/Firas_AR/main/public/channels4_banner.jpg" alt="Firas Stream Hub Banner" width="100%" style="border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);" />
 </p>
 
-<h1 align="center">🎮 iABS Stream Hub</h1>
+<h1 align="center">🎮 Firas Stream Hub</h1>
 
 <p align="center">
-  <strong>— منصة iABS الشاملة للبث المباشر والتفاعل والمجتمع —</strong>
+  <strong>— منصة Firas الشاملة للبث المباشر والتفاعل والمجتمع —</strong>
   <br>
-  <em>The Ultimate Streaming Command Center for iABS • Kick • MT RP • Community</em>
+  <em>The Ultimate Streaming Command Center for Firas • Kick • MT RP • Community</em>
 </p>
 
 <p align="center">
@@ -23,8 +23,8 @@
 <p align="center">
   <a href="https://discord.com/users/1416151331965767810">💬 Discord</a> •
   <a href="https://x.com/Moh_HSG">🐦 X (Twitter)</a> •
-  <a href="https://github.com/HSG116/iABS_AR">📦 GitHub</a> •
-  <a href="https://iabs.stream">🌐 Live Site</a>
+  <a href="https://github.com/HSG116/Firas_AR">📦 GitHub</a> •
+  <a href="https://firas.stream">🌐 Live Site</a>
 </p>
 
 ---
@@ -41,7 +41,7 @@
 - Dual-view: featured section + sidebar
 - Cinema mode for immersive watching
 
-### 🤖 AI Chat — أبو سعد
+### 🤖 AI Chat — أبو فهدة
 - **DeepSeek-powered** with Saudi dialect
 - Custom Kick emotes rendering (`[emote:ID]`)
 - Social link buttons (`[social:platform:count:url]`)
@@ -120,7 +120,7 @@ graph TD
 ## 📁 Project Structure — هيكل المشروع
 
 ```
-iABS_AR/
+Firas_AR/
 ├── api/                          # Vercel Edge Functions
 │   └── kick.ts                   #   Universal API proxy
 ├── components/
@@ -157,8 +157,8 @@ iABS_AR/
 
 ```bash
 # Clone the repository
-git clone https://github.com/HSG116/iABS_AR.git
-cd iABS_AR
+git clone https://github.com/HSG116/Firas_AR.git
+cd Firas_AR
 
 # Install dependencies
 npm install
@@ -209,7 +209,7 @@ Edit `App.tsx` — `createSocialLink()` function handles:
 ### Botrix Leaderboard
 The endpoint is configured in `AIChat.tsx`:
 ```
-https://botrix.live/api/public/leaderboard?platform=kick&user=iabs
+https://botrix.live/api/public/leaderboard?platform=kick&user=firas
 ```
 
 ---
@@ -289,18 +289,18 @@ https://botrix.live/api/public/leaderboard?platform=kick&user=iabs
 
 | Channel | Info |
 |---------|------|
-| 📧 **Business Email** | ABSX84@gmail.com |
+| 📧 **Business Email** | FIRASX84@gmail.com |
 | 📞 **Phone** | +966 550 348 751 |
 | 💬 **Discord** | [Moh_HSG](https://discord.com/users/1416151331965767810) |
 | 🐦 **X (Twitter)** | [@Moh_HSG](https://x.com/Moh_HSG) |
-| 🎮 **Kick** | [iABS](https://kick.com/iABS) |
+| 🎮 **Kick** | [Firas](https://kick.com/Firas) |
 
 ---
 
 ## 📜 License — الترخيص
 
 ```
-© 2026 iABS Stream Hub. All Rights Reserved.
+© 2026 Firas Stream Hub. All Rights Reserved.
 POWERED BY HSG
 ```
 
@@ -311,7 +311,7 @@ POWERED BY HSG
   <a href="https://x.com/Moh_HSG">
     <img src="https://img.shields.io/badge/🐦_Follow_on_X-000000?style=for-the-badge&logo=x&logoColor=white" alt="Follow on X" />
   </a>
-  <a href="https://github.com/HSG116/iABS_AR">
+  <a href="https://github.com/HSG116/Firas_AR">
     <img src="https://img.shields.io/badge/📦_GitHub_Repo-222222?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" />
   </a>
 </p>

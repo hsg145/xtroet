@@ -8,8 +8,8 @@ interface LatestYoutubeProps {
 export const LatestYoutube: React.FC<LatestYoutubeProps> = ({ lang }) => {
   const [video, setVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  // Channel ID for iABS
-  const channelId = 'UCdIM7MB-8G-FgE7ld3XAQ8w';
+  // Level One Clan channel (Firas clan)
+  const channelId = 'UCD7EpD4o6bw24c5o5vu4hGQ';
 
   useEffect(() => {
     const fetchVideo = async () => {

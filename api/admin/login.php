@@ -7,7 +7,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 // Database configuration
 $host = 'localhost';
-$dbname = 'iabs_social';
+$dbname = 'firas_social';
 $username = 'root';
 $password = '';
 

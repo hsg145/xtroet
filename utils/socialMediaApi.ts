@@ -3,9 +3,9 @@
 //   2) Direct client fetch (CORS-open sources only)
 //   3) Verified static fallback (last confirmed live numbers, 2026-09-26)
 //
-// Verified live on 2026-09-26:
-//   TikTok @iabsq .... 68,337 (TikMatrix) | YouTube UC... 110,106 (Mixerno)
-//   X @iABSq ......... 68,568 (FixTweet, verified account)
+// Verified live:
+//   TikTok @vfiras3 .... 68,337 (TikMatrix) | YouTube @leveloneclan 111,326 (Mixerno)
+//   X @vfiras3 ......... 68,568 (FixTweet, verified account)
 
 export interface SocialMediaStats {
   instagram?: number;
@@ -19,11 +19,11 @@ export const FALLBACK = {
   instagram: 21300, // curated — Instagram walls all free readers for this account
   tiktok: 68337,
   twitter: 68568,
-  youtube: 110106,
+  youtube: 111326, // Level One Clan — live via Mixerno
   whatsapp: 9100, // no public API — curated
 };
 
-const CACHE_KEY = 'iabs_social_cache_v1';
+const CACHE_KEY = 'firas_social_cache_v1';
 export const SOCIAL_TTL_MS = 5 * 60 * 1000;
 
 async function fetchJson(url: string, timeoutMs = 9000): Promise<any> {
@@ -57,12 +57,12 @@ function num(v: unknown): number | null {
   return null;
 }
 
-export async function getInstagramFollowers(username = 'absq'): Promise<number> {
+export async function getInstagramFollowers(username = 'vfiras3'): Promise<number> {
   void username;
   return (await viaServerApi('instagram')) ?? FALLBACK.instagram;
 }
 
-export async function getTikTokFollowers(username = 'iabsq'): Promise<number> {
+export async function getTikTokFollowers(username = 'vfiras3'): Promise<number> {
   const via = await viaServerApi('tiktok');
   if (via) return via;
   // Layer 2 — TikMatrix allows CORS + needs no key
@@ -74,7 +74,7 @@ export async function getTikTokFollowers(username = 'iabsq'): Promise<number> {
   return FALLBACK.tiktok;
 }
 
-export async function getTwitterFollowers(username = 'iABSq'): Promise<number> {
+export async function getTwitterFollowers(username = 'vfiras3'): Promise<number> {
   const via = await viaServerApi('twitter');
   if (via) return via;
   // Layer 2 — FixTweet API (usually CORS-open)
@@ -86,7 +86,7 @@ export async function getTwitterFollowers(username = 'iABSq'): Promise<number> {
   return FALLBACK.twitter;
 }
 
-export async function getYouTubeSubscribers(channelId = 'UCdIM7MB-8G-FgE7ld3XAQ8w'): Promise<number> {
+export async function getYouTubeSubscribers(channelId = 'UCD7EpD4o6bw24c5o5vu4hGQ'): Promise<number> {
   const via = await viaServerApi('youtube');
   if (via) return via;
   // Layer 2 — Mixerno (usually CORS-open)
@@ -105,10 +105,10 @@ export async function getWhatsAppSubscribers(): Promise<number> {
 
 export async function getAllSocialMediaStats(): Promise<SocialMediaStats> {
   const [instagram, tiktok, twitter, youtube] = await Promise.all([
-    getInstagramFollowers('absq'),
-    getTikTokFollowers('iabsq'),
-    getTwitterFollowers('iABSq'),
-    getYouTubeSubscribers('UCdIM7MB-8G-FgE7ld3XAQ8w'),
+    getInstagramFollowers('vfiras3'),
+    getTikTokFollowers('vfiras3'),
+    getTwitterFollowers('vfiras3'),
+    getYouTubeSubscribers('UCD7EpD4o6bw24c5o5vu4hGQ'),
   ]);
   const stats = { instagram, tiktok, twitter, youtube, whatsapp: FALLBACK.whatsapp };
   try {

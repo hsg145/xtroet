@@ -1,7 +1,7 @@
 {
-  "name": "iabs-hub",
-  "description": "Official Stream Hub for iABS - Real-time statistics and Live streaming updates.",
-  "author": "iABS",
+  "name": "firas-hub",
+  "description": "Official Stream Hub for Firas - Real-time statistics and Live streaming updates.",
+  "author": "Firas",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,7 +13,6 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.105.0",
     "hls.js": "latest",
     "pusher-js": "7.6.0",
     "react": "^19.2.3",

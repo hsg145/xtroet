@@ -23,7 +23,7 @@ class ChatService {
   private channel: any = null;
 
   private KNOWN_CHATROOM_IDS: Record<string, number> = {
-    // We removed 'iabs' from here to force a fresh lookup from the API, 
+    // We removed 'firas' from here to force a fresh lookup from the API, 
     // ensuring we get the correct Chatroom ID every time.
     'xeid': 47582,
   };
@@ -90,7 +90,7 @@ class ChatService {
 
   private connectionId = 0;
 
-  async connect(channelSlug: string = 'iabs') {
+  async connect(channelSlug: string = 'firas') {
     const slug = channelSlug.toLowerCase().trim();
     this.disconnect();
     const myConnectionId = this.connectionId;
@@ -106,7 +106,7 @@ class ChatService {
         return;
       }
 
-      // If iabs look up fails, log it clearly but don't auto-switch to xeid unless user asked.
+      // If firas look up fails, log it clearly but don't auto-switch to xeid unless user asked.
       // We will stick to the requested channel to avoid confusion.
 
       if (!chatroomId) {

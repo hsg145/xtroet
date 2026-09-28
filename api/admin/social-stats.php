@@ -6,7 +6,7 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 // Database configuration
 $host = 'localhost';
-$dbname = 'iabs_social';
+$dbname = 'firas_social';
 $username = 'postgres';
 $password = '';
 

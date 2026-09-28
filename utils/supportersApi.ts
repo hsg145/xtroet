@@ -12,7 +12,7 @@ export interface TipDonor {
 export type TipInterval = 'all' | 'week' | 'month';
 
 const BASE = 'https://streamlabs.com/api/v6/59249eb4ac505bd/leaderboard/tip';
-const CACHE_PREFIX = 'iabs_tipboard_';
+const CACHE_PREFIX = 'firas_tipboard_';
 export const TIP_TTL_MS = 5 * 60 * 1000;
 
 function normalize(input: any): TipDonor[] {

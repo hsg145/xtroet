@@ -43,8 +43,8 @@ const FireIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" className={className} strokeWidth="0">
     <defs>
       <linearGradient id="fireGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FF6B6B" />
-        <stop offset="100%" stopColor="#FF2D2D" />
+        <stop offset="0%" stopColor="#D9C08A" />
+        <stop offset="100%" stopColor="#C9A24B" />
       </linearGradient>
     </defs>
     <path fill="url(#fireGradient)" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
@@ -91,11 +91,11 @@ const KickerCard: React.FC<KickerCardProps> = ({ title, subtitle, data, icon, ac
       subText: 'text-yellow-200/50'
     },
     fire: {
-      border: 'border-[#FF2D2D]/20',
-      glow: 'shadow-[0_0_40px_-10px_rgba(255,45,45,0.15)]',
-      text: 'text-[#FF2D2D]',
-      bgIcon: 'bg-[#FF2D2D]/10',
-      gradient: 'from-[#FF2D2D] to-red-800',
+      border: 'border-[#C9A24B]/20',
+      glow: 'shadow-[0_0_40px_-10px_rgba(201,162,75,0.15)]',
+      text: 'text-[#C9A24B]',
+      bgIcon: 'bg-[#C9A24B]/10',
+      gradient: 'from-[#C9A24B] to-red-800',
       subText: 'text-red-200/50'
     },
     lightning: {
@@ -253,7 +253,7 @@ export const KICKsSection: React.FC<KICKsSectionProps> = ({ lang }) => {
     // Mock data for now - replace with actual API call when available
     const mockData: KickerData = {
       all_time: [
-        { username: 'iABS_Fan1', quantity: 15420 },
+        { username: 'Firas_Fan1', quantity: 15420 },
         { username: 'SuperKicker', quantity: 12350 },
         { username: 'KickMaster', quantity: 10200 },
         { username: 'ProSupporter', quantity: 8900 },

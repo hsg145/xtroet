@@ -108,7 +108,7 @@ export default defineConfig(({ mode }) => {
               // ---- /api/social : عدّادات التواصل الحية محلياً (مرآة api/social.ts) ----
               const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
               const platform = (url.searchParams.get('platform') || '').toLowerCase();
-              const HANDLES: Record<string, string> = { tiktok: 'iabsq', instagram: 'absq', twitter: 'iABSq', youtube: 'UCdIM7MB-8G-FgE7ld3XAQ8w' };
+              const HANDLES: Record<string, string> = { tiktok: 'vfiras3', instagram: 'vfiras3', twitter: 'vfiras3', youtube: 'UCD7EpD4o6bw24c5o5vu4hGQ' };
               const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
               const parseCompact = (input: any): number | null => {
                 if (typeof input === 'number' && Number.isFinite(input)) return Math.round(input);
@@ -122,15 +122,23 @@ export default defineConfig(({ mode }) => {
                 const out = Math.round(n);
                 return out > 0 ? out : null;
               };
-              const jget = async (u: string) => {
-                const r = await fetch(u, { headers: { Accept: 'application/json', 'User-Agent': UA } });
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return await r.json();
+              const jget = async (u: string, timeoutMs = 12000) => {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                  const r = await fetch(u, { headers: { Accept: 'application/json', 'User-Agent': UA }, signal: controller.signal });
+                  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                  return await r.json();
+                } finally { clearTimeout(timer); }
               };
-              const tget = async (u: string) => {
-                const r = await fetch(u, { headers: { Accept: 'text/html', 'User-Agent': UA } });
-                if (!r.ok) throw new Error(`HTTP ${r.status}`);
-                return await r.text();
+              const tget = async (u: string, timeoutMs = 12000) => {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), timeoutMs);
+                try {
+                  const r = await fetch(u, { headers: { Accept: 'text/html', 'User-Agent': UA }, signal: controller.signal });
+                  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                  return await r.text();
+                } finally { clearTimeout(timer); }
               };
               const tryFirst = async (fns: Array<() => Promise<{ count: number; source: string }>>) => {
                 let last = 'failed';
@@ -234,16 +242,20 @@ export default defineConfig(({ mode }) => {
               try {
                 const targetUrl = Array.isArray(endpoint) ? endpoint[0] : endpoint;
                 
-                // Use built-in Node.js fetch (Node 18+)
+                // Use built-in Node.js fetch (Node 18+) with timeout so slow Kick API never hangs dev
+                const kickController = new AbortController();
+                const kickTimer = setTimeout(() => kickController.abort(), 12000);
                 const response = await fetch(targetUrl, {
                   headers: {
                     'Accept': 'application/json',
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                     'Accept-Language': 'en-US,en;q=0.9',
-                  }
+                  },
+                  signal: kickController.signal,
                 });
                 
                 const text = await response.text();
+                clearTimeout(kickTimer);
                 
                 res.setHeader('Content-Type', 'application/json');
                 res.setHeader('Access-Control-Allow-Origin', '*');

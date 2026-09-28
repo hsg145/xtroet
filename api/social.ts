@@ -11,10 +11,10 @@ const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
 
 const HANDLES = {
-  tiktok: 'iabsq',
-  instagram: 'absq',
-  twitter: 'iABSq',
-  youtube: 'UCdIM7MB-8G-FgE7ld3XAQ8w',
+  tiktok: 'vfiras3',
+  instagram: 'vfiras3',
+  twitter: 'vfiras3',
+  youtube: 'UCD7EpD4o6bw24c5o5vu4hGQ', // Level One Clan (Firas clan)
 } as const;
 
 type Platform = keyof typeof HANDLES;
