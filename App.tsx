@@ -563,16 +563,16 @@ type Supporter = { id: number; name: string; amount: number; currency: string; m
 
 // Special alert tiers — modern interactive cards with perks
 const TIERS = [
-    { amount: 25, label: '25$', c: '#FFE9B8', glow: 'rgba(255,233,184,0.45)', name: 'BRONZE', nameAr: 'برونزي', perk: 'تنبيه برونزي أنيق يظهر اسمك في الشات', perkEn: 'Sleek bronze on-screen alert', icon: '✦' },
-    { amount: 99, label: '99$', c: '#D9C08A', glow: 'rgba(217,192,138,0.5)', name: 'SILVER', nameAr: 'فضي', perk: 'تنبيه فضي + شكر صوتي مباشر من فراس', perkEn: 'Silver alert + live shoutout', icon: '⬣' },
-    { amount: 300, label: '300$', c: '#C9A24B', glow: 'rgba(201,162,75,0.6)', name: 'GOLD', nameAr: 'ذهبي', perk: 'تنبيه ذهبي سينمائي + صوت مخصص باسمك', perkEn: 'Cinematic gold alert + custom sound', icon: '◈', popular: true },
-    { amount: 505, label: '505$', c: '#B388FF', glow: 'rgba(179,136,255,0.55)', name: 'DIAMOND', nameAr: 'ماسي', perk: 'عرض اسمك بحجم الشاشة + مقطع شكر خاص', perkEn: 'Fullscreen takeover + clip', icon: '⬥' },
-    { amount: 999, label: '999$', c: '#FF8A5C', glow: 'rgba(255,138,92,0.55)', name: 'RUBY', nameAr: 'أسطوري', perk: 'دخول قاعة الخلود + فيديو تكريم خاص', perkEn: 'Hall of fame + tribute video', icon: '❖' },
+    { amount: 50, label: '50$', c: '#FFE9B8', glow: 'rgba(255,233,184,0.45)', name: 'BRONZE', nameAr: 'برونزي', perk: 'تنبيه برونزي أنيق يظهر اسمك في الشات', perkEn: 'Sleek bronze on-screen alert', icon: '✦' },
+    { amount: 100, label: '100$', c: '#D9C08A', glow: 'rgba(217,192,138,0.5)', name: 'SILVER', nameAr: 'فضي', perk: 'تنبيه فضي + شكر صوتي مباشر من فراس', perkEn: 'Silver alert + live shoutout', icon: '⬣' },
+    { amount: 200, label: '200$', c: '#C9A24B', glow: 'rgba(201,162,75,0.6)', name: 'GOLD', nameAr: 'ذهبي', perk: 'تنبيه ذهبي سينمائي + صوت مخصص باسمك', perkEn: 'Cinematic gold alert + custom sound', icon: '◈', popular: true },
+    { amount: 500, label: '500$', c: '#B388FF', glow: 'rgba(179,136,255,0.55)', name: 'DIAMOND', nameAr: 'ماسي', perk: 'عرض اسمك بحجم الشاشة + مقطع شكر خاص', perkEn: 'Fullscreen takeover + clip', icon: '⬥' },
+    { amount: 1000, label: '1000$', c: '#FF8A5C', glow: 'rgba(255,138,92,0.55)', name: 'RUBY', nameAr: 'أسطوري', perk: 'دخول قاعة الخلود + فيديو تكريم خاص', perkEn: 'Hall of fame + tribute video', icon: '❖' },
 ];
 
 const AlertTiers: React.FC<{ title: string; note: string; lang: Language }> = ({ title, note, lang }) => {
     const [active, setActive] = useState(2);
-    const max = 999;
+    const max = 1000;
     const isAr = lang === 'ar';
     return (
         <div className="relative mt-5 md:mt-7 rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden">
