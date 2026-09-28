@@ -913,9 +913,15 @@ export default function App() {
                                 <p className="font-gaming text-stroke-red pointer-events-none select-none absolute inset-x-0 -top-4 md:top-2 text-[26vw] md:text-[190px] leading-none opacity-30" dir="ltr" aria-hidden="true">FIRAS</p>
 
                                 <h1 className="animate-fade-in-up relative font-heading font-black text-white leading-[1.05] tracking-tight text-[clamp(2.6rem,9vw,4.8rem)] mt-3" style={{ animationDelay: '180ms' }}>
-                                    {t.nameAr}
-                                    <span className="gold-text"> • </span>
-                                    <span dir="ltr" className="gold-text">FIRAS</span>
+                                    {lang === 'ar' ? (
+                                        <>
+                                            {t.nameAr}
+                                            <span className="gold-text"> • </span>
+                                            <span dir="ltr" className="gold-text">FIRAS</span>
+                                        </>
+                                    ) : (
+                                        <span dir="ltr" className="gold-text">FIRAS</span>
+                                    )}
                                 </h1>
                                 <p className="animate-fade-in-up font-gaming text-lg sm:text-xl md:text-3xl gold-text tracking-[0.12em] mt-2" dir="ltr" style={{ animationDelay: '240ms' }} aria-hidden="true">RISE WITH FIRE</p>
 
