@@ -722,12 +722,12 @@ export default function App() {
 
     const [socialStats, setSocialStats] = useState<Record<string, string>>({
         'KICK': '121.1K', 'TikTok': '68.3K+',
-        'X': '68.6K', 'WhatsApp': '16K', 'Discord': '10.5K'
+        'X': '68.6K', 'WhatsApp': '36K', 'Discord': '10.5K'
     });
 
     const [socials, setSocials] = useState<SocialLink[]>(() => buildDefaultSocials({
         'KICK': '121.1K', 'TikTok': '68.3K+',
-        'X': '68.6K', 'WhatsApp': '16K', 'Discord': '10.5K'
+        'X': '68.6K', 'WhatsApp': '36K', 'Discord': '10.5K'
     }));
     const [lastSession, setLastSession] = useState<any>(null);
     const [pastSessions, setPastSessions] = useState<any[]>([]);

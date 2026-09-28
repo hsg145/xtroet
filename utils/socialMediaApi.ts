@@ -20,7 +20,7 @@ export const FALLBACK = {
   tiktok: 68337,
   twitter: 68568,
   youtube: 111326, // Level One Clan — live via Mixerno
-  whatsapp: 9100, // no public API — curated
+  whatsapp: 36000, // no public API — curated
 };
 
 const CACHE_KEY = 'firas_social_cache_v1';

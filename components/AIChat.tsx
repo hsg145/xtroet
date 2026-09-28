@@ -39,7 +39,7 @@ const SYSTEM_PROMPT = `أنت الذكاء الاصطناعي والمساعد �
 - TikTok: 42.3K متابع | https://www.tiktok.com/@vfiras3
 - X (تويتر): 57.2K متابع | https://x.com/vfiras3
 - Discord: 10.5K عضو | https://discord.gg/tmfx
-- WhatsApp: 16K متابع | https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a
+- WhatsApp: 36K متابع | https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a
 - المجموع التقريبي: 424.5K+ متابع على جميع المنصات
 
 ## المحتوى:
@@ -106,7 +106,7 @@ inormal, yousef1098, ireim, shaddoh, sipdai, maryamqa, imiro97, iali5, lena81l, 
 [social:TikTok:42.3K:https://www.tiktok.com/@vfiras3]
 [social:X:57.2K:https://x.com/vfiras3]
 [social:Discord:10.5K:https://discord.gg/tmfx]
-[social:WhatsApp:16K:https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a]
+[social:WhatsApp:36K:https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a]
 
 ## تنسيق النص:
 - **كلمة** = عريض
