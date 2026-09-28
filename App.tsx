@@ -32,7 +32,7 @@ const createSocialLink = (key: string, value: string, followerCount?: string, sp
         case 'tiktok': return { name: 'TikTok', url: value.startsWith('http') ? value : `https://tiktok.com/@${handle}`, icon: <TikTokIcon className="w-7 h-7" />, color: '', username: `@${handle}`, hex: '#FE2C55', followerCount, specialDetail };
         case 'facebook': return { name: 'Facebook', url: value.startsWith('http') ? value : `https://facebook.com/${handle}`, icon: <FacebookIcon className="w-7 h-7" />, color: '', username: 'Page', hex: '#1877F2', followerCount, specialDetail };
         case 'snapchat': return { name: 'Snapchat', url: value.startsWith('http') ? value : `https://snapchat.com/add/${handle}`, icon: <SnapchatIcon className="w-7 h-7" />, color: '', username: 'firasq', hex: '#FFFC00', followerCount, specialDetail };
-        case 'whatsapp': return { name: 'WhatsApp', url: value, icon: <WhatsAppIcon className="w-7 h-7" />, color: '', username: 'Group', hex: '#25D366', followerCount, specialDetail };
+        case 'whatsapp': return { name: 'WhatsApp', url: value, icon: <WhatsAppIcon className="w-7 h-7" />, color: '', username: 'T • F • M • X - Live', hex: '#25D366', followerCount, specialDetail };
         default: return null;
     }
 };
@@ -55,7 +55,7 @@ const buildDefaultSocials = (stats: Record<string, string>): SocialLink[] => ([
     createSocialLink('tiktok', 'https://www.tiktok.com/@vfiras3', stats['TikTok'], 'أقوى المقاطع والتحديات'),
     createSocialLink('twitter', 'https://x.com/vfiras3', stats['X'], 'أخبار وتحديثات سريعة'),
     createSocialLink('discord', 'https://discord.gg/tmfx', stats['Discord'], 'أكبر تجمع للأساطير'),
-    createSocialLink('whatsapp', 'https://www.whatsapp.com/channel/0029VadbqYx5Ui2eInkr7v2E', stats['WhatsApp'], 'تواصل مباشر وتنبيهات البث'),
+    createSocialLink('whatsapp', 'https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a', stats['WhatsApp'], 'تواصل مباشر وتنبيهات البث'),
 ].filter(Boolean) as SocialLink[]);
 
 const TRANSLATIONS = {
