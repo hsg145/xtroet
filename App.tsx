@@ -61,7 +61,7 @@ const TRANSLATIONS = {
     en: {
         status: 'LIVE NOW', statusOffline: 'OFFLINE',
         headerTitle: 'XTROET STREAM HUB',
-        eyebrow: 'Emerald era — power & legacy',
+        eyebrow: 'Beyond Ordinary — XTROET',
         nameAr: 'Nasser Alanazi',
         bio: 'Nasser Alanazi (XTROET) — member of the Layl One clan, streamer and YouTuber, owner of the Nasser Alanazi character in the MT realistic-life server, one of the strongest and most prominent characters in the city.',
         tags: ['Just Chatting', 'MT RP', 'Level One'],
@@ -87,7 +87,7 @@ const TRANSLATIONS = {
     ar: {
         status: 'بث مباشر الآن', statusOffline: 'غير متصل حالياً',
         headerTitle: 'مركز XTROET للبث المباشر',
-        eyebrow: 'عصر الزمرد — هيبة وحضور',
+        eyebrow: 'خارج المألوف — XTROET',
         nameAr: 'ناصر العنزي',
         bio: 'ناصر العنزي (XTROET) — عضو في كلان ليل ون، استريمر ويوتيوبر، وصاحب شخصية ناصر العنزي في سيرفر MT للحياة الواقعية، إحدى أقوى وأبرز الشخصيات في المدينة.',
         tags: ['Just Chatting', 'MT RP', 'Level One'],
