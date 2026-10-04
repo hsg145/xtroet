@@ -42,6 +42,10 @@ const NAV_DEFS = [
         href: '#archive', id: 'archive', ar: 'الأرشيف', en: 'Archive',
         icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4" /></svg>,
     },
+    {
+        href: '#album', id: 'album', ar: 'الألبوم', en: 'Album',
+        icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="10.5" r="1.8" /><path d="M21 15.5l-4.5-4.5L7 19" /></svg>,
+    },
 ] as const;
 
 /**

@@ -9,6 +9,7 @@ import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
 // Heavy below-fold / on-demand chunks — split out of the first paint
 const HonorSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.HonorSection })));
 const ArchiveSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.ArchiveSection })));
+const AlbumSection = lazy(() => import('./components/AlbumSection').then(m => ({ default: m.AlbumSection })));
 
 // --- Constants (XTROET) ---
 const DEFAULT_PROFILE_IMAGE = "/xtroet-logo.webp";
@@ -78,6 +79,7 @@ const TRANSLATIONS = {
         communityTitle: 'Community HQ', supportTitle: 'Support the Channel', supportSub: 'Your support keeps the emerald empire legendary.',
         honorTitle: 'Hall of Fame', honorSub: 'Top supporters across every stream.',
         archiveTitle: 'Archive', archiveSub: 'Clips and past streams.',
+        albumTitle: " Nasser's Album", albumSub: 'Seventeen frames from the night shifts.',
         statsTitle: 'Stream Stats', statsSub: 'Live numbers from the emerald empire.',
         tiersTitle: 'Special alert tiers',
         theaterTitle: 'Live Theater', viewers: 'watching',
@@ -104,6 +106,7 @@ const TRANSLATIONS = {
         communityTitle: 'مقر المجتمع', supportTitle: 'دعم القناة', supportSub: 'دعمك يخلي إمبراطورية الزمرد أسطورية وتستمر.',
         honorTitle: 'لوحة الشرف', honorSub: 'كبار الداعمين عبر كل البثوث.',
         archiveTitle: 'الأرشيف', archiveSub: 'اللقطات والبثوث السابقة.',
+        albumTitle: 'ألبوم ناصر', albumSub: 'سبع عشرة صورة من ذاكرة السهرات.',
         statsTitle: 'إحصائيات البث', statsSub: 'أرقام إمبراطورية الزمرد لحظة بلحظة.',
         tiersTitle: 'مستويات التنبيه الخاصة',
         theaterTitle: 'مسرح البث المباشر', viewers: 'مشاهد',
@@ -1024,6 +1027,12 @@ export default function App() {
                         <section id="archive" className="pt-12 md:pt-16 scroll-mt-28">
                             <Reveal><SectionHeading no="06" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
                             <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><ArchiveSection lang={lang} /></Suspense></Reveal>
+                        </section>
+
+                        {/* ===== ALBUM — final section: Nasser's photo deck ===== */}
+                        <section id="album" className="pt-12 md:pt-16 scroll-mt-28">
+                            <Reveal><SectionHeading no="07" title={t.albumTitle} sub={t.albumSub} en="ALBUM" /></Reveal>
+                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-72 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><AlbumSection lang={lang} /></Suspense></Reveal>
                         </section>
 
                         {/* ===== FOOTER ===== */}
