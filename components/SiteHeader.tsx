@@ -93,9 +93,11 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
         return () => document.removeEventListener('keydown', onKey);
     }, [open ]);
 
+    /* Mobile strip shares the same panel state as the tablet burger */
     const isAr = lang === 'ar';
     const activeHash = hash === '' ? '#top' : hash;
     const viewersLabel = viewers > 0 ? viewers.toLocaleString('en-US') : '';
+    const activeNav = NAV_DEFS.find((n) => n.href === activeHash) || NAV_DEFS[0];
 
     const goTo = (id: string) => {
         setOpen(false);
@@ -237,11 +239,90 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
             .dock-mrow:hover svg,.dock-mrow.is-active svg{color:#6EE7B7}
             .dock-mrow.gold{color:#04120D;background:linear-gradient(180deg,#A7F3D0,#10B981 55%,#047857);border-color:transparent;font-weight:900}
             .dock-mrow.gold svg{color:#04120D}
+            /* ===== PHONE EDITION: slim top strip — only the sections button ===== */
+            @media(max-width:767px){.dock-desk{display:none}}
+            .dock-mob{position:sticky;top:0;z-index:60;display:block}
+            @media(min-width:768px){.dock-mob{display:none}}
+            .dock-mob-shell{position:relative;width:100%;
+                animation:dock-in .8s cubic-bezier(.16,1,.3,1) both}
+            .dock-mob-bar{position:relative;overflow:hidden;
+                background:linear-gradient(180deg,rgba(6,26,20,.94),rgba(3,11,8,.82));
+                backdrop-filter:blur(22px) saturate(1.25);-webkit-backdrop-filter:blur(22px) saturate(1.25);
+                box-shadow:0 18px 44px -26px rgba(0,0,0,.95),inset 0 -1px 0 rgba(255,255,255,.06)}
+            .dock-mob-bar::before{content:"";position:absolute;top:0;left:6%;right:6%;height:1px;border-radius:99px;
+                background:linear-gradient(90deg,transparent,rgba(244,217,138,.6),rgba(16,185,129,.75),transparent);pointer-events:none}
+            .dock-mob-bar::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.85;
+                background:radial-gradient(320px 90px at 88% -40%,rgba(201,162,75,.14),transparent 70%),
+                           radial-gradient(320px 90px at 6% -30%,rgba(16,185,129,.2),transparent 70%)}
+            .dock-mob-row{position:relative;z-index:1;display:flex;align-items:center;gap:9px;padding:9px 12px}
+            /* the one and only phone control */
+            .dock-mob-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;
+                height:46px;padding:0 14px 0 8px;border-radius:99px;cursor:pointer;font-family:inherit;
+                color:#04120D;background:linear-gradient(180deg,#A7F3D0 0%,#10B981 52%,#047857 100%);
+                border:1px solid rgba(201,162,75,.32);
+                box-shadow:0 14px 30px -12px rgba(16,185,129,.8),inset 0 1px 0 rgba(255,255,255,.55);
+                transition:transform .3s ease,box-shadow .3s ease}
+            .dock-mob-btn:active{transform:scale(.97)}
+            .dock-mob-btn::after{content:"";position:absolute;top:-40%;bottom:-40%;width:34%;left:-75%;z-index:0;pointer-events:none;
+                background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);transform:skewX(-18deg);
+                animation:mob-shine 5.5s ease-in-out infinite}
+            @keyframes mob-shine{0%{left:-75%;opacity:0}14%{opacity:1}36%,100%{left:150%;opacity:0}}
+            .dock-mob-btn>*{position:relative;z-index:1}
+            .dock-mob-btn-ic{width:32px;height:32px;border-radius:11px;flex:none;display:inline-flex;align-items:center;justify-content:center;
+                background:#04120D;color:#6EE7B7;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+            .dock-mob-btn-tx{display:flex;flex-direction:column;align-items:start;line-height:1.08;gap:1px}
+            .dock-mob-btn-tx b{font-size:13.5px;font-weight:900;white-space:nowrap}
+            .dock-mob-btn-tx small{font-size:9.5px;font-weight:800;letter-spacing:.06em;opacity:.72;white-space:nowrap;
+                max-width:44vw;overflow:hidden;text-overflow:ellipsis}
+            .dock-mob-chev{flex:none;display:inline-flex;transition:transform .4s cubic-bezier(.16,1,.3,1)}
+            .dock-mob.is-open .dock-mob-chev{transform:rotate(180deg)}
+            /* dropdown panel */
+            .dock-mob-menu{display:grid;grid-template-rows:0fr;opacity:0;
+                transition:grid-template-rows .42s cubic-bezier(.16,1,.3,1),opacity .3s ease}
+            .dock-mob.is-open .dock-mob-menu{grid-template-rows:1fr;opacity:1}
+            .dock-mob-menu-in{overflow:hidden}
+            .dock-mob-panel{margin:8px 12px 12px;border-radius:22px;padding:1px;
+                background:linear-gradient(150deg,rgba(16,185,129,.55),rgba(201,162,75,.28) 45%,rgba(16,185,129,.55));
+                box-shadow:0 26px 60px -22px rgba(0,0,0,.95)}
+            .dock-mob-panel-in{border-radius:21px;padding:12px;max-height:min(74vh,560px);overflow-y:auto;overscroll-behavior:contain;
+                -webkit-overflow-scrolling:touch;
+                background:linear-gradient(180deg,rgba(8,32,25,.99),rgba(3,10,8,.99))}
+            .dock-mob-head{display:flex;align-items:center;gap:12px;padding:2px 4px 11px;margin-bottom:11px;border-bottom:1px solid rgba(16,185,129,.13)}
+            .dock-mob-head img{width:44px;height:44px;border-radius:14px;object-fit:cover;flex:none;border:1px solid rgba(16,185,129,.45)}
+            .dock-mob-head b{display:block;font-size:14px;letter-spacing:.15em;color:#fff}
+            .dock-mob-head small{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.45);margin-top:4px}
+            .dock-mob-head small i{width:6px;height:6px;border-radius:99px;background:#5a6a63;flex:none}
+            .dock-mob-head small.on{color:#34D399}
+            .dock-mob-head small.on i{background:#10B981;box-shadow:0 0 8px #10B981;animation:dock-pulse 3s ease-in-out infinite}
+            .dock-mob-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+            .dock-tile{position:relative;display:flex;align-items:center;gap:10px;width:100%;padding:13px 12px;border-radius:18px;
+                border:1px solid rgba(16,185,129,.14);background:rgba(16,185,129,.05);color:rgba(255,255,255,.8);
+                font-family:inherit;font-size:13.5px;font-weight:800;text-align:start;cursor:pointer;
+                transition:transform .3s ease,background .3s ease,border-color .3s ease,color .3s ease,box-shadow .3s ease}
+            .dock-tile svg{color:rgba(216,190,130,.6);flex:none;transition:color .3s ease}
+            .dock-tile:active{transform:scale(.97)}
+            .dock-tile.is-active{color:#04120D;background:linear-gradient(180deg,#A7F3D0,#10B981 55%,#047857);
+                border-color:transparent;box-shadow:0 12px 28px -12px rgba(16,185,129,.85)}
+            .dock-tile.is-active svg{color:#04120D}
+            .dock-tile-n{position:absolute;top:6px;inset-inline-end:9px;font-size:9px;font-weight:900;letter-spacing:.14em;
+                color:rgba(255,255,255,.22)}
+            .dock-tile.is-active .dock-tile-n{color:rgba(4,18,13,.45)}
+            .dock-mob-cta{position:relative;overflow:hidden;margin-top:11px;display:flex;align-items:center;justify-content:center;gap:9px;
+                width:100%;height:52px;border-radius:18px;text-decoration:none;color:#04120D;font-size:14px;font-weight:900;
+                background:linear-gradient(180deg,#A7F3D0 0%,#10B981 55%,#047857 100%);
+                box-shadow:0 16px 34px -12px rgba(16,185,129,.8),inset 0 1px 0 rgba(255,255,255,.5)}
+            .dock-mob-cta:active{transform:scale(.985)}
+            .dock-mob-acts{display:flex;gap:9px;margin-top:9px}
+            .dock-mob-act{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;height:46px;border-radius:15px;
+                font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer;color:rgba(255,255,255,.72);
+                background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);transition:all .3s ease}
+            .dock-mob-act:active{transform:scale(.97);border-color:rgba(16,185,129,.5);color:#A7F3D0}
+            @media(prefers-reduced-motion:reduce){.dock-mob-shell{animation:none}.dock-mob-btn::after{animation:none}}
             a:focus-visible,button:focus-visible{outline:2px solid #10B981;outline-offset:2px;border-radius:10px}
             @media(prefers-reduced-motion:reduce){.dock-shell,.dock-menu,.dock-aurora{animation:none;transition:none}.dock-dot.on,.dock-live.on i{animation:none}}
             `}</style>
 
-            <header className={`dock dock-shell${compact ? ' is-compact' : ''}`}>
+            <header className={`dock dock-shell dock-desk${compact ? ' is-compact' : ''}`}>
                 <div className="dock-frame">
                     <div className="dock-bar">
                         <span className="dock-aurora" aria-hidden="true" />
@@ -366,6 +447,90 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
                     </div>
                 </div>
             </header>
+
+            {/* ===== PHONE EDITION: slim top strip with only the sections button ===== */}
+            <div className={`dock-mob${open ? ' is-open' : ''}`}>
+                <div className="dock-mob-shell">
+                    <div className="dock-mob-bar">
+                        <div className="dock-mob-row">
+                            <button
+                                type="button"
+                                className="dock-mob-btn"
+                                onClick={() => setOpen((v) => !v)}
+                                aria-label={isAr ? 'الأقسام' : 'Sections'}
+                                aria-expanded={open}
+                                aria-controls="dock-mob-sections"
+                            >
+                                <span className="dock-mob-btn-ic" aria-hidden="true">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="3" y="3" width="7" height="7" rx="2" /><rect x="14" y="3" width="7" height="7" rx="2" />
+                                        <rect x="3" y="14" width="7" height="7" rx="2" /><rect x="14" y="14" width="7" height="7" rx="2" />
+                                    </svg>
+                                </span>
+                                <span className="dock-mob-btn-tx">
+                                    <b>{isAr ? 'الأقسام' : 'Sections'}</b>
+                                    <small>{isAr ? activeNav.ar : activeNav.en}</small>
+                                </span>
+                                <span className="dock-mob-chev" aria-hidden="true">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+                                </span>
+                            </button>
+                        </div>
+
+                        {/* sections dropdown */}
+                        <div className="dock-mob-menu" id="dock-mob-sections">
+                            <div className="dock-mob-menu-in">
+                                <div className="dock-mob-panel">
+                                    <div className="dock-mob-panel-in">
+                                        <div className="dock-mob-head" dir={isAr ? 'rtl' : 'ltr'}>
+                                            <img src={profileImage} alt="" loading="lazy" />
+                                            <span className="min-w-0">
+                                                <b dir="ltr">XTROET</b>
+                                                <small className={isLive ? 'on' : ''}>
+                                                    <i aria-hidden="true" />
+                                                    <span className="truncate">{isLive ? `${statusText}${viewersLabel ? ` • ${viewersLabel}` : ''}` : statusText}</span>
+                                                </small>
+                                            </span>
+                                        </div>
+
+                                        <nav className="dock-mob-grid" aria-label={isAr ? 'الأقسام' : 'Sections'} dir={isAr ? 'rtl' : 'ltr'}>
+                                            {NAV_DEFS.map((n, i) => (
+                                                <button
+                                                    key={n.href}
+                                                    type="button"
+                                                    onClick={() => goTo(n.id)}
+                                                    aria-current={activeHash === n.href ? 'page' : undefined}
+                                                    className={`dock-tile${activeHash === n.href ? ' is-active' : ''}`}
+                                                >
+                                                    {n.icon}
+                                                    <span className="truncate">{isAr ? n.ar : n.en}</span>
+                                                    <span className="dock-tile-n" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+                                                </button>
+                                            ))}
+                                        </nav>
+
+                                        <a href="https://kick.com/xtroet" target="_blank" rel="noopener noreferrer" className="dock-mob-cta">
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+                                            {isAr ? 'شاهد البث المباشر' : 'Watch Live'}
+                                        </a>
+
+                                        <div className="dock-mob-acts">
+                                            <button type="button" className="dock-mob-act" onClick={() => onToggleLang()}>
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" /></svg>
+                                                {isAr ? 'English' : 'العربية'}
+                                            </button>
+                                            <button type="button" className="dock-mob-act" onClick={() => { onRefresh(); setOpen(false); }}>
+                                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                                                {isAr ? 'تحديث الحالة' : 'Refresh'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </>
     );
 };

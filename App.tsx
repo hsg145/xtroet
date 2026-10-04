@@ -495,9 +495,9 @@ const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boole
             {/* top energy line */}
             <span className="absolute top-0 start-6 end-6 h-[2.5px] rounded-full transition-all duration-500" style={{ background: `linear-gradient(90deg, transparent, ${brand}, transparent)`, opacity: active ? 1 : 0.3, boxShadow: active ? `0 0 18px ${brand}` : 'none' }} />
             {launching && <span className="absolute bottom-0 start-0 h-1 animate-charge z-30" style={{ width: '100%', backgroundColor: brand, boxShadow: `0 0 12px ${brand}` }} />}
-            <div className={`relative p-4 sm:p-5 flex items-center gap-3.5 sm:gap-4 ${featured ? 'min-h-[128px]' : 'min-h-[104px]'}`}>
+            <div className={`relative p-3.5 sm:p-5 flex items-center gap-3 sm:gap-4 ${featured ? 'min-h-[112px] sm:min-h-[128px]' : 'min-h-[96px] sm:min-h-[104px]'}`}>
                 {/* icon medallion */}
-                <div className={`${featured ? 'w-[68px] h-[68px]' : 'w-[60px] h-[60px]'} rounded-[18px] flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-[1.06] group-hover:-rotate-3`}
+                <div className={`${featured ? 'w-[54px] h-[54px] sm:w-[68px] sm:h-[68px]' : 'w-[50px] h-[50px] sm:w-[60px] sm:h-[60px]'} rounded-[18px] flex items-center justify-center shrink-0 transition-all duration-300 group-hover:scale-[1.06] group-hover:-rotate-3`}
                     style={{
                         color: active && bright ? '#000' : brand,
                         background: active && bright ? brand : `linear-gradient(160deg, ${brand}2e, rgba(255,255,255,0.04))`,
@@ -520,19 +520,19 @@ const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boole
                             </span>
                         )}
                     </div>
-                    <p className={`font-black text-white truncate leading-tight mt-0.5 ${featured ? 'text-[22px] sm:text-2xl' : 'text-[17px]'}`} dir="ltr">{social.username}</p>
-                    <div className="flex items-center gap-1.5 mt-1">
+                    <p className={`font-black text-white truncate leading-tight mt-0.5 ${featured ? 'text-[19px] min-[400px]:text-[21px] sm:text-2xl' : 'text-[15px] min-[400px]:text-[16px] sm:text-[17px]'}`} dir="ltr">{social.username}</p>
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                         {social.followerCount && social.followerCount !== '—' && (
                             <span className={`inline-flex items-center gap-1 text-[11px] font-black text-white/85`} dir="ltr">
                                 <svg className="w-3 h-3 text-white/40" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" /></svg>
                                 {social.followerCount}
                             </span>
                         )}
-                        {social.specialDetail && <span className="text-[11px] text-white/40 font-medium truncate">{social.specialDetail}</span>}
+                        {social.specialDetail && <span className="text-[11px] text-white/40 font-medium truncate max-w-full">{social.specialDetail}</span>}
                     </div>
                 </div>
                 {/* CTA */}
-                <span className={`shrink-0 flex items-center justify-center rounded-full font-black transition-all duration-300 ${featured ? 'w-12 h-12' : 'w-11 h-11'}`}
+                <span className={`shrink-0 flex items-center justify-center rounded-full font-black transition-all duration-300 ${featured ? 'w-11 h-11 sm:w-12 sm:h-12' : 'w-10 h-10 sm:w-11 sm:h-11'}`}
                     style={{
                         background: active ? brand : 'rgba(255,255,255,0.07)',
                         color: active ? (bright ? '#000' : '#fff') : '#fff',
@@ -654,9 +654,9 @@ const DonateGate: React.FC<{
                     <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: color, boxShadow: `0 0 10px ${color}` }} />
                     {busy ? (lang === 'en' ? 'OPENING…' : 'جاري الفتح…') : 'LIVE'}
                 </span>
-                <div className="relative p-5 sm:p-7">
-                    <div className="flex items-center gap-4">
-                        <span className="relative w-[68px] h-[68px] sm:w-20 sm:h-20 rounded-[22px] flex items-center justify-center shrink-0 overflow-hidden border border-white/20 bg-black/40 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3"
+                <div className="relative p-4 sm:p-5 md:p-7">
+                    <div className="flex items-center gap-3.5 sm:gap-4">
+                        <span className="relative w-[58px] h-[58px] sm:w-20 sm:h-20 rounded-[20px] flex items-center justify-center shrink-0 overflow-hidden border border-white/20 bg-black/40 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3"
                             style={{ boxShadow: hover ? `0 18px 44px -12px ${color}aa, inset 0 1px 0 rgba(255,255,255,0.25)` : `0 12px 30px -12px ${color}77, inset 0 1px 0 rgba(255,255,255,0.15)` }}>
                             {markImg
                                 ? <img src={markImg} alt={`${title} logo`} className="w-full h-full object-cover" loading="lazy" />
@@ -664,20 +664,20 @@ const DonateGate: React.FC<{
                             <span className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
                         </span>
                         <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-black tracking-[0.3em] uppercase" style={{ color }}>{label}</p>
-                            <h3 className="font-black text-white tracking-tight leading-none text-[30px] sm:text-4xl mt-1" dir="ltr">{title}</h3>
-                            <p className="text-[12px] text-white/50 font-medium mt-1.5 leading-relaxed">{sub}</p>
+                            <p className="text-[10px] font-black tracking-[0.3em] uppercase truncate" style={{ color }}>{label}</p>
+                            <h3 className="font-black text-white tracking-tight leading-none mt-1.5 text-[23px] min-[400px]:text-[26px] sm:text-[30px] md:text-4xl break-words" dir="ltr">{title}</h3>
+                            <p className="text-[12px] text-white/50 font-medium mt-2 leading-relaxed">{sub}</p>
                         </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-2 mt-4">
                         {[(lang === 'en' ? 'Instant alert' : 'تنبيه فوري'), (lang === 'en' ? 'On-screen name' : 'اسمك على الشاشة'), (lang === 'en' ? 'Chat shoutout' : 'شكر في الشات')].map((f) => (
                             <span key={f} className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1.5 rounded-full bg-white/[0.05] border border-white/10 text-white/60">
-                                <svg className="w-3 h-3" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                <svg className="w-3 h-3 shrink-0" style={{ color }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                                 {f}
                             </span>
                         ))}
                     </div>
-                    <span className="mt-5 w-full min-h-[56px] inline-flex items-center justify-between gap-3 rounded-2xl ps-5 pe-2 py-2 font-black text-sm transition-all duration-300 group-hover:brightness-110"
+                    <span className="mt-5 w-full min-h-[54px] inline-flex items-center justify-between gap-3 rounded-2xl ps-4 sm:ps-5 pe-2 py-2 font-black text-[13px] sm:text-sm transition-all duration-300 group-hover:brightness-110"
                         style={{ background: ctaBg, color: ctaColor, boxShadow: hover ? `0 0 32px ${color}88, 0 16px 40px -12px ${color}66` : `0 12px 28px -12px ${color}66` }}>
                         <span className="inline-flex items-center gap-2">
                             {busy
@@ -707,7 +707,7 @@ const SupportArena: React.FC<{ lang: Language; supporters: Supporter[] }> = ({ l
             <div className="relative">
                 <div className="absolute -top-10 right-0 w-64 h-64 rounded-full bg-[#10B981]/15 blur-[90px] animate-aurora pointer-events-none" aria-hidden="true" />
                 <div className="absolute -bottom-10 left-0 w-72 h-72 rounded-full bg-[#C9A24B]/20 blur-[100px] animate-aurora pointer-events-none" style={{ animationDelay: '-7s' }} aria-hidden="true" />
-                <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5" dir="rtl">
+                <div className="relative grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-5" dir="rtl">
                     <DonateGate lang={lang} title="STREAMLABS" url="https://streamlabs.com/xtroet" color="#10B981" markImg="/xtroet-logo.webp"
                         label={lang === 'en' ? 'STREAMLABS' : 'ستريم لابس'} secure={lang === 'en' ? 'SECURE • INSTANT ALERT' : 'آمن • تنبيه فوري'} cta={lang === 'en' ? 'Donate via Streamlabs' : 'ادعم عبر ستريم لابس'}
                         sub={lang === 'en' ? 'Global cards • instant on-screen alert' : 'بطاقات عالمية • تنبيه فوري على الشاشة'} />
@@ -847,7 +847,7 @@ export default function App() {
                     <div className="relative z-10 w-full max-w-[1200px] mx-auto px-3 sm:px-4 md:px-8 pb-10 overflow-clip">
 
                         {/* ===== HERO — ascension in the emerald void ===== */}
-                        <section id="top" className="relative pt-10 md:pt-20 pb-8 md:pb-12 overflow-clip">
+                        <section id="top" className="relative pt-14 md:pt-20 pb-8 md:pb-12 overflow-clip">
                             <div className="relative mx-auto w-full max-w-3xl text-center">
                                 {/* emblem seal */}
                                 <div className="animate-fade-in relative mx-auto w-fit" onMouseEnter={() => setIsHoveringProfile(true)} onMouseLeave={() => setIsHoveringProfile(false)}>

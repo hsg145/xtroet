@@ -175,10 +175,10 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
   if (!data || data.length === 0) {
     return (
       <div className={`
-                 relative flex flex-col items-center justify-center p-6 text-center rounded-[28px] overflow-hidden
+                 relative flex flex-col items-center justify-center p-4 sm:p-6 text-center rounded-[28px] overflow-hidden
                  bg-white/[0.04] backdrop-blur-2xl border border-white/10
                  transition-all duration-500 hover:border-[#10B981]/30 hover:bg-white/[0.05] hover:-translate-y-1 group
-                 ${isMain ? 'lg:mt-8 z-10 min-h-[220px] md:min-h-[300px]' : 'min-h-[200px] md:min-h-[280px]'}
+                 ${isMain ? 'lg:mt-8 z-10 min-h-[210px] md:min-h-[300px]' : 'min-h-[210px] md:min-h-[280px]'}
                  ${className}
              `}
         style={{ animationDelay: `${delay}ms` }}>
@@ -274,7 +274,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
                     {formatNumber(entry.quantity)}
                   </span>
                 </div>
-                <div className="mt-2 ms-[52px] sm:ms-[76px] h-1 rounded-full bg-white/[0.06] overflow-hidden" dir="ltr">
+                <div className="mt-2 ms-[42px] sm:ms-[76px] h-1 rounded-full bg-white/[0.06] overflow-hidden" dir="ltr">
                   <div className="bar-grow h-full rounded-full" style={{ width: `${pct}%`, background: `linear-gradient(90deg, ${config.barBright}, ${config.barDeep})`, boxShadow: `0 0 10px rgba(${config.glowColor},0.6)`, animationDelay: `${idx * 80}ms` }} />
                 </div>
               </div>
@@ -426,18 +426,18 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
           <div className="relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden">
             <div className="absolute -top-20 start-1/3 w-96 h-96 rounded-full bg-[#10B981]/[0.08] blur-[100px] pointer-events-none" aria-hidden="true" />
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#10B981]/60 to-transparent" aria-hidden="true" />
-            <div className="relative p-5 sm:p-7 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-start">
-              <span className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] flex items-center justify-center shrink-0 border border-[#10B981]/50 bg-[#04120D] transition-transform duration-500 hover:scale-110 hover:-rotate-6"
+            <div className="relative p-5 sm:p-6 lg:p-7 flex flex-col md:flex-row items-center gap-4 lg:gap-5 text-center md:text-start">
+              <span className="relative w-14 h-14 lg:w-16 lg:h-16 rounded-[20px] flex items-center justify-center shrink-0 border border-[#10B981]/50 bg-[#04120D] transition-transform duration-500 hover:scale-110 hover:-rotate-6"
                 style={{ boxShadow: '0 16px 40px -12px rgba(16,185,129,0.65), inset 0 1px 0 rgba(167,243,208,0.25), 0 0 28px -6px rgba(16,185,129,0.5)' }}>
-                <CrownIcon className="w-7 h-7 sm:w-8 sm:h-8" />
+                <CrownIcon className="w-7 h-7 lg:w-8 lg:h-8" />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className={`text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-none ${lang === 'ar' ? 'font-arabic' : ''}`}>
+                <h2 className={`text-[22px] sm:text-[26px] lg:text-4xl font-black text-white tracking-tight leading-tight lg:leading-none ${lang === 'ar' ? 'font-arabic' : ''}`}>
                   {t.topGifters}
                 </h2>
-                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.28em] bg-gradient-to-r from-[#A7F3D0] to-[#059669] bg-clip-text text-transparent mt-2" dir="ltr">HALL OF GENEROSITY • LIVE</p>
+                <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.28em] bg-gradient-to-r from-[#A7F3D0] to-[#059669] bg-clip-text text-transparent mt-1.5 lg:mt-2" dir="ltr">HALL OF GENEROSITY • LIVE</p>
               </div>
-              <span className="shrink-0 inline-flex items-center gap-2 text-[10px] font-black px-3.5 py-2 rounded-full bg-[#10B981]/10 border border-[#10B981]/30 text-[#6EE7B7]">
+              <span className="shrink-0 inline-flex items-center justify-center gap-2 text-[10px] font-black px-3.5 py-2 rounded-full bg-[#10B981]/10 border border-[#10B981]/30 text-[#6EE7B7] self-center md:self-auto">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse shadow-[0_0_10px_#10B981]" />
                 {lang === 'en' ? 'UPDATED LIVE' : 'يتحدث مباشرة'}
               </span>
