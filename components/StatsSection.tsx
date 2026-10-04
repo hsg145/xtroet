@@ -178,7 +178,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
                  relative flex flex-col items-center justify-center p-6 text-center rounded-[28px] overflow-hidden
                  bg-white/[0.04] backdrop-blur-2xl border border-white/10
                  transition-all duration-500 hover:border-[#10B981]/30 hover:bg-white/[0.05] hover:-translate-y-1 group
-                 ${isMain ? 'lg:-mt-4 z-10 min-h-[220px] md:min-h-[300px]' : 'min-h-[200px] md:min-h-[280px]'}
+                 ${isMain ? 'lg:mt-8 z-10 min-h-[220px] md:min-h-[300px]' : 'min-h-[200px] md:min-h-[280px]'}
                  ${className}
              `}
         style={{ animationDelay: `${delay}ms` }}>
@@ -208,7 +208,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
 
   return (
     <div
-      className={`group relative rounded-[28px] transition-all duration-500 hover:-translate-y-1.5 ${isMain ? 'md:-mt-8 z-20 md:scale-[1.03]' : ''} ${className}`}
+      className={`group relative rounded-[28px] transition-all duration-500 hover:-translate-y-1.5 ${isMain ? 'md:mt-10 z-20 md:scale-[1.03]' : ''} ${className}`}
       style={{ animationDelay: `${delay}ms` }}
     >
       <div className="absolute -inset-2 rounded-[32px] blur-3xl opacity-40 group-hover:opacity-80 transition-opacity duration-700 pointer-events-none" style={{ background: `linear-gradient(180deg, rgba(${config.glowColor},0.25), transparent 65%)` }} aria-hidden="true" />
@@ -493,7 +493,7 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
-              <Skeleton className="col-span-2 md:col-span-1 order-1 md:order-2 h-80 md:h-[480px] w-full rounded-3xl -mt-0 md:-mt-8" />
+              <Skeleton className="col-span-2 md:col-span-1 order-1 md:order-2 h-80 md:h-[480px] w-full rounded-3xl mt-0 md:mt-10" />
               <Skeleton className="col-span-1 order-2 md:order-1 h-64 md:h-96 w-full rounded-3xl" />
               <Skeleton className="col-span-1 order-3 md:order-3 h-64 md:h-96 w-full rounded-3xl" />
             </div>
