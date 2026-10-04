@@ -213,16 +213,25 @@ const ArenaBackground: React.FC = () => {
     );
 };
 
-const SectionHeading: React.FC<{ no: string; title: string; sub?: string; en?: string }> = ({ no, title, sub, en }) => (
-    <div className="flex items-end gap-3 md:gap-4 mb-6 md:mb-9">
-        <span className="font-gaming text-3xl sm:text-4xl md:text-6xl leading-none text-stroke-red select-none shrink-0" dir="ltr">{no}</span>
+const SectionHeading: React.FC<{ no: string; title: string; sub?: string; en?: string; compact?: boolean }> = ({ no, title, sub, en, compact }) => (
+    <div className={`flex items-end gap-3 md:gap-5 ${compact ? 'mb-5 md:mb-7' : 'mb-6 md:mb-9'}`}>
+        <span className="relative font-gaming text-4xl sm:text-5xl md:text-7xl leading-none text-stroke-red select-none shrink-0"
+            style={{ filter: 'drop-shadow(0 0 22px rgba(201,162,75,.35))' }}
+            dir="ltr"
+            aria-hidden="true">{no}</span>
         <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
-                <h2 className="text-xl sm:text-2xl md:text-4xl font-black tracking-tight text-white">{title}</h2>
-                {en && <span className="hidden sm:inline text-[10px] font-bold tracking-[0.3em] text-white/30 uppercase" dir="ltr">{en}</span>}
+            <div className="flex items-baseline gap-3 flex-wrap">
+                <h2 className="text-[26px] sm:text-3xl md:text-[42px] font-black leading-tight tracking-tight text-white">{title}</h2>
+                {en && (
+                    <span className="hidden sm:inline-flex items-center text-[10px] font-black tracking-[0.32em] uppercase text-[#C9A24B]/70"
+                        style={{ transform: 'translateY(-2px)' }} dir="ltr">{en}</span>
+                )}
             </div>
-            {sub && <p className="text-[13px] md:text-sm text-white/50 mt-1 font-medium">{sub}</p>}
-            <div className="mt-2.5 md:mt-3 h-px w-full bg-gradient-to-l from-[#C9A24B]/60 via-[#10B981]/25 to-transparent" />
+            {sub && <p className="text-[13px] md:text-[15px] text-white/55 mt-2 font-medium leading-relaxed">{sub}</p>}
+            <div className="relative mt-3.5 md:mt-4 h-[2px] w-full rounded-full bg-gradient-to-l from-[#C9A24B]/55 via-[#10B981]/28 to-transparent">
+                <span className="absolute inset-y-0 start-0 w-14 rounded-full"
+                    style={{ background: 'linear-gradient(90deg,#F4D98A,#C9A24B)', boxShadow: '0 0 14px rgba(201,162,75,.7)' }} aria-hidden="true" />
+            </div>
         </div>
     </div>
 );

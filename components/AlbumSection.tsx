@@ -158,7 +158,9 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 animation:alb-drift 16s ease-in-out infinite alternate}
             @keyframes alb-drift{from{transform:translate3d(-2%,0,0) scale(1)}to{transform:translate3d(2%,1.5%,0) scale(1.06)}}
             .alb-stage{position:relative;aspect-ratio:4/3;perspective:1600px;transform-style:preserve-3d}
-            @media(min-width:768px){.alb-stage{aspect-ratio:16/11}}
+            @media(min-width:768px){.alb-stage{aspect-ratio:16/10}}
+            @media(min-width:1024px){.alb-stage{aspect-ratio:4/3}}
+            @media(min-width:1280px){.alb-stage{aspect-ratio:3/2}}
             .alb-reflect{position:absolute;left:8%;right:8%;bottom:-14px;height:70px;border-radius:50%;pointer-events:none;
                 background:radial-gradient(closest-side,rgba(16,185,129,.30),transparent 78%);filter:blur(10px)}
             .alb-sheen{position:absolute;inset:0;mix-blend-mode:screen;opacity:.5;
@@ -182,7 +184,8 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 background:linear-gradient(90deg,rgba(255,255,255,.55),rgba(167,243,208,.75));
                 animation:alb-prog 5.2s linear forwards}
             @keyframes alb-prog{from{width:0%}to{width:100%}}
-            .alb-chip{position:relative;flex:none;width:74px;height:52px;border-radius:14px;overflow:hidden;cursor:pointer;
+            .alb-strip{max-width:100%;overflow-x:auto;overflow-y:hidden}
+            .alb-chip{position:relative;flex:none;width:64px;height:46px;border-radius:13px;overflow:hidden;cursor:pointer;
                 border:1px solid rgba(255,255,255,.1);background:#04120D;padding:0;
                 transition:transform .45s cubic-bezier(.16,1,.3,1),border-color .35s ease,box-shadow .35s ease,opacity .35s ease;opacity:.5}
             .alb-chip img{width:100%;height:100%;object-fit:cover;display:block}
@@ -190,9 +193,16 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
             .alb-chip.is-active{opacity:1;transform:translateY(-4px) scale(1.06);border-color:transparent;
                 box-shadow:0 0 0 2px #10B981,0 14px 30px -10px rgba(16,185,129,.75)}
             .alb-chip:focus-visible{outline:2px solid #A7F3D0;outline-offset:3px}
-            .alb-id-name{background:linear-gradient(180deg,#FFFFFF 20%,#A7F3D0 130%);
-                -webkit-background-clip:text;background-clip:text;color:transparent}
-            .alb-rule{height:1px;background:linear-gradient(90deg,transparent,rgba(201,162,75,.7),rgba(16,185,129,.5),transparent)}
+            .alb-id-name{position:relative;display:inline-block;
+                background:linear-gradient(165deg,#FFFFFF 0%,#EAFBF3 34%,#A7F3D0 78%,#34D399 100%);
+                -webkit-background-clip:text;background-clip:text;color:transparent;
+                filter:drop-shadow(0 6px 30px rgba(16,185,129,.35))}
+            [dir="rtl"] .alb-id-name{letter-spacing:0!important}
+            .alb-rule{position:relative;height:2px;border-radius:99px;
+                background:linear-gradient(90deg,rgba(201,162,75,.85),rgba(16,185,129,.55) 45%,transparent)}
+            .alb-rule::before{content:"";position:absolute;inset-inline-start:0;top:50%;width:56px;height:2px;
+                transform:translateY(-50%);border-radius:99px;
+                background:linear-gradient(90deg,#F4D98A,#C9A24B);box-shadow:0 0 16px rgba(201,162,75,.75)}
             .alb-tag{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;
                 font-size:11px;font-weight:800;color:rgba(255,255,255,.68);
                 background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);transition:all .3s ease}
@@ -213,10 +223,10 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
             a:focus-visible,button:focus-visible{outline:2px solid #10B981;outline-offset:3px;border-radius:12px}
             `}</style>
 
-            <div className="grid gap-4 lg:gap-0 lg:grid-cols-[1.08fr_0.92fr] items-stretch">
+            <div className="grid gap-4 md:gap-6 lg:gap-0 lg:grid-cols-[0.78fr_1.22fr] items-stretch">
 
                 {/* ================= DECK ================= */}
-                <div className="alb-shell order-1">
+                <div className="alb-shell order-1 min-w-0">
                     <div className="alb-shell-in">
                         <span className="alb-aura" aria-hidden="true" />
 
@@ -296,9 +306,15 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
 
                         {/* filmstrip */}
                         <div className="relative border-t border-white/[0.07] bg-black/35">
+                            <div className="px-4 sm:px-6 pt-4 pb-3 flex items-center justify-between gap-3">
+                                <span className="text-[10px] font-black uppercase text-white/30">
+                                    {isAr ? 'كل الصور' : 'All frames'}
+                                </span>
+                                <span className="text-[10px] font-black text-[#C9A24B]/80" dir="ltr">{pad(total)}</span>
+                            </div>
                             <div
                                 ref={stripRef}
-                                className="scrollbar-hide flex gap-2.5 overflow-x-auto px-4 sm:px-6 py-4"
+                                className="scrollbar-hide alb-strip flex gap-2 overflow-x-auto px-4 sm:px-6 pb-4"
                                 dir="ltr"
                             >
                                 {PHOTOS.map((p) => (
@@ -320,7 +336,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 </div>
 
                 {/* ================= IDENTITY ================= */}
-                <aside className="order-2 flex flex-col justify-center">
+                <aside className="order-2 min-w-0 flex flex-col justify-center">
                     <div className="relative h-full rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden">
                         <div
                             className="absolute -top-24 start-0 h-72 w-72 rounded-full blur-[100px] pointer-events-none"
@@ -334,25 +350,29 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                         />
                         <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#C9A24B]/60 to-transparent" aria-hidden="true" />
 
-                        <div className="relative p-6 sm:p-8 lg:p-9">
+                        <div className="relative p-6 sm:p-9 lg:p-11 xl:p-12">
                             <span className="inline-flex items-center gap-2.5 text-[10px] font-black uppercase text-white/35">
                                 <span className="h-1.5 w-1.5 rotate-45 bg-[#C9A24B]" aria-hidden="true" />
                                 <span dir="ltr">// THE MAN BEHIND XTROET</span>
                             </span>
 
-                            <h3 className={`alb-id-name mt-4 text-[34px] leading-[1.08] font-black tracking-tight sm:text-[42px] lg:text-[48px] ${isAr ? 'font-arabic' : ''}`}>
+                            <h3 className={`alb-id-name mt-5 text-[38px] leading-[1.05] font-black tracking-tight sm:text-[52px] lg:text-[62px] xl:text-[70px] ${isAr ? 'font-arabic' : ''}`}>
                                 {copy.name}
                             </h3>
 
-                            <div className="mt-3 flex items-center gap-3">
-                                <span className="text-sm font-black text-[#6EE7B7]" dir="ltr">{copy.handle}</span>
+                            <p className="mt-2.5 text-[11px] sm:text-xs font-black uppercase text-white/25" dir="ltr">
+                                {isAr ? 'Nasser Alanazi' : 'XTROET — Nasser Alanazi'}
+                            </p>
+
+                            <div className="mt-5 flex items-center gap-3">
+                                <span className="text-[15px] font-black text-[#6EE7B7]" dir="ltr">{copy.handle}</span>
                                 <span className="h-1 w-1 rotate-45 bg-[#C9A24B]/70" aria-hidden="true" />
-                                <span className="text-[13px] font-bold text-white/45">{copy.role}</span>
+                                <span className="text-[14px] font-bold text-white/45">{copy.role}</span>
                             </div>
 
-                            <span className="alb-rule mt-6 block" aria-hidden="true" />
+                            <span className="alb-rule mt-7 block" aria-hidden="true" />
 
-                            <p className="mt-6 text-[15px] sm:text-[16px] leading-[2] font-medium text-white/65 max-w-[46ch]">
+                            <p className="mt-7 text-[16px] sm:text-[17px] lg:text-[18px] leading-[2.05] font-medium text-white/70 max-w-[46ch]">
                                 {copy.bio}
                             </p>
 
