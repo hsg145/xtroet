@@ -94,12 +94,12 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
         const ad = Math.abs(d);
         if (ad > 2) return null;
 
-        const x = d * 60 * dir;
-        const y = ad * 14;
-        const rot = d * 5 * dir;
-        const sc = 1 - ad * 0.07;
-        const op = d === 0 ? 1 : Math.max(0.16, 0.6 - (ad - 1) * 0.22);
-        const filt = d === 0 ? 'brightness(1) saturate(1.06)' : `brightness(${1 - ad * 0.42}) saturate(.7) blur(${ad === 1 ? 1.2 : 2.6}px)`;
+        const x = d * 54 * dir;
+        const y = ad * 12;
+        const rot = d * 4.5 * dir;
+        const sc = 1 - ad * 0.06;
+        const op = d === 0 ? 1 : Math.max(0.2, 0.66 - (ad - 1) * 0.24);
+        const filt = d === 0 ? 'brightness(1) saturate(1.05)' : `brightness(${1 - ad * 0.4}) saturate(.75) blur(${ad === 1 ? 1 : 2.4}px)`;
 
         return (
             <div
@@ -116,19 +116,34 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 }}
             >
                 {d === 0 ? (
-                    <div className="h-full w-full rounded-[26px] p-[1.5px] bg-gradient-to-b from-[#A7F3D0]/85 via-[#10B981]/35 to-[#C9A24B]/75 shadow-[0_0_60px_-14px_rgba(16,185,129,0.7)]">
-                        <div className="relative h-full w-full overflow-hidden rounded-[24.5px] border border-white/10 bg-black">
+                    /* uniform frame — every photo uses the same box, so the deck
+                       never changes size and the art is letterboxed, never cropped */
+                    <div
+                        className="relative h-full w-full rounded-[22px] p-[1.5px]"
+                        style={{ background: 'linear-gradient(160deg,#A7F3D0 0%,rgba(16,185,129,.35) 42%,#C9A24B 100%)', boxShadow: '0 0 70px -12px rgba(16,185,129,.65)' }}
+                    >
+                        <div className="relative h-full w-full overflow-hidden rounded-[20.5px] border border-white/10 bg-[#04120D]">
+                            {/* blurred copy fills the letterbox bars */}
+                            <img
+                                src={p.src}
+                                alt=""
+                                aria-hidden="true"
+                                loading={p.n <= 3 ? 'eager' : 'lazy'}
+                                decoding="async"
+                                className="absolute inset-0 h-full w-full object-cover scale-125 blur-2xl opacity-40 saturate-125"
+                            />
+                            {/* full art, always whole */}
                             <img
                                 src={p.src}
                                 alt={`${copy.name} — ${isAr ? 'صورة' : 'photo'} ${pad(p.n)}`}
                                 loading={p.n <= 3 ? 'eager' : 'lazy'}
                                 decoding="async"
-                                className="h-full w-full object-cover"
+                                className="relative h-full w-full object-contain"
                                 onClick={() => setBox(true)}
                             />
                             <span className="alb-sheen pointer-events-none absolute inset-0" aria-hidden="true" />
-                            <span className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/25 to-transparent" aria-hidden="true" />
-                            <span className="absolute bottom-3 start-3 inline-flex items-center gap-2 rounded-full bg-black/65 px-3 py-1.5 text-[10px] font-black text-white/85 backdrop-blur border border-white/15">
+                            <span className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/[0.07]" aria-hidden="true" />
+                            <span className="absolute bottom-3 start-3 inline-flex items-center gap-2 rounded-full bg-black/70 px-3 py-1.5 text-[10px] font-black text-white/85 backdrop-blur border border-white/15">
                                 <span className="h-1.5 w-1.5 rotate-45 bg-[#C9A24B]" aria-hidden="true" />
                                 <span dir="ltr">{pad(p.n)} / {pad(total)}</span>
                             </span>
@@ -136,7 +151,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                         </div>
                     </div>
                 ) : (
-                    <div className="h-full w-full overflow-hidden rounded-[24px] border border-white/10 bg-black">
+                    <div className="h-full w-full overflow-hidden rounded-[20px] border border-white/10 bg-[#04120D]">
                         <img src={p.src} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                     </div>
                 )}
@@ -147,7 +162,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
     return (
         <div className="w-full">
             <style>{`
-            .alb-shell{position:relative;border-radius:32px;padding:1px;
+            .alb-shell{position:relative;border-radius:32px;padding:1px;min-width:0;overflow:hidden;
                 background:linear-gradient(150deg,rgba(16,185,129,.5),rgba(201,162,75,.22) 45%,rgba(16,185,129,.5));
                 box-shadow:0 40px 90px -30px rgba(0,0,0,.9)}
             .alb-shell-in{position:relative;border-radius:31px;overflow:hidden;
@@ -157,10 +172,10 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                            radial-gradient(420px 200px at 8% 108%,rgba(201,162,75,.14),transparent 70%);
                 animation:alb-drift 16s ease-in-out infinite alternate}
             @keyframes alb-drift{from{transform:translate3d(-2%,0,0) scale(1)}to{transform:translate3d(2%,1.5%,0) scale(1.06)}}
-            .alb-stage{position:relative;aspect-ratio:4/3;perspective:1600px;transform-style:preserve-3d}
-            @media(min-width:768px){.alb-stage{aspect-ratio:16/10}}
-            @media(min-width:1024px){.alb-stage{aspect-ratio:4/3}}
-            @media(min-width:1280px){.alb-stage{aspect-ratio:3/2}}
+            /* tall enough that portrait and wide art both breathe inside it */
+            .alb-stage{position:relative;aspect-ratio:1/1;perspective:1600px;transform-style:preserve-3d}
+            @media(min-width:768px){.alb-stage{aspect-ratio:5/4}}
+            @media(min-width:1280px){.alb-stage{aspect-ratio:4/3}}
             .alb-reflect{position:absolute;left:8%;right:8%;bottom:-14px;height:70px;border-radius:50%;pointer-events:none;
                 background:radial-gradient(closest-side,rgba(16,185,129,.30),transparent 78%);filter:blur(10px)}
             .alb-sheen{position:absolute;inset:0;mix-blend-mode:screen;opacity:.5;
@@ -223,7 +238,10 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
             a:focus-visible,button:focus-visible{outline:2px solid #10B981;outline-offset:3px;border-radius:12px}
             `}</style>
 
-            <div className="grid gap-4 md:gap-6 lg:gap-0 lg:grid-cols-[0.78fr_1.22fr] items-stretch">
+            {/* minmax(0,…) is required: plain `fr` has an auto minimum, so a wide child
+            (the horizontal filmstrip) would push the whole grid off-screen. */}
+            <div className="grid gap-4 md:gap-6 lg:gap-7 xl:gap-9 items-stretch
+                lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]">
 
                 {/* ================= DECK ================= */}
                 <div className="alb-shell order-1 min-w-0">
@@ -350,11 +368,11 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                         />
                         <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#C9A24B]/60 to-transparent" aria-hidden="true" />
 
-                        <div className="relative p-6 sm:p-9 lg:p-11 xl:p-12">
-                            <span className="inline-flex items-center gap-2.5 text-[10px] font-black uppercase text-white/35">
+                        <div className="relative p-6 sm:p-9 lg:p-10 xl:p-11">
+                            <div className="flex items-center gap-2.5 text-[10px] font-black uppercase text-white/35">
                                 <span className="h-1.5 w-1.5 rotate-45 bg-[#C9A24B]" aria-hidden="true" />
                                 <span dir="ltr">// THE MAN BEHIND XTROET</span>
-                            </span>
+                            </div>
 
                             <h3 className={`alb-id-name mt-5 text-[38px] leading-[1.05] font-black tracking-tight sm:text-[52px] lg:text-[62px] xl:text-[70px] ${isAr ? 'font-arabic' : ''}`}>
                                 {copy.name}
