@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>HSG RUNNER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #050011;
+        font-family: 'Rajdhani', sans-serif;
+        touch-action: none;
+        overscroll-behavior: none;
+      }
+
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+      .font-cyber {
+        font-family: 'Orbitron', sans-serif;
+      }
+      .font-title {
+        font-family: 'Syncopate', sans-serif;
+      }
+
+      /* Glitch Effect */
+      .glitch {
+        position: relative;
+        color: white;
+        text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff,
+          0.025em 0.04em 0 #fffc00;
+        animation: glitch 725ms infinite;
+      }
+
+      @keyframes glitch {
+        0% { text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff, 0.025em 0.04em 0 #fffc00; }
+        14% { text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff, 0.025em 0.04em 0 #fffc00; }
+        15% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+        49% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+        50% { text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff, 0 -0.04em 0 #fffc00; }
+        99% { text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff, 0 -0.04em 0 #fffc00; }
+        100% { text-shadow: -0.05em 0 0 #00fffc, -0.025em -0.025em 0 #fc00ff, -0.04em -0.04em 0 #fffc00; }
+      }
+
+      /* Scanning Line Animation */
+      .scanline {
+        width: 100%;
+        height: 100px;
+        z-index: 10;
+        background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 255, 255, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
+        opacity: 0.1;
+        position: absolute;
+        bottom: 100%;
+        animation: scanline 6s linear infinite;
+      }
+
+      @keyframes scanline {
+        0% { bottom: 100%; }
+        100% { bottom: -100px; }
+      }
+
+      /* Heart Animations */
+      @keyframes heart-pulse {
+        0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(236, 72, 153, 0.6)); }
+        50% { transform: scale(1.1); filter: drop-shadow(0 0 12px rgba(236, 72, 153, 0.9)); }
+      }
+
+      @keyframes heart-shatter {
+        0% { transform: scale(1) rotate(0); opacity: 1; filter: brightness(2); }
+        20% { transform: scale(1.4) rotate(10deg); opacity: 1; filter: hue-rotate(90deg); }
+        100% { transform: scale(0) rotate(-45deg); opacity: 0; filter: blur(10px); }
+      }
+
+      .animate-heart-pulse {
+        animation: heart-pulse 2s ease-in-out infinite;
+      }
+
+      .animate-heart-shatter {
+        animation: heart-shatter 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+      }
+
+      .btn-cyber-glow {
+        box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+      }
+      .btn-cyber-glow:hover {
+        box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.0/",
+    "react": "https://esm.sh/react@^19.2.0",
+    "lucide-react": "https://esm.sh/lucide-react@^0.553.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.0/",
+    "@react-three/postprocessing": "https://esm.sh/@react-three/postprocessing@^3.0.4",
+    "@react-three/fiber": "https://esm.sh/@react-three/fiber@^9.4.0",
+    "zustand": "https://esm.sh/zustand@^5.0.8",
+    "uuid": "https://esm.sh/uuid@^13.0.0",
+    "@react-three/drei": "https://esm.sh/@react-three/drei@^10.7.7",
+    "three": "https://esm.sh/three@^0.181.1",
+    "postprocessing": "https://esm.sh/postprocessing@^6.38.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

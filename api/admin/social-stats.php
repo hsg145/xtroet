@@ -6,7 +6,7 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
 // Database configuration
 $host = 'localhost';
-$dbname = 'firas_social';
+$dbname = 'xtroet_social';
 $username = 'postgres';
 $password = '';
 

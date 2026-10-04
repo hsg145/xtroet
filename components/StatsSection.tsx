@@ -9,7 +9,7 @@ interface StatsSectionProps {
   lang: Language;
 }
 
-const FALLBACK_IMAGE = "https://files.kick.com/images/user/1106194/profile_image/conversion/140c7236-24f9-4267-b318-6be659f6035e-fullsize.webp";
+const FALLBACK_IMAGE = "/xtroet-logo.webp";
 
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat('en-US', { notation: "compact", maximumFractionDigits: 1 }).format(num || 0);
@@ -121,16 +121,16 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
       orb: 'bg-[#FFD76A]/15'
     },
     rose: {
-      border: 'border-[#B388FF]/25',
-      text: 'text-[#C9B8FF]',
-      bgIcon: 'bg-[#B388FF]/10',
-      gradient: 'from-[#D9C8FF] to-[#8B5CF6]',
-      subText: 'text-[#C9B8FF]/50',
-      glowColor: '179,136,255',
-      barBright: '#D9C8FF',
-      barDeep: '#8B5CF6',
-      medalBg: 'linear-gradient(160deg,#D9C8FF,#8B5CF6 60%,#4C1D95)',
-      orb: 'bg-[#B388FF]/15'
+      border: 'border-[#10B981]/25',
+      text: 'text-[#6EE7B7]',
+      bgIcon: 'bg-[#10B981]/10',
+      gradient: 'from-[#A7F3D0] to-[#059669]',
+      subText: 'text-[#6EE7B7]/50',
+      glowColor: '16,185,129',
+      barBright: '#A7F3D0',
+      barDeep: '#059669',
+      medalBg: 'linear-gradient(160deg,#A7F3D0,#10B981 55%,#047857)',
+      orb: 'bg-[#10B981]/15'
     },
     cyan: {
       border: 'border-[#6FF2C4]/25',
@@ -280,11 +280,9 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
 };
 
 
-export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
+export const HonorSection: React.FC<StatsSectionProps> = ({ lang }) => {
   // Initialize as null to indicate "loading"
   const [leaderboards, setLeaderboards] = useState<LeaderboardData | null>(null);
-  const [clips, setClips] = useState<Clip[] | null>(null);
-  const [videos, setVideos] = useState<Video[] | null>(null);
   const [channelInfo, setChannelInfo] = useState<ChannelInfo | null>(null);
 
 
@@ -294,13 +292,9 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
     allTime: lang === 'en' ? 'All Time' : 'الأفضل',
     monthly: lang === 'en' ? 'Monthly' : 'شهرياً',
     weekly: lang === 'en' ? 'Weekly' : 'أسبوعياً',
-    recentClips: lang === 'en' ? 'Recent Clips' : 'آخر اللقطات',
-    recentVods: lang === 'en' ? 'Past Streams' : 'البثوث السابقة',
-    views: lang === 'en' ? 'Views' : 'مشاهدة',
     gift: lang === 'en' ? 'Gifts' : 'هدية',
     subBadges: lang === 'en' ? 'Sub Badges' : 'شارات المشتركين',
     noData: lang === 'en' ? 'No Data' : 'لا يوجد بيانات',
-    watching: lang === 'en' ? 'Now Playing' : 'جاري المشاهدة',
 
     // Custom Empty States
     noDataWeekly: lang === 'en' ? 'No active gifters this week' : 'لا يوجد داعمين هذا الأسبوع',
@@ -309,17 +303,10 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
   };
 
   useEffect(() => {
-    const channelSlug = 'firas';
-    
-    const endpoints = {
-      leaderboard: `https://kick.com/api/v2/channels/${channelSlug}/leaderboards`,
-      clips: `https://kick.com/api/v2/channels/${channelSlug}/clips`,
-      videos: `https://kick.com/api/v2/channels/${channelSlug}/videos`,
-      channel: `https://kick.com/api/v2/channels/${channelSlug}`
-    };
+    const channelSlug = 'xtroet';
 
     // جلب معلومات القناة (المتابعين)
-    kickFetch(endpoints.channel).then(rawData => {
+    kickFetch(`https://kick.com/api/v2/channels/${channelSlug}`).then(rawData => {
         const data = rawData?.data || rawData; // فك التغليف إن وجد
         if (data) {
             setChannelInfo({
@@ -330,37 +317,16 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
     }).catch(() => setChannelInfo({ followers_count: 0, subscriber_badges: [] }));
 
     // جلب الداعمين
-    kickFetch(endpoints.leaderboard).then(rawData => {
+    kickFetch(`https://kick.com/api/v2/channels/${channelSlug}/leaderboards`).then(rawData => {
         const data = rawData?.data || rawData; // فك التغليف
         if (data) {
             setLeaderboards({
                 gifts: data.gifts || [],
                 gifts_week: data.gifts_week || [],
-                gifts_month: data.gifts_month || [] 
+                gifts_month: data.gifts_month || []
             });
         }
     }).catch(() => setLeaderboards({ gifts: [], gifts_week: [], gifts_month: [] }));
-
-    // جلب اللقطات (آخر اللقطات مع منطق استخراج قوي لضمان ظهور البيانات)
-    kickFetch(endpoints.clips).then(rawData => {
-        // فك التغليف لجميع الهياكل المحتملة من Kick API
-        const data = rawData?.data || rawData; 
-        const clipsArray = data?.clips || (Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []));
-        
-        // ترتيب تنازلي حسب التاريخ (الأحدث أولاً)
-        const sortedClips = [...clipsArray].sort((a: any, b: any) => 
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-
-        setClips(sortedClips.slice(0, 4));
-    }).catch(() => setClips([]));
-
-    // جلب الفيديوهات
-    kickFetch(endpoints.videos).then(rawData => {
-        const data = rawData?.data || rawData; // فك التغليف
-        const videosArray = data?.videos || (Array.isArray(data) ? data : []);
-        setVideos(videosArray.slice(0, 3));
-    }).catch(() => setVideos([]));
 
   }, []);
 
@@ -371,12 +337,12 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
         {/* --- KICK FORTRESS: followers + sub badges in 3D --- */}
         {channelInfo ? (
           <div className="relative [perspective:1200px]">
-            <div className="absolute -inset-2 rounded-[36px] bg-gradient-to-b from-[#C9A24B]/15 via-transparent to-transparent blur-2xl pointer-events-none" aria-hidden="true" />
-            <div className="group card-sheen relative overflow-hidden rounded-[30px] border border-[#C9A24B]/25 bg-[#0d0505]/90 backdrop-blur-xl shadow-[0_30px_80px_-20px_rgba(201,162,75,0.3)] [transform-style:preserve-3d]">
+            <div className="absolute -inset-2 rounded-[36px] bg-gradient-to-b from-[#10B981]/15 via-transparent to-transparent blur-2xl pointer-events-none" aria-hidden="true" />
+            <div className="group card-sheen relative overflow-hidden rounded-[30px] border border-[#10B981]/25 bg-[#04120D]/90 backdrop-blur-xl shadow-[0_30px_80px_-20px_rgba(16,185,129,0.3)] [transform-style:preserve-3d]">
               <div aria-hidden="true" className="absolute -end-8 -bottom-12 opacity-[0.07] scale-[3.2] origin-bottom-right pointer-events-none text-[#C9A24B]">
                 <KickIcon className="w-24 h-24" />
               </div>
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-l from-transparent via-[#C9A24B]/70 to-transparent" />
+              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-l from-transparent via-[#10B981]/70 to-transparent" />
               <div className="relative p-5 sm:p-8 flex flex-col lg:flex-row items-center gap-6 lg:gap-10 [transform-style:preserve-3d]">
 
                 {/* 3D K emblem + live followers */}
@@ -397,7 +363,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
                     <p className="text-4xl sm:text-5xl font-black text-white tracking-tighter leading-none mt-1 drop-shadow-lg">
                       <KickCount value={channelInfo.followers_count} />
                     </p>
-                    <a href="https://kick.com/firas" target="_blank" rel="noopener noreferrer"
+                    <a href="https://kick.com/xtroet" target="_blank" rel="noopener noreferrer"
                       className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-black px-5 py-2.5 rounded-full border border-[#C9A24B]/60 text-[#D9C08A] hover:bg-[#C9A24B] hover:text-black hover:shadow-[0_0_24px_rgba(201,162,75,0.6)] active:scale-95 transition-all duration-300">
                       {lang === 'en' ? 'FOLLOW' : 'تابع الآن'}
                       <svg className={`w-3.5 h-3.5 ${lang === 'ar' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -527,9 +493,53 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
         <div className="pt-8 border-t border-white/5">
           <BotrixLeaderboard lang={lang} />
         </div>
+      </div>
+    </>
+  );
+};
 
+export const ArchiveSection: React.FC<StatsSectionProps> = ({ lang }) => {
+  const [clips, setClips] = useState<Clip[] | null>(null);
+  const [videos, setVideos] = useState<Video[] | null>(null);
+
+  const t = {
+    recentClips: lang === 'en' ? 'Recent Clips' : 'آخر اللقطات',
+    recentVods: lang === 'en' ? 'Past Streams' : 'البثوث السابقة',
+    views: lang === 'en' ? 'Views' : 'مشاهدة',
+    noData: lang === 'en' ? 'No Data' : 'لا يوجد بيانات',
+  };
+
+  useEffect(() => {
+    const channelSlug = 'xtroet';
+
+    // جلب اللقطات (آخر اللقطات مع منطق استخراج قوي لضمان ظهور البيانات)
+    kickFetch(`https://kick.com/api/v2/channels/${channelSlug}/clips`).then(rawData => {
+        // فك التغليف لجميع الهياكل المحتملة من Kick API
+        const data = rawData?.data || rawData;
+        const clipsArray = data?.clips || (Array.isArray(data) ? data : (data?.data && Array.isArray(data.data) ? data.data : []));
+
+        // ترتيب تنازلي حسب التاريخ (الأحدث أولاً)
+        const sortedClips = [...clipsArray].sort((a: any, b: any) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+
+        setClips(sortedClips.slice(0, 4));
+    }).catch(() => setClips([]));
+
+    // جلب الفيديوهات
+    kickFetch(`https://kick.com/api/v2/channels/${channelSlug}/videos`).then(rawData => {
+        const data = rawData?.data || rawData; // فك التغليف
+        const videosArray = data?.videos || (Array.isArray(data) ? data : []);
+        setVideos(videosArray.slice(0, 3));
+    }).catch(() => setVideos([]));
+
+  }, []);
+
+  return (
+    <>
+      <div className="w-full animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         {/* --- CLIPS & VODS GRID --- */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7 pt-8 border-t border-white/[0.07]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 lg:gap-7">
 
           {/* CLIPS — modern reel */}
           <div className="group/sec relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden transition-colors duration-500 hover:border-white/20">
@@ -547,7 +557,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
                 <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-none">{t.recentClips}</h3>
                 <p className="text-[10px] font-black text-white/35 uppercase tracking-[0.24em] mt-1.5" dir="ltr">{clips?.length || 0} CLIPS • FRESH</p>
               </div>
-              <a href="https://kick.com/firas/clips" target="_blank" rel="noreferrer"
+              <a href="https://kick.com/xtroet/clips" target="_blank" rel="noreferrer"
                 className="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-black px-4 py-2.5 rounded-2xl bg-white/[0.05] border border-white/10 text-white/60 hover:text-black hover:bg-[#FFE9B8] hover:border-[#FFE9B8] hover:shadow-[0_0_24px_rgba(255,215,106,0.5)] active:scale-95 transition-all duration-300">
                 {lang === 'en' ? 'VIEW ALL' : 'عرض الكل'}
                 <svg className={`w-3.5 h-3.5 ${lang === 'ar' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -560,7 +570,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
                   {clips.map((clip, i) => (
                     <div key={clip.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 90}ms` }}>
                       <a
-                        href={`https://kick.com/firas?clip=${clip.id}`}
+                        href={`https://kick.com/xtroet?clip=${clip.id}`}
                         target="_blank"
                         rel="noreferrer"
                         className="group relative block aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black transition-all duration-500 hover:border-[#FFE9B8]/60 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_-16px_rgba(255,215,106,0.45)]"
@@ -626,7 +636,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
                 <h3 className="text-lg sm:text-xl font-black text-white tracking-tight leading-none">{t.recentVods}</h3>
                 <p className="text-[10px] font-black text-white/35 uppercase tracking-[0.24em] mt-1.5" dir="ltr">{videos?.length || 0} VODS • ARCHIVE</p>
               </div>
-              <a href="https://kick.com/firas/videos" target="_blank" rel="noopener noreferrer"
+              <a href="https://kick.com/xtroet/videos" target="_blank" rel="noopener noreferrer"
                 className="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-black px-4 py-2.5 rounded-2xl bg-white/[0.05] border border-white/10 text-white/60 hover:text-black hover:bg-[#B8FFE9] hover:border-[#B8FFE9] hover:shadow-[0_0_24px_rgba(111,242,196,0.5)] active:scale-95 transition-all duration-300">
                 {lang === 'en' ? 'VIEW ALL' : 'عرض الكل'}
                 <svg className={`w-3.5 h-3.5 ${lang === 'ar' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
@@ -643,7 +653,7 @@ export const StatsSection: React.FC<StatsSectionProps> = ({ lang }) => {
                     return (
                       <div key={video.id} className="animate-fade-in-up" style={{ animationDelay: `${i * 100}ms` }}>
                         <a
-                          href={`https://kick.com/firas/videos/${videoUUID}`}
+                          href={`https://kick.com/xtroet/videos/${videoUUID}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="group flex gap-3 p-2.5 rounded-3xl bg-black/40 border border-white/[0.07] hover:border-[#B8FFE9]/50 hover:bg-white/[0.05] hover:-translate-y-1 hover:shadow-[0_20px_50px_-16px_rgba(111,242,196,0.35)] active:scale-[0.99] transition-all duration-300 cursor-pointer"

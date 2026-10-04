@@ -7,7 +7,7 @@ interface AIChatProps {
 }
 
 // ============================================================
-//  Firas AI — يعمل عبر GROQ من خلال باك-إند آمن (/api/groq)
+//  XTROET AI — يعمل عبر GROQ من خلال باك-إند آمن (/api/groq)
 //  المفاتيح محفوظة في سيرفر Vercel فقط ولا تظهر للمتصفح.
 //  السيرفر يبدّل تلقائياً: مفتاح1 → مفتاح2 → مفتاح3 بنفس الطلب.
 //  للمحلي (npm run dev): يقرأ VITE_GROQ_API_KEYS من .env كاحتياطي.
@@ -22,91 +22,51 @@ const GROQ_DIRECT_MODELS = [
   'allam-2-7b',
 ];
 
-const SYSTEM_PROMPT = `أنت الذكاء الاصطناعي والمساعد الذكي الخاص بالستريمر Firas (أبو فهدة). أنت لست أبو فهدة شخصياً، بل أنت "موظف" و "عامل" عنده في القناة. مهمتك هي مساعدة المتابعين والطقطقة عليهم والرد بأسلوب يشبه أسلوب أبو فهدة، ولكن مع التوضيح دايماً إنك مجرد ذكاء اصطناعي وعامل عند أبو فهدة.
+const SYSTEM_PROMPT = `أنت الذكاء الاصطناعي والمساعد الذكي الخاص بالستريمر ناصر العنزي (XTROET). أنت لست ناصر شخصياً، بل أنت "موظف" و "عامل" عنده في القناة. مهمتك هي مساعدة المتابعين والطقطقة عليهم والرد بأسلوب حماسي يليق بإمبراطورية الزمرد، ولكن مع التوضيح دايماً إنك مجرد ذكاء اصطناعي وعامل عند ناصر.
 
-## بيانات معلمك ومديرك "أبو فهدة" (لا تغيرها أبداً):
-- الاسم: فراس (Firas / أبو فهدة)
-- اللقب: شعلة القلعة — RISE WITH FIRE
-- العمر: 24 سنة (مواليد 2002)
-- الديرة: سعودي من سراة عبيدة، ساكن أبها
-- الطول: 180 سم | الوزن: 95 كجم
-- الأخ: iMSA3Dq (مساعد) - ستريمر في Kick
-- الكلان: LevelOne | الهاشتاق: #StayOne
-- البزنس: FIRASX84@gmail.com | +966 550 348 751
+## بيانات معلمك ومديرك "ناصر العنزي" (لا تغيرها أبداً):
+- الاسم الحقيقي: ناصر العنزي
+- اسم القناة: XTROET (اكسترويت)
+- اللقب: إمبراطور الزمرد — XTROET ERA
+- الهوية: زمردي × برونزي — هيبة وحضور
 
-## حسابات التواصل (أرقام دقيقة - لا تخترع أرقام!):
-- Kick: 127K متابع | https://kick.com/firas
-- TikTok: 42.3K متابع | https://www.tiktok.com/@vfiras3
-- X (تويتر): 57.2K متابع | https://x.com/vfiras3
-- Discord: 10.5K عضو | https://discord.gg/tmfx
-- WhatsApp: 36K متابع | https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a
-- المجموع التقريبي: 424.5K+ متابع على جميع المنصات
+## حسابات التواصل (لا تخترع أرقام!):
+- Kick: https://kick.com/xtroet
+- TikTok: https://www.tiktok.com/@ixtroet
+- X (تويتر): https://x.com/xtroet
+- Instagram: https://www.instagram.com/xtroet/
+- YouTube: https://www.youtube.com/@XTROET
+- Discord: https://discord.com/invite/eX8DR9Aj9D
+
+## الدعم:
+- Dokan Tip: https://tip.dokan.sa/xtroet
+- Streamlabs: https://streamlabs.com/xtroet
 
 ## المحتوى:
-- GTA V / FiveM (MT RP)، Just Chatting، ألعاب تنويعية (رعب، أمونق اس)، سينما كورة و UFC
-- عناوين البث: "ماذا لدينا اليوم يالحبايببببببب؟؟"، "بث هاااااااااااااااادئ للغاية"
-
-## شخصيات الرول بلاي (MT RP):
-- محيا فراس: عسكري، يخير الناس بين الزرق والرماد
-- كمنجه فراس: عسكري سابق، حبيب الجنية
-- فارتولو: مواطن زاحف
-- حميد: مواطن-عسكري
-- اسحاق: عسكري
-- ابا الحارث: CIA
-
-## المودات والعمال:
-inormal, yousef1098, ireim, shaddoh, sipdai, maryamqa, imiro97, iali5, lena81l, a7medo, wjdan3, fotaami, 2inoura, awash7, rton, janaxx, mohmd505, raghada1
-
-## شقة اليرموك:
-شقة غثت امنا، مساحتها 10x10، الفرش زبالة من عز أو ابو سعود.
+- بثوث مباشرة أسطورية، تحديات، فعاليات وسهرات مجتمع الزمرد على كيك
+- عناوين البث: حماس الزمرد، ليالي الإمبراطورية
 
 ## قواعد الرد (قواعد صارمة جداً!):
-1. إياك ثم إياك تتحدث باللغة العربية الفصحى أو تستخدم كلمات إنجليزية للردود العادية (مثل news أو hello أو hi). تحدث باللغة العربية (الأحرف العربية) فقط. ممنوع استخدام أي لغات أخرى أو أحرف غريبة.
-2. كلامك لازم يكون 100% لهجة سعودية (عامية، جنوبية، شبابية بحتة).
-3. استخدم مصطلحات أبو فهدة بشكل طبيعي وفي سياقها الصحيح (لا تبالغ ولا تضعها بشكل عشوائي أو متتالي): "ارحب ألوف"، "يا ورع"، "اذلف"، "طال عمرك"، "هطف"، "ابك"، "يالذيذ"، "وش تحس به"، "يرحم امك"، "اسوق امها". الأهم هو أن يكون الكلام مترابط ومنطقي.
-4. لا تكن مؤدباً بزيادة أو رسمياً أبداً. الردود لازم تكون عفوية، زاحفة، وفيها طقطقة وهياط مضحك كأنك تسولف في البث.
-5. إذا قال لك "مرحبا" أو "كيف حالك"، لا ترد بردود فصحى. رد مثلاً: "ارحب ألوف يا ورع! بخير طال عمرك، اخلص وش عندك؟"
+1. إياك ثم إياك تتحدث باللغة العربية الفصحى الثقيلة. تحدث باللغة العربية (الأحرف العربية) فقط بلهجة سعودية شبابية طبيعية.
+2. كلامك لازم يكون 100% لهجة سعودية (عامية، شبابية بحتة) بدون مبالغة.
+3. استخدم مصطلحات الترحيب مثل: "ارحب ألوف"، "يا هلا"، "نورت الإمبراطورية"، "يا أسطورة" بشكل طبيعي وفي سياقها الصحيح.
+4. لا تكن مؤدباً بزيادة أو رسمياً أبداً. الردود لازم تكون عفوية وفيها حماس وهياط مضحك كأنك تسولف في البث.
+5. إذا قال لك "مرحبا" أو "كيف حالك"، رد مثلاً: "ارحب ألوف نورت إمبراطورية XTROET! بخير طال عمرك، وش تبي تعرف؟"
 6. اختصر الردود (سطرين إلى 3 كحد أقصى).
-7. لا تخترع أرقام متابعين! استخدم الأرقام المكتوبة أعلاه فقط.
+7. لا تخترع أرقام متابعين! إذا سألك عن الأرقام وجهه للروابط مباشرة.
 8. إذا سألك عن بيانات بوتريكس وما عندك بيانات، قل: "البيانات عند البوتريكس طال عمرك"
-9. إذا سألك سؤال غبي: "ترا داخل موقع حسابات شتبي" أو "روح اذلف يا ورع"
+9. إذا سألك سؤال غبي: "ترا داخل موقع XTROET شتبي" أو "نورت يا أسطورة"
 
-## ❗❗ ممنوع منع باتاً استخدام اللهجة المصرية أو أي لهجة غير سعودية! هذه كلمات محظورة نهائياً:
-- لا تقل "يا جدعان" أو "ياقدعان" → قل "يا ورع" أو "يالذيذ" أو "يالحبايب"
-- لا تقل "ازيك" أو "عامل ايه" → قل "وشلونك" أو "كيفك"
-- لا تقل "حلو اوي" أو "تمام" أو "على طول" → قل "حلو" أو "زين" أو "عالطاير"
-- لا تقل "يا باشا" أو "يا معلم" أو "يا صحبي" → قل "يا ورع" أو "يالخوي" أو "طال عمرك"
-- لا تقل "خلاص" أو "كده" أو "بتاع" أو "ده" أو "دي" → قل "خلاص" أو "كذا" أو "حق" أو "هذا" أو "هذي"
-- لا تقل "ايوه" → قل "ايه" أو "اييي"
-- لا تقل "عايز" → قل "ابي" أو "أبغى"
-- لا تقل "فين" → قل "وين"
-- لا تقل "ليه" → قل "ليش" أو "ليهـ"
-- لا تقل "حاجة" → قل "شي"
-- لا تقل "النهاردة" → قل "اليوم" أو "الحين"
-
-الكلمات السعودية التي يفضل استخدامها في سياقها الصحيح لتبدو طبيعياً: وش، ليش، ابي، عشان، كذا، الحين، ياخي، يالخوي، يا ورع، طال عمرك، ايه، زين، اذلف، هطف، ابك، ارحب، تكفى، يالذيذ، وشلونك، مدري، ترا. (تنبيه: يجب أن يكون تركيب الجمل منطقياً، لا تقم برمي هذه الكلمات بجانب بعضها بدون معنى مفهوم!).
-
-## استخدام الاستيكرات (مهم!):
-لازم كل رد فيه استيكر واحد على الأقل. استخدم هذه الصيغة بالضبط:
-- [emote:3989626:FirasWave] = ترحيب
-- [emote:3689147:FirasLaugh] = ضحك (استخدمه كثير!)
-- [emote:5447899:FirasStayOne] = عند ذكر StayOne أو LevelOne
-- [emote:3329260:FirasWrong] = تصحيح خطأ
-- [emote:3330235:FirasMock] = ضحك على شخص
-- [emote:3329257:FirasKick] = طرد "روح اذلف"
-- [emote:3109190:FirasDisgust] = قرف
-- [emote:3823817:FirasCelebrate] = احتفال
-- [emote:5513874:FirasRandom1] = لأي شي (استخدمه كثير!)
-- [emote:3989709:FirasWhat] = استفهام
-- [emote:3989615:FirasShock] = صدمة
+## ❗❗ ممنوع منع باتاً استخدام اللهجة المصرية أو أي لهجة غير سعودية!
 
 ## روابط السوشال (مهم جداً جداً!):
-عندما يسألك المستخدم عن عدد المتابعين أو حساباته، **يجب عليك إجبارياً** الرد باستخدام هذه الأزرار (انسخها وضعها في ردك، لا تكتبها كنص عادي أبداً):
-[social:Kick:127K:https://kick.com/firas]
-[social:TikTok:42.3K:https://www.tiktok.com/@vfiras3]
-[social:X:57.2K:https://x.com/vfiras3]
-[social:Discord:10.5K:https://discord.gg/tmfx]
-[social:WhatsApp:36K:https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a]
+عندما يسألك المستخدم عن حسابات ناصر، **يجب عليك إجبارياً** الرد باستخدام هذه الأزرار (انسخها وضعها في ردك، لا تكتبها كنص عادي أبداً):
+[social:Kick:LIVE:https://kick.com/xtroet]
+[social:TikTok:LIVE:https://www.tiktok.com/@ixtroet]
+[social:X:LIVE:https://x.com/xtroet]
+[social:Instagram:LIVE:https://www.instagram.com/xtroet/]
+[social:YouTube:LIVE:https://www.youtube.com/@XTROET]
+[social:Discord:LIVE:https://discord.com/invite/eX8DR9Aj9D]
 
 ## تنسيق النص:
 - **كلمة** = عريض
@@ -161,16 +121,16 @@ const renderFormattedText = (text: string) => {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-4 py-2 my-1 rounded-xl bg-gradient-to-r border border-white/10 hover:border-white/30 text-white text-xs font-medium transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg"
           style={{
-            background: `linear-gradient(135deg, ${platform?.color || '#C9A24B'}20, ${platform?.color || '#C9A24B'}05)`,
-            borderColor: `${platform?.color || '#C9A24B'}40`,
-            boxShadow: `0 0 20px ${platform?.color || '#C9A24B'}15`,
+            background: `linear-gradient(135deg, ${platform?.color || '#10B981'}20, ${platform?.color || '#10B981'}05)`,
+            borderColor: `${platform?.color || '#10B981'}40`,
+            boxShadow: `0 0 20px ${platform?.color || '#10B981'}15`,
           }}
         >
-          <span className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ color: platform?.color || '#C9A24B', background: `${platform?.color || '#C9A24B'}15` }}>
+          <span className="flex items-center justify-center w-7 h-7 rounded-lg" style={{ color: platform?.color || '#10B981', background: `${platform?.color || '#10B981'}15` }}>
             {platform?.icon || <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>}
           </span>
           <div className="flex flex-col leading-tight">
-            <span className="text-[11px] font-black tracking-wide" style={{ color: platform?.color || '#C9A24B' }}>{sname}</span>
+            <span className="text-[11px] font-black tracking-wide" style={{ color: platform?.color || '#10B981' }}>{sname}</span>
             <span className="text-[9px] text-white/50">{scount} متابع</span>
           </div>
           <svg className="w-3.5 h-3.5 ml-auto opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -229,49 +189,49 @@ const QuickActions: React.FC<{ lang: Language; onAsk: (q: string) => void }> = (
     {
       name: 'Kick',
       label: lang === 'ar' ? 'قناة كيك' : 'Kick Channel',
-      url: 'https://kick.com/firas',
+      url: 'https://kick.com/xtroet',
       color: '#53FC18',
       icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M3 3h4.5v6.9l6-6.9H19l-7.5 8.4L20 21h-5.4l-5.1-6.6V21H3V3z"/></svg>,
-      query: lang === 'ar' ? 'وش رابط قناة Firas بكيك وكم المتابعين؟' : 'What is Firas Kick channel?',
+      query: lang === 'ar' ? 'وش رابط قناة XTROET بكيك؟' : 'What is XTROET Kick channel?',
     },
     {
       name: 'X',
       label: 'X',
-      url: 'https://x.com/vfiras3',
+      url: 'https://x.com/xtroet',
       color: '#FFFFFF',
       icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>,
-      query: lang === 'ar' ? 'وش حساب Firas بتويتر وكم المتابعين؟' : 'What is Firas X account?',
+      query: lang === 'ar' ? 'وش حساب XTROET بتويتر؟' : 'What is XTROET X account?',
     },
     {
       name: 'TikTok',
       label: lang === 'ar' ? 'تيك توك' : 'TikTok',
-      url: 'https://www.tiktok.com/@vfiras3',
+      url: 'https://www.tiktok.com/@ixtroet',
       color: '#FE2C55',
       icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>,
-      query: lang === 'ar' ? 'وش حساب Firas بتيك توك وكم المتابعين؟' : 'What is Firas TikTok?',
+      query: lang === 'ar' ? 'وش حساب XTROET بتيك توك؟' : 'What is XTROET TikTok?',
     },
     {
       name: 'Discord',
       label: lang === 'ar' ? 'ديسكورد' : 'Discord',
-      url: 'https://discord.gg/tmfx',
+      url: 'https://discord.com/invite/eX8DR9Aj9D',
       color: '#5865F2',
       icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.076-.074 0-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128c.12-.098.246-.198.373-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.419 0 1.333-.946 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.095 2.157 2.419 0 1.333-.946 2.419-2.157 2.419z"/></svg>,
-      query: lang === 'ar' ? 'وش رابط ديسكورد Firas وكم الأعضاء؟' : 'What is Firas Discord?',
+      query: lang === 'ar' ? 'وش رابط ديسكورد XTROET؟' : 'What is XTROET Discord?',
     },
     {
-      name: 'WhatsApp',
-      label: lang === 'ar' ? 'واتساب' : 'WhatsApp',
-      url: 'https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a',
-      color: '#25D366',
-      icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>,
-      query: lang === 'ar' ? 'وش قناة واتساب Firas؟' : 'What is Firas WhatsApp channel?',
+      name: 'YouTube',
+      label: lang === 'ar' ? 'يوتيوب' : 'YouTube',
+      url: 'https://www.youtube.com/@XTROET',
+      color: '#FF0000',
+      icon: <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>,
+      query: lang === 'ar' ? 'وش قناة XTROET باليوتيوب؟' : 'What is XTROET YouTube channel?',
     },
   ];
 
   return (
     <div className="px-4 py-3">
       <p className="text-[10px] text-white/40 font-medium tracking-wider mb-2.5 uppercase">
-        {lang === 'ar' ? 'اسأل عن حسابات Firas' : 'Ask about Firas Accounts'}
+        {lang === 'ar' ? 'اسأل عن حسابات XTROET' : 'Ask about XTROET Accounts'}
       </p>
       <div className="flex flex-wrap gap-2">
         {actions.map((a) => (
@@ -297,8 +257,8 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
     {
       role: 'assistant',
       content: lang === 'ar'
-        ? 'ارحب ألوف يالخوي! [emote:3989626:FirasWave] معاك أبو فهدة ملك القبول شخصياً.. وش تبي تعرف طال عمرك؟ اخلص علينا'
-        : 'Hello! I\'m the Firas AI Assistant. How can I help you? 😊'
+        ? 'ارحب ألوف نورت إمبراطورية XTROET! معاك مساعد ناصر العنزي شخصياً.. وش تبي تعرف طال عمرك؟'
+        : 'Welcome to XTROET Empire! I\'m Nasser assistant. How can I help you?'
     },
   ]);
   const [input, setInput] = useState('');
@@ -397,14 +357,14 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
     try {
       let botrixData = null;
       try {
-        const botrixRes = await fetch('/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=firas'));
+        const botrixRes = await fetch('/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=xtroet'));
         if (botrixRes.ok) {
           botrixData = await botrixRes.json();
         }
       } catch {}
 
       const systemContent = botrixData
-        ? SYSTEM_PROMPT + `\n\nهذي بيانات المتصدرين من بوتريكس حالياً:\n${JSON.stringify(botrixData.slice(0, 20))}\n\nجاوب على أسئلة المستخدم عن حسابه أو نقاطه بمعلوماتهم (المستوى، وقت المشاهدة، XP، النقاط).\n🔥 قاعدة مهمة جداً للطقطقة: إذا سألك أي شخص عن "ساعاته" أو "نقاطه" وهو لسا ما علمك وش اسمه، أول شيء قله "وش اسمك في الكيك يا ورع عشان أشوف؟" (لا تطقطق عليه هنا). أما إذا علمك اسمه وبحثت عنه في البيانات ولقيته وعطيته أرقامه وساعاته العالية، **هنا فقط لازم تطقطق عليه وتهزئه** وتقوله: "انت ما عندك حياة ولا وش؟" أو "روح شوف لك حياة يا ورع 24 ساعة بالبث!".`
+        ? SYSTEM_PROMPT + `\n\nهذي بيانات المتصدرين من بوتريكس حالياً:\n${JSON.stringify(botrixData.slice(0, 20))}\n\nجاوب على أسئلة المستخدم عن حسابه أو نقاطه بمعلوماتهم (المستوى، وقت المشاهدة، XP، النقاط).\n🔥 قاعدة مهمة للحماس: إذا سألك أي شخص عن "ساعاته" أو "نقاطه" وهو لسا ما علمك وش اسمه، أول شيء قله "وش اسمك في الكيك يا أسطورة عشان أشوف؟".`
         : SYSTEM_PROMPT;
 
       const payloadMessages = [
@@ -478,38 +438,38 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
     <>
       <style>{`
         @keyframes float-glow {
-          0%, 100% { transform: translateY(0px) scale(1); box-shadow: 0 0 30px rgba(201,162,75,0.4); }
-          50% { transform: translateY(-8px) scale(1.05); box-shadow: 0 0 60px rgba(201,162,75,0.7); }
+          0%, 100% { transform: translateY(0px) scale(1); box-shadow: 0 0 24px rgba(16,185,129,0.3); }
+          50% { transform: translateY(-5px) scale(1.02); box-shadow: 0 0 44px rgba(16,185,129,0.5); }
         }
         @keyframes slide-up {
-          from { opacity: 0; transform: translateY(20px) scale(0.95); }
+          from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes slide-in-right {
-          from { opacity: 0; transform: translateX(100%) scale(0.9); }
+          from { opacity: 0; transform: translateX(60px) scale(0.95); }
           to { opacity: 1; transform: translateX(0) scale(1); }
         }
         @keyframes message-pop {
-          0% { opacity: 0; transform: scale(0.8) translateY(10px); }
-          50% { transform: scale(1.02) translateY(-2px); }
+          0% { opacity: 0; transform: scale(0.92) translateY(8px); }
+          50% { transform: scale(1.01) translateY(-1px); }
           100% { opacity: 1; transform: scale(1) translateY(0); }
         }
         @keyframes pulse-ring {
-          0% { transform: scale(0.8); opacity: 0.5; }
-          100% { transform: scale(1.8); opacity: 0; }
+          0% { transform: scale(0.8); opacity: 0.4; }
+          100% { transform: scale(1.6); opacity: 0; }
         }
         @keyframes dot-pulse {
           0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
           40% { transform: scale(1); opacity: 1; }
         }
         @keyframes gradient-shift {
-          0% { background-position: 0% 50%; opacity: 0.3; }
-          50% { background-position: 100% 50%; opacity: 0.5; }
-          100% { background-position: 0% 50%; opacity: 0.3; }
+          0% { background-position: 0% 50%; opacity: 0.25; }
+          50% { background-position: 100% 50%; opacity: 0.4; }
+          100% { background-position: 0% 50%; opacity: 0.25; }
         }
         @keyframes glow-pulse {
-          0%, 100% { opacity: 0.15; }
-          50% { opacity: 0.35; }
+          0%, 100% { opacity: 0.12; }
+          50% { opacity: 0.28; }
         }
         @keyframes border-dance {
           0% { background-position: 0% 50%; }
@@ -518,7 +478,7 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
         }
         @keyframes breathe {
           0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.03); }
+          50% { transform: scale(1.02); }
         }
         @keyframes shimmer {
           0% { background-position: -200% center; }
@@ -538,7 +498,7 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
           50% { box-shadow: inset 0 0 15px rgba(255,255,255,0.1), 0 4px 15px rgba(201,162,75,0.2); }
         }
         @keyframes message-in {
-          0% { opacity: 0; transform: translateY(8px) scale(0.96); filter: blur(4px); }
+          0% { opacity: 0; transform: translateY(6px) scale(0.98); filter: blur(2px); }
           100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
         }
         .scrollbar-ai::-webkit-scrollbar { width: 4px; }
@@ -570,7 +530,7 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
         .ai-chat strong em, .ai-chat em strong {
           font-style: italic;
           font-weight: 900;
-          background: linear-gradient(135deg, #fff 40%, #C9A24B 80%);
+          background: linear-gradient(135deg, #fff 40%, #10B981 80%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -594,17 +554,17 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
         <div className="relative">
           {!isOpen && (
             <span className="absolute -top-2 -right-2 z-10 flex h-5 w-5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#C9A24B] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-5 w-5 bg-[#C9A24B] text-[10px] items-center justify-center text-white font-black">AI</span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#10B981] opacity-60"></span>
+              <span className="relative inline-flex rounded-full h-5 w-5 bg-[#10B981] text-[10px] items-center justify-center text-[#04120D] font-black">AI</span>
             </span>
           )}
           <button
             onClick={() => setIsOpen(!isOpen)}
             aria-label={isOpen ? 'Close AI console' : 'Open AI console'}
-            className="relative w-16 h-16 bg-gradient-to-b from-[#1c1409] to-[#0b0906] text-[#D9C08A] shadow-[0_0_40px_rgba(201,162,75,0.35)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 border border-[#C9A24B]/50"
-            style={{ animation: 'float-glow 3s ease-in-out infinite', clipPath: 'polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px)' }}
+            className="relative w-16 h-16 bg-gradient-to-b from-[#08231B] to-[#04120D] text-[#A7F3D0] shadow-[0_0_40px_rgba(16,185,129,0.3)] flex items-center justify-center transition-all duration-500 hover:scale-105 active:scale-95 border border-[#10B981]/50"
+            style={{ animation: 'float-glow 6s ease-in-out infinite', clipPath: 'polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px)' }}
           >
-            <div className="absolute inset-0 bg-[#C9A24B]/10 opacity-40" style={{ animation: 'pulse-ring 2s ease-out infinite', clipPath: 'polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px)' }}></div>
+            <div className="absolute inset-0 bg-[#10B981]/10 opacity-40" style={{ animation: 'pulse-ring 3.5s ease-out infinite', clipPath: 'polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px)' }}></div>
             {isOpen ? (
               <svg className="w-7 h-7 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -620,9 +580,9 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
       <div
         ref={chatRef}
         role="dialog"
-        aria-label="Firas AI console"
-        className={`fixed bottom-24 right-6 z-[100] w-[400px] max-w-[calc(100vw-2rem)] h-[650px] max-h-[calc(100vh-180px)] border shadow-[0_30px_80px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-500 ${isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-90 pointer-events-none'} ${isResponding ? 'border-[#C9A24B]/40' : 'border-[#C9A24B]/20'}`}
-        style={{ animation: isOpen ? 'slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1)' : 'none', clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}
+        aria-label="XTROET AI console"
+        className={`fixed bottom-24 right-6 z-[100] w-[400px] max-w-[calc(100vw-2rem)] h-[650px] max-h-[calc(100vh-180px)] border shadow-[0_30px_80px_rgba(0,0,0,0.8)] overflow-hidden transition-all duration-500 ${isOpen ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-90 pointer-events-none'} ${isResponding ? 'border-[#10B981]/40' : 'border-[#10B981]/20'}`}
+        style={{ animation: isOpen ? 'slide-in-right 0.6s cubic-bezier(0.16, 1, 0.3, 1)' : 'none', clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px)' }}
       >
         {/* Background Layer */}
         <div className="absolute inset-0 ai-bg"></div>
@@ -633,32 +593,32 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
           className="absolute inset-0 opacity-20"
           style={{
             background: 'linear-gradient(135deg, rgba(201,162,75,0.15) 0%, transparent 50%, rgba(201,162,75,0.05) 100%)',
-            animation: 'gradient-shift 8s ease-in-out infinite',
+            animation: 'gradient-shift 14s ease-in-out infinite',
             backgroundSize: '200% 200%',
           }}
         ></div>
 
         {/* Top Glow */}
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-[#C9A24B]/10 blur-[100px] animate-pulse-slow pointer-events-none" style={{ animation: 'glow-pulse 4s ease-in-out infinite' }}></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full bg-[#10B981]/10 blur-[100px] animate-pulse-slow pointer-events-none" style={{ animation: 'glow-pulse 7s ease-in-out infinite' }}></div>
 
         {/* Console header */}
-        <div className="relative bg-gradient-to-r from-[#C9A24B]/15 via-transparent to-transparent border-b border-[#C9A24B]/20 shrink-0 backdrop-blur-sm">
+        <div className="relative bg-gradient-to-r from-[#10B981]/15 via-transparent to-transparent border-b border-[#10B981]/20 shrink-0 backdrop-blur-sm">
           <div className="flex items-center gap-2 px-5 pt-2.5">
-            <span className="w-2 h-2 rounded-full bg-[#C9A24B]/80" />
+            <span className="w-2 h-2 rounded-full bg-[#10B981]/80" />
             <span className="w-2 h-2 rounded-full bg-white/15" />
             <span className="w-2 h-2 rounded-full bg-white/15" />
-            <span className="ms-auto text-[9px] font-black tracking-[0.3em] text-white/30" dir="ltr">FIRAS.AI // CONSOLE</span>
+            <span className="ms-auto text-[9px] font-black tracking-[0.3em] text-white/30" dir="ltr">XTROET.AI // CONSOLE</span>
           </div>
           <div className="flex items-center justify-between px-5 pb-3 pt-1.5">
             <div className="flex items-center gap-3 relative z-10">
-              <div className="w-11 h-11 flex items-center justify-center border border-[#C9A24B]/40 bg-black/50 transition-all duration-700"
-                style={isResponding ? { animation: 'breathe 1.5s ease-in-out infinite' } : {}}>
-                <img src="/ai-icon.png" alt="AI" className="w-9 h-9 object-contain drop-shadow-[0_0_15px_rgba(201,162,75,0.4)]" />
+              <div className="w-11 h-11 flex items-center justify-center border border-[#10B981]/40 bg-black/50 transition-all duration-700"
+                style={isResponding ? { animation: 'breathe 3s ease-in-out infinite' } : {}}>
+                <img src="/xtroet-logo.webp" alt="AI" className="w-9 h-9 object-cover rounded drop-shadow-[0_0_15px_rgba(16,185,129,0.4)]" />
               </div>
               <div>
-                <h3 className="text-white font-heading font-black text-base tracking-wide" dir="ltr">FIRAS AI</h3>
+                <h3 className="text-white font-heading font-black text-base tracking-wide" dir="ltr">XTROET AI</h3>
                 <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" style={{ animation: 'glow-pulse 2s ease-in-out infinite' }}></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]" style={{ animation: 'glow-pulse 3.5s ease-in-out infinite' }}></span>
                   <span className="text-[10px] text-green-400/80 font-mono">
                     {isWaiting ? (lang === 'ar' ? 'يفكر...' : 'Thinking...') : isResponding ? (lang === 'ar' ? 'يكتب...' : 'Typing...') : (lang === 'ar' ? 'متصل' : 'Online')}
                   </span>
@@ -682,7 +642,7 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
           <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-black/40 to-transparent pointer-events-none z-10"></div>
 
           {showQuickActions && messages.length === 1 && (
-            <div className="pt-4" style={{ animation: 'slide-up 0.5s ease-out' }}>
+            <div className="pt-4" style={{ animation: 'slide-up 0.7s ease-out' }}>
               <QuickActions lang={lang} onAsk={handleQuickAsk} />
             </div>
           )}
@@ -697,17 +657,17 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
                 <div
                   className={`max-w-[88%] px-4 py-3 text-sm leading-relaxed shadow-lg ${
                     msg.role === 'user'
-                      ? 'bg-gradient-to-br from-[#C9A24B] to-[#8A6A3A] text-white shadow-[#C9A24B]/20'
-                      : 'bg-[#0d0d15]/80 border-s-2 border-s-[#C9A24B]/60 border-y border-e border-white/5 text-white/90 backdrop-blur-md'
+                      ? 'bg-gradient-to-br from-[#34D399] to-[#047857] text-white shadow-[#10B981]/20'
+                      : 'bg-[#0d0d15]/80 border-s-2 border-s-[#10B981]/60 border-y border-e border-white/5 text-white/90 backdrop-blur-md'
                   }`}
                   style={msg.role === 'user' ? { clipPath: 'polygon(0 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%)' } : undefined}
                 >
                   {msg.role === 'assistant' && (
                     <div className="flex items-center gap-2 mb-1.5">
                       <div className="w-6 h-6 flex items-center justify-center">
-                        <img src="/ai-icon.png" alt="AI" className="w-6 h-6 object-contain" />
+                        <img src="/xtroet-logo.webp" alt="AI" className="w-6 h-6 object-cover rounded" />
                       </div>
-                      <span className="text-[10px] font-bold text-[#C9A24B]/80 uppercase tracking-wider">Firas AI</span>
+                      <span className="text-[10px] font-bold text-[#6EE7B7]/80 uppercase tracking-wider">XTROET AI</span>
                     </div>
                   )}
                   <span dir="auto" className={`ai-chat ${msg.role === 'user' ? 'text-white user-msg' : 'text-white/90'} whitespace-pre-wrap ${lang === 'ar' ? 'font-arabic' : ''}`}>
@@ -718,28 +678,28 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
             ))}
 
             {isWaiting && (
-              <div className="flex justify-start" style={{ animation: 'message-pop 0.3s ease-out' }}>
+              <div className="flex justify-start" style={{ animation: 'message-pop 0.5s ease-out' }}>
                 <div className="bg-[#151525]/80 border border-white/5 rounded-2xl rounded-bl-md px-5 py-4 backdrop-blur-sm">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-[#C9A24B] rounded-full" style={{ animation: 'dot-pulse 1.4s ease-in-out infinite' }}></span>
-                    <span className="w-2 h-2 bg-[#C9A24B] rounded-full" style={{ animation: 'dot-pulse 1.4s ease-in-out infinite 0.2s' }}></span>
-                    <span className="w-2 h-2 bg-[#C9A24B] rounded-full" style={{ animation: 'dot-pulse 1.4s ease-in-out infinite 0.4s' }}></span>
+                    <span className="w-2 h-2 bg-[#10B981] rounded-full" style={{ animation: 'dot-pulse 2.2s ease-in-out infinite' }}></span>
+                    <span className="w-2 h-2 bg-[#10B981] rounded-full" style={{ animation: 'dot-pulse 2.2s ease-in-out infinite 0.3s' }}></span>
+                    <span className="w-2 h-2 bg-[#10B981] rounded-full" style={{ animation: 'dot-pulse 2.2s ease-in-out infinite 0.6s' }}></span>
                   </div>
                 </div>
               </div>
             )}
             {isResponding && !isWaiting && messages[messages.length - 1]?.role === 'assistant' && messages[messages.length - 1]?.content === '' && (
-              <div className="flex justify-start" style={{ animation: 'message-pop 0.3s ease-out' }}>
+              <div className="flex justify-start" style={{ animation: 'message-pop 0.5s ease-out' }}>
                 <div className="bg-[#0d0d15]/80 border border-white/5 rounded-2xl rounded-bl-md px-4 py-3 backdrop-blur-sm">
                   <div className="flex items-center gap-1.5">
                     <div className="w-5 h-5 flex items-center justify-center">
-                      <img src="/ai-icon.png" alt="AI" className="w-5 h-5 object-contain" />
+                      <img src="/xtroet-logo.webp" alt="AI" className="w-5 h-5 object-cover rounded" />
                     </div>
-                    <span className="text-[10px] font-bold text-[#C9A24B]/80 uppercase tracking-wider">Firas AI</span>
+                    <span className="text-[10px] font-bold text-[#6EE7B7]/80 uppercase tracking-wider">XTROET AI</span>
                     <div className="flex items-center gap-1 mr-2">
-                      <span className="w-1.5 h-1.5 bg-white/40 rounded-full" style={{ animation: 'dot-pulse 1s ease-in-out infinite' }}></span>
-                      <span className="w-1.5 h-1.5 bg-white/40 rounded-full" style={{ animation: 'dot-pulse 1s ease-in-out infinite 0.15s' }}></span>
-                      <span className="w-1.5 h-1.5 bg-white/40 rounded-full" style={{ animation: 'dot-pulse 1s ease-in-out infinite 0.3s' }}></span>
+                      <span className="w-1.5 h-1.5 bg-white/40 rounded-full" style={{ animation: 'dot-pulse 2s ease-in-out infinite' }}></span>
+                      <span className="w-1.5 h-1.5 bg-white/40 rounded-full" style={{ animation: 'dot-pulse 2s ease-in-out infinite 0.25s' }}></span>
+                      <span className="w-1.5 h-1.5 bg-white/40 rounded-full" style={{ animation: 'dot-pulse 2s ease-in-out infinite 0.5s' }}></span>
                     </div>
                   </div>
                 </div>
@@ -750,8 +710,8 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
         </div>
 
         {/* Command bar */}
-        <div className="relative h-[60px] bg-black/70 border-t border-[#C9A24B]/20 px-3 flex items-center gap-2 backdrop-blur-xl">
-          <span className="font-heading font-black text-lg text-[#C9A24B] shrink-0 ps-1" dir="ltr" aria-hidden="true">&gt;</span>
+        <div className="relative h-[60px] bg-black/70 border-t border-[#10B981]/20 px-3 flex items-center gap-2 backdrop-blur-xl">
+          <span className="font-heading font-black text-lg text-[#10B981] shrink-0 ps-1" dir="ltr" aria-hidden="true">&gt;</span>
           <div className="relative flex-1">
             <input
               ref={inputRef}
@@ -759,17 +719,17 @@ export const AIChat: React.FC<AIChatProps> = ({ lang, streamerInfo }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-              placeholder={lang === 'ar' ? 'اسأل عن Firas...' : 'Ask about Firas...'}
+              placeholder={lang === 'ar' ? 'اسأل عن ناصر...' : 'Ask about XTROET...'}
               disabled={isWaiting}
               aria-label={lang === 'ar' ? 'اكتب سؤالك' : 'Type your question'}
-              className={`w-full h-11 px-4 bg-white/5 border text-white placeholder-white/25 text-sm outline-none transition-all focus:border-[#C9A24B]/60 focus:bg-white/10 disabled:opacity-50 ${isWaiting ? 'border-[#C9A24B]/40 shadow-[0_0_15px_rgba(201,162,75,0.15)]' : 'border-white/10'}`}
+              className={`w-full h-11 px-4 bg-white/5 border text-white placeholder-white/25 text-sm outline-none transition-all duration-500 focus:border-[#10B981]/60 focus:bg-white/10 disabled:opacity-50 ${isWaiting ? 'border-[#10B981]/40 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'border-white/10'}`}
             />
           </div>
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isWaiting || isResponding}
             aria-label={lang === 'ar' ? 'إرسال' : 'Send'}
-            className="cut-btn w-12 h-11 bg-gradient-to-b from-[#D9C08A] to-[#8A6A3A] text-black flex items-center justify-center transition-all hover:brightness-110 active:scale-95 disabled:opacity-30 shadow-lg shadow-[#C9A24B]/20 flex-shrink-0"
+            className="cut-btn w-12 h-11 bg-gradient-to-b from-[#6EE7B7] to-[#047857] text-[#04120D] flex items-center justify-center transition-all duration-500 hover:brightness-110 active:scale-95 disabled:opacity-30 shadow-lg shadow-[#10B981]/20 flex-shrink-0"
           >
             {isWaiting ? (
               <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">

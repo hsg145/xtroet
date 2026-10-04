@@ -1,0 +1,730 @@
+[
+  {
+    "id": "DOUBLE_JUMP",
+    "name": "Grav-Boots v2",
+    "description": "Enables double jumping in mid-air.",
+    "cost": 5000,
+    "category": "UPGRADE"
+  },
+  {
+    "id": "MAX_LIFE",
+    "name": "Core Expansion",
+    "description": "Increases maximum neural integrity by 1.",
+    "cost": 15000,
+    "category": "UPGRADE"
+  },
+  {
+    "id": "HEAL",
+    "name": "Nano-Repair",
+    "description": "Restores 1 lost neural link (Health).",
+    "cost": 2000,
+    "category": "UPGRADE"
+  },
+  {
+    "id": "IMMORTAL",
+    "name": "Phase Shift",
+    "description": "Temporary invulnerability to obstacles.",
+    "cost": 25000,
+    "category": "UPGRADE"
+  },
+  {
+    "id": "char_neon",
+    "name": "Neon Runner",
+    "description": "A Neon tier runner model.",
+    "cost": 10000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_gold",
+    "name": "Gold Runner",
+    "description": "A Gold tier runner model.",
+    "cost": 15000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_void",
+    "name": "Void Runner",
+    "description": "A Void tier runner model.",
+    "cost": 20000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_crimson",
+    "name": "Crimson Runner",
+    "description": "A Crimson tier runner model.",
+    "cost": 25000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_azure",
+    "name": "Azure Runner",
+    "description": "A Azure tier runner model.",
+    "cost": 30000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_jade",
+    "name": "Jade Runner",
+    "description": "A Jade tier runner model.",
+    "cost": 35000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_amethyst",
+    "name": "Amethyst Runner",
+    "description": "A Amethyst tier runner model.",
+    "cost": 40000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_obsidian",
+    "name": "Obsidian Runner",
+    "description": "A Obsidian tier runner model.",
+    "cost": 45000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_quantum",
+    "name": "Quantum Runner",
+    "description": "A Quantum tier runner model.",
+    "cost": 50000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "char_plasma",
+    "name": "Plasma Runner",
+    "description": "A Plasma tier runner model.",
+    "cost": 55000,
+    "category": "CHARACTER"
+  },
+  {
+    "id": "outfit_cyber_red",
+    "name": "Red Cyber Suit",
+    "description": "A stylish red cyber exoskeleton.",
+    "cost": 2000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_blue",
+    "name": "Blue Cyber Suit",
+    "description": "A stylish blue cyber exoskeleton.",
+    "cost": 2500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_green",
+    "name": "Green Cyber Suit",
+    "description": "A stylish green cyber exoskeleton.",
+    "cost": 3000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_yellow",
+    "name": "Yellow Cyber Suit",
+    "description": "A stylish yellow cyber exoskeleton.",
+    "cost": 3500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_purple",
+    "name": "Purple Cyber Suit",
+    "description": "A stylish purple cyber exoskeleton.",
+    "cost": 4000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_orange",
+    "name": "Orange Cyber Suit",
+    "description": "A stylish orange cyber exoskeleton.",
+    "cost": 4500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_pink",
+    "name": "Pink Cyber Suit",
+    "description": "A stylish pink cyber exoskeleton.",
+    "cost": 5000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_white",
+    "name": "White Cyber Suit",
+    "description": "A stylish white cyber exoskeleton.",
+    "cost": 5500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_black",
+    "name": "Black Cyber Suit",
+    "description": "A stylish black cyber exoskeleton.",
+    "cost": 6000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_cyber_cyan",
+    "name": "Cyan Cyber Suit",
+    "description": "A stylish cyan cyber exoskeleton.",
+    "cost": 6500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_red",
+    "name": "Red Stealth Suit",
+    "description": "A stylish red stealth exoskeleton.",
+    "cost": 4000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_blue",
+    "name": "Blue Stealth Suit",
+    "description": "A stylish blue stealth exoskeleton.",
+    "cost": 4500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_green",
+    "name": "Green Stealth Suit",
+    "description": "A stylish green stealth exoskeleton.",
+    "cost": 5000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_yellow",
+    "name": "Yellow Stealth Suit",
+    "description": "A stylish yellow stealth exoskeleton.",
+    "cost": 5500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_purple",
+    "name": "Purple Stealth Suit",
+    "description": "A stylish purple stealth exoskeleton.",
+    "cost": 6000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_orange",
+    "name": "Orange Stealth Suit",
+    "description": "A stylish orange stealth exoskeleton.",
+    "cost": 6500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_pink",
+    "name": "Pink Stealth Suit",
+    "description": "A stylish pink stealth exoskeleton.",
+    "cost": 7000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_white",
+    "name": "White Stealth Suit",
+    "description": "A stylish white stealth exoskeleton.",
+    "cost": 7500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_black",
+    "name": "Black Stealth Suit",
+    "description": "A stylish black stealth exoskeleton.",
+    "cost": 8000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_stealth_cyan",
+    "name": "Cyan Stealth Suit",
+    "description": "A stylish cyan stealth exoskeleton.",
+    "cost": 8500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_red",
+    "name": "Red Mecha Suit",
+    "description": "A stylish red mecha exoskeleton.",
+    "cost": 6000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_blue",
+    "name": "Blue Mecha Suit",
+    "description": "A stylish blue mecha exoskeleton.",
+    "cost": 6500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_green",
+    "name": "Green Mecha Suit",
+    "description": "A stylish green mecha exoskeleton.",
+    "cost": 7000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_yellow",
+    "name": "Yellow Mecha Suit",
+    "description": "A stylish yellow mecha exoskeleton.",
+    "cost": 7500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_purple",
+    "name": "Purple Mecha Suit",
+    "description": "A stylish purple mecha exoskeleton.",
+    "cost": 8000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_orange",
+    "name": "Orange Mecha Suit",
+    "description": "A stylish orange mecha exoskeleton.",
+    "cost": 8500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_pink",
+    "name": "Pink Mecha Suit",
+    "description": "A stylish pink mecha exoskeleton.",
+    "cost": 9000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_white",
+    "name": "White Mecha Suit",
+    "description": "A stylish white mecha exoskeleton.",
+    "cost": 9500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_black",
+    "name": "Black Mecha Suit",
+    "description": "A stylish black mecha exoskeleton.",
+    "cost": 10000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_mecha_cyan",
+    "name": "Cyan Mecha Suit",
+    "description": "A stylish cyan mecha exoskeleton.",
+    "cost": 10500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_red",
+    "name": "Red Nomad Suit",
+    "description": "A stylish red nomad exoskeleton.",
+    "cost": 8000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_blue",
+    "name": "Blue Nomad Suit",
+    "description": "A stylish blue nomad exoskeleton.",
+    "cost": 8500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_green",
+    "name": "Green Nomad Suit",
+    "description": "A stylish green nomad exoskeleton.",
+    "cost": 9000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_yellow",
+    "name": "Yellow Nomad Suit",
+    "description": "A stylish yellow nomad exoskeleton.",
+    "cost": 9500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_purple",
+    "name": "Purple Nomad Suit",
+    "description": "A stylish purple nomad exoskeleton.",
+    "cost": 10000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_orange",
+    "name": "Orange Nomad Suit",
+    "description": "A stylish orange nomad exoskeleton.",
+    "cost": 10500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_pink",
+    "name": "Pink Nomad Suit",
+    "description": "A stylish pink nomad exoskeleton.",
+    "cost": 11000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_white",
+    "name": "White Nomad Suit",
+    "description": "A stylish white nomad exoskeleton.",
+    "cost": 11500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_black",
+    "name": "Black Nomad Suit",
+    "description": "A stylish black nomad exoskeleton.",
+    "cost": 12000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_nomad_cyan",
+    "name": "Cyan Nomad Suit",
+    "description": "A stylish cyan nomad exoskeleton.",
+    "cost": 12500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_red",
+    "name": "Red Elite Suit",
+    "description": "A stylish red elite exoskeleton.",
+    "cost": 10000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_blue",
+    "name": "Blue Elite Suit",
+    "description": "A stylish blue elite exoskeleton.",
+    "cost": 10500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_green",
+    "name": "Green Elite Suit",
+    "description": "A stylish green elite exoskeleton.",
+    "cost": 11000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_yellow",
+    "name": "Yellow Elite Suit",
+    "description": "A stylish yellow elite exoskeleton.",
+    "cost": 11500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_purple",
+    "name": "Purple Elite Suit",
+    "description": "A stylish purple elite exoskeleton.",
+    "cost": 12000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_orange",
+    "name": "Orange Elite Suit",
+    "description": "A stylish orange elite exoskeleton.",
+    "cost": 12500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_pink",
+    "name": "Pink Elite Suit",
+    "description": "A stylish pink elite exoskeleton.",
+    "cost": 13000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_white",
+    "name": "White Elite Suit",
+    "description": "A stylish white elite exoskeleton.",
+    "cost": 13500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_black",
+    "name": "Black Elite Suit",
+    "description": "A stylish black elite exoskeleton.",
+    "cost": 14000,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "outfit_elite_cyan",
+    "name": "Cyan Elite Suit",
+    "description": "A stylish cyan elite exoskeleton.",
+    "cost": 14500,
+    "category": "OUTFIT"
+  },
+  {
+    "id": "trail_spark_red",
+    "name": "Red Spark Trail",
+    "description": "Leaves a red spark wake behind you.",
+    "cost": 1000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_blue",
+    "name": "Blue Spark Trail",
+    "description": "Leaves a blue spark wake behind you.",
+    "cost": 1250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_green",
+    "name": "Green Spark Trail",
+    "description": "Leaves a green spark wake behind you.",
+    "cost": 1500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_yellow",
+    "name": "Yellow Spark Trail",
+    "description": "Leaves a yellow spark wake behind you.",
+    "cost": 1750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_purple",
+    "name": "Purple Spark Trail",
+    "description": "Leaves a purple spark wake behind you.",
+    "cost": 2000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_orange",
+    "name": "Orange Spark Trail",
+    "description": "Leaves a orange spark wake behind you.",
+    "cost": 2250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_pink",
+    "name": "Pink Spark Trail",
+    "description": "Leaves a pink spark wake behind you.",
+    "cost": 2500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_white",
+    "name": "White Spark Trail",
+    "description": "Leaves a white spark wake behind you.",
+    "cost": 2750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_black",
+    "name": "Black Spark Trail",
+    "description": "Leaves a black spark wake behind you.",
+    "cost": 3000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_spark_cyan",
+    "name": "Cyan Spark Trail",
+    "description": "Leaves a cyan spark wake behind you.",
+    "cost": 3250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_red",
+    "name": "Red Flame Trail",
+    "description": "Leaves a red flame wake behind you.",
+    "cost": 2000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_blue",
+    "name": "Blue Flame Trail",
+    "description": "Leaves a blue flame wake behind you.",
+    "cost": 2250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_green",
+    "name": "Green Flame Trail",
+    "description": "Leaves a green flame wake behind you.",
+    "cost": 2500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_yellow",
+    "name": "Yellow Flame Trail",
+    "description": "Leaves a yellow flame wake behind you.",
+    "cost": 2750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_purple",
+    "name": "Purple Flame Trail",
+    "description": "Leaves a purple flame wake behind you.",
+    "cost": 3000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_orange",
+    "name": "Orange Flame Trail",
+    "description": "Leaves a orange flame wake behind you.",
+    "cost": 3250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_pink",
+    "name": "Pink Flame Trail",
+    "description": "Leaves a pink flame wake behind you.",
+    "cost": 3500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_white",
+    "name": "White Flame Trail",
+    "description": "Leaves a white flame wake behind you.",
+    "cost": 3750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_black",
+    "name": "Black Flame Trail",
+    "description": "Leaves a black flame wake behind you.",
+    "cost": 4000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_flame_cyan",
+    "name": "Cyan Flame Trail",
+    "description": "Leaves a cyan flame wake behind you.",
+    "cost": 4250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_red",
+    "name": "Red Plasma Trail",
+    "description": "Leaves a red plasma wake behind you.",
+    "cost": 3000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_blue",
+    "name": "Blue Plasma Trail",
+    "description": "Leaves a blue plasma wake behind you.",
+    "cost": 3250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_green",
+    "name": "Green Plasma Trail",
+    "description": "Leaves a green plasma wake behind you.",
+    "cost": 3500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_yellow",
+    "name": "Yellow Plasma Trail",
+    "description": "Leaves a yellow plasma wake behind you.",
+    "cost": 3750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_purple",
+    "name": "Purple Plasma Trail",
+    "description": "Leaves a purple plasma wake behind you.",
+    "cost": 4000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_orange",
+    "name": "Orange Plasma Trail",
+    "description": "Leaves a orange plasma wake behind you.",
+    "cost": 4250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_pink",
+    "name": "Pink Plasma Trail",
+    "description": "Leaves a pink plasma wake behind you.",
+    "cost": 4500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_white",
+    "name": "White Plasma Trail",
+    "description": "Leaves a white plasma wake behind you.",
+    "cost": 4750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_black",
+    "name": "Black Plasma Trail",
+    "description": "Leaves a black plasma wake behind you.",
+    "cost": 5000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_plasma_cyan",
+    "name": "Cyan Plasma Trail",
+    "description": "Leaves a cyan plasma wake behind you.",
+    "cost": 5250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_red",
+    "name": "Red Digital Trail",
+    "description": "Leaves a red digital wake behind you.",
+    "cost": 4000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_blue",
+    "name": "Blue Digital Trail",
+    "description": "Leaves a blue digital wake behind you.",
+    "cost": 4250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_green",
+    "name": "Green Digital Trail",
+    "description": "Leaves a green digital wake behind you.",
+    "cost": 4500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_yellow",
+    "name": "Yellow Digital Trail",
+    "description": "Leaves a yellow digital wake behind you.",
+    "cost": 4750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_purple",
+    "name": "Purple Digital Trail",
+    "description": "Leaves a purple digital wake behind you.",
+    "cost": 5000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_orange",
+    "name": "Orange Digital Trail",
+    "description": "Leaves a orange digital wake behind you.",
+    "cost": 5250,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_pink",
+    "name": "Pink Digital Trail",
+    "description": "Leaves a pink digital wake behind you.",
+    "cost": 5500,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_white",
+    "name": "White Digital Trail",
+    "description": "Leaves a white digital wake behind you.",
+    "cost": 5750,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_black",
+    "name": "Black Digital Trail",
+    "description": "Leaves a black digital wake behind you.",
+    "cost": 6000,
+    "category": "TRAIL"
+  },
+  {
+    "id": "trail_digital_cyan",
+    "name": "Cyan Digital Trail",
+    "description": "Leaves a cyan digital wake behind you.",
+    "cost": 6250,
+    "category": "TRAIL"
+  }
+]

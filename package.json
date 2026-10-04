@@ -1,7 +1,7 @@
 {
-  "name": "firas-hub",
-  "description": "Official Stream Hub for Firas - Real-time statistics and Live streaming updates.",
-  "author": "Firas",
+  "name": "xtroet-hub",
+  "description": "Official Stream Hub for XTROET (Nasser Alanazi) - Real-time statistics and Live streaming updates.",
+  "author": "XTROET",
   "private": true,
   "version": "0.0.0",
   "type": "module",

@@ -2,12 +2,12 @@
   <img src="https://raw.githubusercontent.com/HSG116/Firas_AR/main/public/channels4_banner.jpg" alt="Firas Stream Hub Banner" width="100%" style="border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.5);" />
 </p>
 
-<h1 align="center">🎮 Firas Stream Hub</h1>
+<h1 align="center">🎮 XTROET Stream Hub</h1>
 
 <p align="center">
-  <strong>— منصة Firas الشاملة للبث المباشر والتفاعل والمجتمع —</strong>
+  <strong>— منصة ناصر العنزي (XTROET) الشاملة للبث المباشر والتفاعل والمجتمع —</strong>
   <br>
-  <em>The Ultimate Streaming Command Center for Firas • Kick • MT RP • Community</em>
+  <em>The Ultimate Streaming Command Center for XTROET • Kick • Emerald Empire • Community</em>
 </p>
 
 <p align="center">
@@ -209,7 +209,7 @@ Edit `App.tsx` — `createSocialLink()` function handles:
 ### Botrix Leaderboard
 The endpoint is configured in `AIChat.tsx`:
 ```
-https://botrix.live/api/public/leaderboard?platform=kick&user=firas
+  https://botrix.live/api/public/leaderboard?platform=kick&user=xtroet
 ```
 
 ---
@@ -293,14 +293,14 @@ https://botrix.live/api/public/leaderboard?platform=kick&user=firas
 | 📞 **Phone** | +966 550 348 751 |
 | 💬 **Discord** | [Moh_HSG](https://discord.com/users/1416151331965767810) |
 | 🐦 **X (Twitter)** | [@Moh_HSG](https://x.com/Moh_HSG) |
-| 🎮 **Kick** | [Firas](https://kick.com/Firas) |
+| 🎮 **Kick** | [XTROET](https://kick.com/xtroet) |
 
 ---
 
 ## 📜 License — الترخيص
 
 ```
-© 2026 Firas Stream Hub. All Rights Reserved.
+© 2026 XTROET Stream Hub — Nasser Alanazi. All Rights Reserved.
 POWERED BY HSG
 ```
 

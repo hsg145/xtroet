@@ -8,8 +8,9 @@ interface LatestYoutubeProps {
 export const LatestYoutube: React.FC<LatestYoutubeProps> = ({ lang }) => {
   const [video, setVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  // Level One Clan channel (Firas clan)
-  const channelId = 'UCD7EpD4o6bw24c5o5vu4hGQ';
+  // XTROET official channel (@XTROET)
+  const channelId = 'XTROET';
+  const channelUrl = 'https://www.youtube.com/@XTROET';
 
   useEffect(() => {
     const fetchVideo = async () => {

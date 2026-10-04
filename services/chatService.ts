@@ -23,9 +23,7 @@ class ChatService {
   private channel: any = null;
 
   private KNOWN_CHATROOM_IDS: Record<string, number> = {
-    // We removed 'firas' from here to force a fresh lookup from the API, 
-    // ensuring we get the correct Chatroom ID every time.
-    'xeid': 47582,
+    // XTROET lookup is fresh from API every time to ensure correct Chatroom ID.
   };
 
   async getChatroomId(channelSlug: string): Promise<number | null> {
@@ -90,7 +88,7 @@ class ChatService {
 
   private connectionId = 0;
 
-  async connect(channelSlug: string = 'firas') {
+  async connect(channelSlug: string = 'xtroet') {
     const slug = channelSlug.toLowerCase().trim();
     this.disconnect();
     const myConnectionId = this.connectionId;
@@ -106,8 +104,7 @@ class ChatService {
         return;
       }
 
-      // If firas look up fails, log it clearly but don't auto-switch to xeid unless user asked.
-      // We will stick to the requested channel to avoid confusion.
+      // If xtroet look up fails, log it clearly. We stick to the requested channel to avoid confusion.
 
       if (!chatroomId) {
         console.error(`[ChatService] Could not find ID for ${slug}.`);

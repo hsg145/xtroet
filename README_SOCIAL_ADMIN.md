@@ -1,8 +1,8 @@
-# نظام إدارة التواصل الاجتماعي - Firas
+# نظام إدارة التواصل الاجتماعي - XTROET
 
 ## نظرة عامة
 
-نظام متكامل لإدارة أعداد المتابعين لمنصات التواصل الاجتماعي الخاصة بـ Firas مع واجهة تحكم سهلة وقاعدة بيانات SQL كاملة.
+نظام متكامل لإدارة أعداد المتابعين لمنصات التواصل الاجتماعي الخاصة بـ XTROET (ناصر العنزي) مع واجهة تحكم سهلة وقاعدة بيانات SQL كاملة.
 
 ## المميزات
 
@@ -28,7 +28,7 @@
 ### 1. قاعدة البيانات
 ```sql
 -- استيراد مخطط قاعدة البيانات
-mysql -u root -p firas_social < database/social_media_schema.sql
+mysql -u root -p xtroet_social < database/social_media_schema.sql
 ```
 
 ### 2. إعدادات الاتصال
@@ -41,7 +41,7 @@ mysql -u root -p firas_social < database/social_media_schema.sql
 ```php
 // تعديل هذه القيم
 $host = 'localhost';
-$dbname = 'firas_social';
+$dbname = 'xtroet_social';
 $username = 'root';
 $password = '';
 ```
@@ -196,4 +196,4 @@ fetch('/api/admin/social-stats.php', {
 
 ---
 
-**ملاحظة**: هذا النظام مصمم خصيصاً لـ Firas ويتم تحديثه باستمرار لضمان أفضل أداء وميزات.
+**ملاحظة**: هذا النظام مصمم خصيصاً لـ XTROET ويتم تحديثه باستمرار لضمان أفضل أداء وميزات.

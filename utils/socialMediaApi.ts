@@ -1,29 +1,26 @@
 // Live social counters — 3-layer architecture per platform:
 //   1) /api/social (server-side: Vercel Edge in prod, vite middleware in dev)
 //   2) Direct client fetch (CORS-open sources only)
-//   3) Verified static fallback (last confirmed live numbers, 2026-09-26)
+//   3) Static fallback (neutral until live numbers land)
 //
-// Verified live:
-//   TikTok @vfiras3 .... 68,337 (TikMatrix) | YouTube @leveloneclan 111,326 (Mixerno)
-//   X @vfiras3 ......... 68,568 (FixTweet, verified account)
+// XTROET handles:
+//   TikTok @ixtroet | X @xtroet | Instagram @xtroet | YouTube @XTROET
 
 export interface SocialMediaStats {
   instagram?: number;
   tiktok?: number;
   twitter?: number;
   youtube?: number;
-  whatsapp?: number;
 }
 
 export const FALLBACK = {
-  instagram: 21300, // curated — Instagram walls all free readers for this account
-  tiktok: 68337,
-  twitter: 68568,
-  youtube: 111326, // Level One Clan — live via Mixerno
-  whatsapp: 36000, // no public API — curated
+  instagram: 0, // live via server API when available
+  tiktok: 0,
+  twitter: 0,
+  youtube: 0, // @XTROET — live via Mixerno when ID resolves
 };
 
-const CACHE_KEY = 'firas_social_cache_v1';
+const CACHE_KEY = 'xtroet_social_cache_v1';
 export const SOCIAL_TTL_MS = 5 * 60 * 1000;
 
 async function fetchJson(url: string, timeoutMs = 9000): Promise<any> {
@@ -57,12 +54,12 @@ function num(v: unknown): number | null {
   return null;
 }
 
-export async function getInstagramFollowers(username = 'vfiras3'): Promise<number> {
+export async function getInstagramFollowers(username = 'xtroet'): Promise<number> {
   void username;
   return (await viaServerApi('instagram')) ?? FALLBACK.instagram;
 }
 
-export async function getTikTokFollowers(username = 'vfiras3'): Promise<number> {
+export async function getTikTokFollowers(username = 'ixtroet'): Promise<number> {
   const via = await viaServerApi('tiktok');
   if (via) return via;
   // Layer 2 — TikMatrix allows CORS + needs no key
@@ -74,7 +71,7 @@ export async function getTikTokFollowers(username = 'vfiras3'): Promise<number> 
   return FALLBACK.tiktok;
 }
 
-export async function getTwitterFollowers(username = 'vfiras3'): Promise<number> {
+export async function getTwitterFollowers(username = 'xtroet'): Promise<number> {
   const via = await viaServerApi('twitter');
   if (via) return via;
   // Layer 2 — FixTweet API (usually CORS-open)
@@ -86,7 +83,7 @@ export async function getTwitterFollowers(username = 'vfiras3'): Promise<number>
   return FALLBACK.twitter;
 }
 
-export async function getYouTubeSubscribers(channelId = 'UCD7EpD4o6bw24c5o5vu4hGQ'): Promise<number> {
+export async function getYouTubeSubscribers(channelId = 'XTROET'): Promise<number> {
   const via = await viaServerApi('youtube');
   if (via) return via;
   // Layer 2 — Mixerno (usually CORS-open)
@@ -99,18 +96,14 @@ export async function getYouTubeSubscribers(channelId = 'UCD7EpD4o6bw24c5o5vu4hG
   return FALLBACK.youtube;
 }
 
-export async function getWhatsAppSubscribers(): Promise<number> {
-  return FALLBACK.whatsapp;
-}
-
 export async function getAllSocialMediaStats(): Promise<SocialMediaStats> {
   const [instagram, tiktok, twitter, youtube] = await Promise.all([
-    getInstagramFollowers('vfiras3'),
-    getTikTokFollowers('vfiras3'),
-    getTwitterFollowers('vfiras3'),
-    getYouTubeSubscribers('UCD7EpD4o6bw24c5o5vu4hGQ'),
+    getInstagramFollowers('xtroet'),
+    getTikTokFollowers('ixtroet'),
+    getTwitterFollowers('xtroet'),
+    getYouTubeSubscribers('XTROET'),
   ]);
-  const stats = { instagram, tiktok, twitter, youtube, whatsapp: FALLBACK.whatsapp };
+  const stats = { instagram, tiktok, twitter, youtube };
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), stats }));
   } catch {}
@@ -131,6 +124,7 @@ export function readSocialCache(): (SocialMediaStats & { _fresh: boolean }) | nu
 }
 
 export function formatFollowerCount(count: number): string {
+  if (!count || count <= 0) return '—';
   if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M+`;
   if (count >= 1000) return `${(count / 1000).toFixed(1)}K+`;
   return count.toString();

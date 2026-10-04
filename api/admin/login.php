@@ -7,7 +7,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 
 // Database configuration
 $host = 'localhost';
-$dbname = 'firas_social';
+$dbname = 'xtroet_social';
 $username = 'root';
 $password = '';
 

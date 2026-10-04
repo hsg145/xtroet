@@ -1,22 +1,24 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
-import { KickIcon, XIcon, SnapchatIcon, DiscordIcon, TikTokIcon, WhatsAppIcon, InstagramIcon, YoutubeIcon, FacebookIcon } from './components/Icons';
+import { KickIcon, XIcon, DiscordIcon, TikTokIcon, InstagramIcon, YoutubeIcon } from './components/Icons';
 import { SocialLink, Language } from './types';
 import { StreamPlayer } from './components/StreamPlayer';
+import { SiteHeader } from './components/SiteHeader';
 import { ChatWidget } from './components/Chat';
 import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
 
 // Heavy below-fold / on-demand chunks — split out of the first paint
-const StatsSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.StatsSection })));
+const HonorSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.HonorSection })));
+const ArchiveSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.ArchiveSection })));
 const AIChat = lazy(() => import('./components/AIChat').then(m => ({ default: m.AIChat })));
 
-// --- Constants (preserved) ---
-const DEFAULT_PROFILE_IMAGE = "/firas-mark.webp";
+// --- Constants (XTROET) ---
+const DEFAULT_PROFILE_IMAGE = "/xtroet-logo.webp";
 import { kickFetch } from './utils/kickApi';
 import { getAllSocialMediaStats, formatFollowerCount, readSocialCache, SOCIAL_TTL_MS } from './utils/socialMediaApi';
 
-const PC_BACKGROUND = "/bg-pc.jpg";
-const MOBILE_BACKGROUND = "/bg-mobile.jpg";
-const CHANNEL_SLUG = 'firas';
+const PC_BACKGROUND = "/xtroet-banner.jpg";
+const MOBILE_BACKGROUND = "/xtroet-banner.jpg";
+const CHANNEL_SLUG = 'xtroet';
 
 const createSocialLink = (key: string, value: string, followerCount?: string, specialDetail?: string): SocialLink | null => {
     if (!value) return null;
@@ -27,56 +29,56 @@ const createSocialLink = (key: string, value: string, followerCount?: string, sp
     switch (key) {
         case 'twitter': return { name: 'X', url: value.startsWith('http') ? value : `https://x.com/${handle}`, icon: <XIcon className="w-7 h-7" />, color: '', username: `@${handle}`, hex: '#FFFFFF', followerCount, specialDetail };
         case 'instagram': return { name: 'Instagram', url: value.startsWith('http') ? value : `https://instagram.com/${handle}`, icon: <InstagramIcon className="w-7 h-7" />, color: '', username: `@${handle}`, hex: '#E1306C', followerCount, specialDetail };
-        case 'youtube': return { name: 'YouTube', url: value.startsWith('http') ? value : `https://youtube.com/@${handle}`, icon: <YoutubeIcon className="w-7 h-7" />, color: '', username: 'Channel', hex: '#FF0000', followerCount, specialDetail };
-        case 'discord': return { name: 'Discord', url: value.startsWith('http') ? value : `https://discord.gg/${handle}`, icon: <DiscordIcon className="w-7 h-7" />, color: '', username: 'Community', hex: '#5865F2', followerCount, specialDetail };
+        case 'youtube': return { name: 'YouTube', url: value.startsWith('http') ? value : `https://youtube.com/@${handle}`, icon: <YoutubeIcon className="w-7 h-7" />, color: '', username: '@XTROET', hex: '#FF0000', followerCount, specialDetail };
+        case 'discord': return { name: 'Discord', url: value.startsWith('http') ? value : `https://discord.gg/${handle}`, icon: <DiscordIcon className="w-7 h-7" />, color: '', username: 'Emerald Community', hex: '#5865F2', followerCount, specialDetail };
         case 'tiktok': return { name: 'TikTok', url: value.startsWith('http') ? value : `https://tiktok.com/@${handle}`, icon: <TikTokIcon className="w-7 h-7" />, color: '', username: `@${handle}`, hex: '#FE2C55', followerCount, specialDetail };
-        case 'facebook': return { name: 'Facebook', url: value.startsWith('http') ? value : `https://facebook.com/${handle}`, icon: <FacebookIcon className="w-7 h-7" />, color: '', username: 'Page', hex: '#1877F2', followerCount, specialDetail };
-        case 'snapchat': return { name: 'Snapchat', url: value.startsWith('http') ? value : `https://snapchat.com/add/${handle}`, icon: <SnapchatIcon className="w-7 h-7" />, color: '', username: 'firasq', hex: '#FFFC00', followerCount, specialDetail };
-        case 'whatsapp': return { name: 'WhatsApp', url: value, icon: <WhatsAppIcon className="w-7 h-7" />, color: '', username: 'T • F • M • X - Live', hex: '#25D366', followerCount, specialDetail };
         default: return null;
     }
 };
 
 const KICK_SOCIAL: SocialLink = {
     name: 'KICK',
-    url: 'https://kick.com/firas',
+    url: 'https://kick.com/xtroet',
     icon: <KickIcon className="w-8 h-8" />,
     color: '',
-    username: 'Firas',
+    username: 'xtroet',
     hex: '#53FC18',
-    followerCount: '121.1K',
-    specialDetail: 'البث الأساسي والتفاعل المباشر'
+    followerCount: '—',
+    specialDetail: 'المسرح الرئيسي والبث المباشر'
 };
 
-// Static 5-platform roster — built synchronously so all cards render on first
+// XTROET roster — 6 platforms, built synchronously so all cards render on first
 // paint even before live follower counts arrive (no empty grid gaps).
 const buildDefaultSocials = (stats: Record<string, string>): SocialLink[] => ([
     { ...KICK_SOCIAL, followerCount: stats['KICK'] || KICK_SOCIAL.followerCount },
-    createSocialLink('tiktok', 'https://www.tiktok.com/@vfiras3', stats['TikTok'], 'أقوى المقاطع والتحديات'),
-    createSocialLink('twitter', 'https://x.com/vfiras3', stats['X'], 'أخبار وتحديثات سريعة'),
-    createSocialLink('discord', 'https://discord.gg/tmfx', stats['Discord'], 'أكبر تجمع للأساطير'),
-    createSocialLink('whatsapp', 'https://whatsapp.com/channel/0029VadcjLc4Y9lnhHoOAw0a', stats['WhatsApp'], 'تواصل مباشر وتنبيهات البث'),
+    createSocialLink('tiktok', 'https://www.tiktok.com/@ixtroet', stats['TikTok'], 'أقوى المقاطع والترند'),
+    createSocialLink('twitter', 'https://x.com/xtroet', stats['X'], 'الأخبار والتحديثات أول بأول'),
+    createSocialLink('discord', 'https://discord.com/invite/eX8DR9Aj9D', stats['Discord'], 'مجتمع الزمرد الرسمي'),
+    createSocialLink('instagram', 'https://www.instagram.com/xtroet/', stats['Instagram'], 'الكواليس والستوري والصور'),
 ].filter(Boolean) as SocialLink[]);
 
 const TRANSLATIONS = {
     en: {
         status: 'LIVE NOW', statusOffline: 'OFFLINE',
-        headerTitle: 'FIRAS STREAM HUB',
-        eyebrow: 'Rise with fire & consistency',
-        nameAr: 'Firas',
-        bio: 'Firas broadcasts here — epic streams, challenges and community nights. Welcome to the fortress, follow the fire and stay legendary.',
-        tags: ['Epic Streams', 'Challenges', 'Community Nights'],
+        headerTitle: 'XTROET STREAM HUB',
+        eyebrow: 'Emerald era — power & legacy',
+        nameAr: 'Nasser Alanazi',
+        bio: 'Nasser Alanazi (XTROET) broadcasts here — legendary streams, challenges and emerald community nights. Welcome to the empire, follow the emerald and stay legendary.',
+        tags: ['Epic Streams', 'Legend Vibes', 'Emerald Community'],
         defaultStreamTitle: 'CHECK OUT THE VODS | FOLLOW NOW',
         defaultCategory: 'Offline',
-        footer: '© 2026 Firas. All Rights Reserved.',
-        poweredBy: 'POWERED BY HSG',
+        footer: '© 2026 XTROET — Nasser Alanazi. All Rights Reserved.',
+        poweredBy: 'POWERED BY XTROET ERA',
         watchLive: 'Watch Live', joinDiscord: 'Join Discord',
         subOnly: 'SUB ONLY', dropsEnabled: 'DROPS ENABLED', noTags: 'No tags',
-        shareTitle: 'Firas Stream Hub', shareText: 'Check out Firas live on Kick!',         copied: 'Link copied!',
+        shareTitle: 'XTROET Stream Hub', shareText: 'Check out XTROET live on Kick!',         copied: 'Link copied!',
         lastSessionReport: 'Last session report', ago: 'Ago', duration: 'Duration',
         categoriesSpent: 'Categories in this stream', highlights: 'Stream highlights',
         socialsTitle: 'Social Arena', socialsSub: 'One hub — every platform. Pick your battlefield.',
-        communityTitle: 'Community HQ', supportTitle: 'Support & Donation', supportSub: 'Your support keeps the stream legendary.',
+        communityTitle: 'Community HQ', supportTitle: 'Support the Channel', supportSub: 'Your support keeps the emerald empire legendary.',
+        honorTitle: 'Hall of Fame', honorSub: 'Top supporters across every stream.',
+        archiveTitle: 'Archive', archiveSub: 'Clips and past streams.',
+        statsTitle: 'Stream Stats', statsSub: 'Live numbers from the emerald empire.',
         tiersTitle: 'Special alert tiers',
         theaterTitle: 'Live Theater', viewers: 'watching',
         statsKick: 'Kick followers', statsPlatforms: 'Platforms', statsStatus: 'Status',
@@ -84,22 +86,25 @@ const TRANSLATIONS = {
     },
     ar: {
         status: 'بث مباشر الآن', statusOffline: 'غير متصل حالياً',
-        headerTitle: 'مركز FIRAS للبث المباشر',
-        eyebrow: 'اصعد مع النار — قوة واستمرارية',
-        nameAr: 'فراس',
-        bio: 'فراس يبث هنا — بثوث ملحمية وتحديات وسهرات مجتمع. حياك الله في القلعة، تابع النار وخلك أسطوري.',
-        tags: ['بثوث ملحمية', 'تحديات', 'سهرات مجتمع'],
+        headerTitle: 'مركز XTROET للبث المباشر',
+        eyebrow: 'عصر الزمرد — هيبة وحضور',
+        nameAr: 'ناصر العنزي',
+        bio: 'ناصر العنزي (XTROET) يبث هنا — بثوث أسطورية وتحديات وسهرات مجتمع الزمرد. حياك الله في الإمبراطورية، تابع الزمرد وخلك أسطورة.',
+        tags: ['بثوث أسطورية', 'تحديات الزمرد', 'مجتمع الإمبراطورية'],
         defaultStreamTitle: 'تابع البثوث السابقة | تابعني الآن',
         defaultCategory: 'غير متصل',
-        footer: '© 2026 Firas. جميع الحقوق محفوظة.',
-        poweredBy: 'بدعم من HSG',
+        footer: '© 2026 XTROET — ناصر العنزي. جميع الحقوق محفوظة.',
+        poweredBy: 'بدعم من XTROET ERA',
         watchLive: 'شاهد البث', joinDiscord: 'انضم للديسكورد',
         subOnly: 'للمشتركين فقط', dropsEnabled: 'الجوائز مفعلة', noTags: 'لا يوجد وسوم',
-        shareTitle: 'مركز بث Firas', shareText: 'تابع بث Firas المباشر على كيك!',         copied: 'تم نسخ الرابط!',
+        shareTitle: 'مركز بث XTROET', shareText: 'تابع بث ناصر العنزي المباشر على كيك!',         copied: 'تم نسخ الرابط!',
         lastSessionReport: 'تقرير الجلسة الأخيرة', ago: 'منذ', duration: 'المدة',
         categoriesSpent: 'الفئات التي تم بثها', highlights: 'لقطات ممتعة من البث',
         socialsTitle: 'ساحة التواصل', socialsSub: 'كل المنصات في مكان واحد — اختر ساحتك.',
-        communityTitle: 'مقر المجتمع', supportTitle: 'الدعم المادي', supportSub: 'دعمك يخلي البث أسطوري ويستمر.',
+        communityTitle: 'مقر المجتمع', supportTitle: 'دعم القناة', supportSub: 'دعمك يخلي إمبراطورية الزمرد أسطورية وتستمر.',
+        honorTitle: 'لوحة الشرف', honorSub: 'كبار الداعمين عبر كل البثوث.',
+        archiveTitle: 'الأرشيف', archiveSub: 'اللقطات والبثوث السابقة.',
+        statsTitle: 'إحصائيات البث', statsSub: 'أرقام إمبراطورية الزمرد لحظة بلحظة.',
         tiersTitle: 'مستويات التنبيه الخاصة',
         theaterTitle: 'مسرح البث المباشر', viewers: 'مشاهد',
         statsKick: 'متابع كيك', statsPlatforms: 'منصة', statsStatus: 'الحالة',
@@ -134,21 +139,21 @@ const ArenaBackground: React.FC = () => {
         if (!ctx) return;
         let raf = 0; let w = 0; let h = 0;
         const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
-        // Ember citadel: rising gold embers with flicker + slow drifting ash
-        type P = { x: number; y: number; r: number; vy: number; vx: number; sway: number; phase: number; a: number; ember: boolean };
+        // Emerald empire: rising emerald sparks + bronze embers with flicker
+        type P = { x: number; y: number; r: number; vy: number; vx: number; sway: number; phase: number; a: number; ember: boolean; green: boolean };
         let parts: P[] = [];
         const resize = () => {
             w = window.innerWidth; h = window.innerHeight;
             canvas.width = w * DPR; canvas.height = h * DPR;
             canvas.style.width = `${w}px`; canvas.style.height = `${h}px`;
             ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-            const n = Math.min(64, Math.floor(w / 24));
+            const n = Math.min(72, Math.floor(w / 22));
             parts = Array.from({ length: n }, () => ({
                 x: Math.random() * w, y: Math.random() * h,
                 r: 0.7 + Math.random() * 2.4,
                 vy: -(0.25 + Math.random() * 0.7), vx: (Math.random() - 0.5) * 0.2,
                 sway: 0.3 + Math.random() * 0.9, phase: Math.random() * Math.PI * 2,
-                a: 0.2 + Math.random() * 0.55, ember: Math.random() > 0.4,
+                a: 0.2 + Math.random() * 0.55, ember: Math.random() > 0.4, green: Math.random() > 0.45,
             }));
         };
         resize();
@@ -166,7 +171,11 @@ const ArenaBackground: React.FC = () => {
                 const alpha = Math.max(0, Math.min(1, p.a * flick));
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                if (p.ember) {
+                if (p.green) {
+                    ctx.fillStyle = `rgba(16,185,129,${alpha})`;
+                    ctx.shadowBlur = 14;
+                    ctx.shadowColor = 'rgba(16,185,129,0.9)';
+                } else if (p.ember) {
                     ctx.fillStyle = `rgba(217,180,100,${alpha})`;
                     ctx.shadowBlur = 14;
                     ctx.shadowColor = 'rgba(201,162,75,0.9)';
@@ -183,20 +192,20 @@ const ArenaBackground: React.FC = () => {
         return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
     }, []);
     return (
-        <div className="fixed inset-0 z-0 bg-[#0B0906] overflow-hidden" aria-hidden="true">
-            {/* the citadel artwork — hero of the whole design */}
+        <div className="fixed inset-0 z-0 bg-[#04120D] overflow-hidden" aria-hidden="true">
+            {/* the emerald empire artwork — hero of the whole design */}
             <div className="absolute inset-0 fortress_bg" />
             <div className="absolute inset-0 fortress_overlay" />
-            {/* god-ray beams through the clouds */}
+            {/* god-ray beams through the emerald haze */}
             <div className="beam left-[8%] hidden md:block" />
             <div className="beam left-[16%] opacity-60 hidden md:block" style={{ animationDelay: '-4s', width: 70 }} />
-            {/* sky glow top-left where the light breaks + gold aura right at the wall */}
-            <div className="absolute -top-32 -left-32 w-[46vw] h-[46vw] max-w-[560px] max-h-[560px] rounded-full bg-[#E8D5A8]/[0.13] blur-[130px] animate-aurora" />
+            {/* emerald glow left + bronze aura right */}
+            <div className="absolute -top-32 -left-32 w-[46vw] h-[46vw] max-w-[560px] max-h-[560px] rounded-full bg-[#10B981]/[0.14] blur-[130px] animate-aurora" />
             <div className="absolute top-[8%] right-[-8%] w-[34vw] h-[34vw] max-w-[440px] max-h-[440px] rounded-full bg-[#C9A24B]/[0.16] blur-[120px] animate-aurora" style={{ animationDelay: '-8s' }} />
             <canvas ref={canvasRef} className="absolute inset-0 opacity-90" />
-            {/* readability vignette: dark void in the middle, deep ink at content depth */}
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_62%_44%_at_50%_30%,transparent_30%,rgba(11,9,6,0.5)_100%)]" />
-            <div className="absolute inset-x-0 bottom-0 h-[36%] bg-gradient-to-t from-[#0B0906] via-[#0B0906]/70 to-transparent" />
+            {/* readability vignette: dark void in the middle, deep emerald ink at content depth */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_62%_44%_at_50%_30%,transparent_30%,rgba(4,18,13,0.5)_100%)]" />
+            <div className="absolute inset-x-0 bottom-0 h-[36%] bg-gradient-to-t from-[#04120D] via-[#04120D]/70 to-transparent" />
         </div>
     );
 };
@@ -210,15 +219,15 @@ const SectionHeading: React.FC<{ no: string; title: string; sub?: string; en?: s
                 {en && <span className="hidden sm:inline text-[10px] font-bold tracking-[0.3em] text-white/30 uppercase" dir="ltr">{en}</span>}
             </div>
             {sub && <p className="text-[13px] md:text-sm text-white/50 mt-1 font-medium">{sub}</p>}
-            <div className="mt-2.5 md:mt-3 h-px w-full bg-gradient-to-l from-[#C9A24B]/60 via-white/10 to-transparent" />
+            <div className="mt-2.5 md:mt-3 h-px w-full bg-gradient-to-l from-[#C9A24B]/60 via-[#10B981]/25 to-transparent" />
         </div>
     </div>
 );
 
 const Marquee: React.FC<{ lang: Language }> = ({ lang }) => {
     const items = lang === 'ar'
-        ? ['بثوث ملحمية', 'قلعة فراس', 'مجتمع الأساطير', 'تفاعل لا يتوقف', 'جوائز ودروبس', 'تحديات نارية', 'سهرات مجتمع']
-        : ['EPIC STREAMS', 'RISE WITH FIRE', 'LEGENDS COMMUNITY', 'NONSTOP HYPE', 'DROPS & REWARDS', 'FIRE CHALLENGES', 'COMMUNITY NIGHTS'];
+        ? ['بثوث أسطورية', 'إمبراطورية XTROET', 'مجتمع الزمرد', 'تفاعل لا يتوقف', 'جوائز ودروبس', 'تحديات ناصر', 'سهرات الإمبراطورية']
+        : ['EPIC STREAMS', 'XTROET ERA', 'EMERALD COMMUNITY', 'NONSTOP HYPE', 'DROPS & REWARDS', 'NASSER VIBES', 'EMPIRE NIGHTS'];
     const row = [...items, ...items];
     return (
         <div className="relative -mx-3 sm:-mx-4 md:-mx-8 overflow-hidden border-y border-[#C9A24B]/20 bg-black/60 backdrop-blur-md marquee-mask" dir="ltr" aria-hidden="true">
@@ -449,25 +458,23 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
     );
 };
 
-// --- Platform identity gradients (same palette, richer expression) ---
+// --- Platform identity gradients (emerald empire palette) ---
 const BRAND_GRADIENTS: Record<string, string> = {
     KICK: 'linear-gradient(135deg, rgba(83,252,24,0.28), rgba(83,252,24,0.05) 55%, transparent)',
-    Snapchat: 'linear-gradient(135deg, rgba(255,252,0,0.20), rgba(255,140,0,0.07) 55%, transparent)',
     Instagram: 'linear-gradient(135deg, rgba(225,48,108,0.28), rgba(129,52,175,0.14) 50%, rgba(255,170,60,0.08))',
     TikTok: 'linear-gradient(135deg, rgba(254,44,85,0.24), rgba(37,244,238,0.12) 60%, transparent)',
     X: 'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 60%, transparent)',
-    WhatsApp: 'linear-gradient(135deg, rgba(37,211,102,0.26), rgba(37,211,102,0.05) 55%, transparent)',
     Discord: 'linear-gradient(135deg, rgba(88,101,242,0.30), rgba(88,101,242,0.07) 55%, transparent)',
     YouTube: 'linear-gradient(135deg, rgba(255,0,0,0.26), rgba(255,0,0,0.05) 55%, transparent)',
 };
 
-// --- Social Card — premium edition (ported from iABS design, Firas gold identity) ---
+// --- Social Card — premium emerald edition (XTROET identity) ---
 const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boolean; lang: Language }> = ({ social, index, featured = false, lang }) => {
     const [hover, setHover] = useState(false);
     const [launching, setLaunching] = useState(false);
     const [pressed, setPressed] = useState(false);
     const brand = social.hex || '#ffffff';
-    const bright = social.name === 'Snapchat' || social.name === 'KICK';
+    const bright = social.name === 'KICK';
     const go = (e: React.MouseEvent) => {
         e.preventDefault();
         if (launching) return;
@@ -515,7 +522,7 @@ const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boole
                     <p className={`font-black text-white truncate leading-tight mt-0.5 ${featured ? 'text-[22px] sm:text-2xl' : 'text-[17px]'}`} dir="ltr">{social.username}</p>
                     <div className="flex items-center gap-1.5 mt-1">
                         {social.followerCount && (
-                            <span className={`inline-flex items-center gap-1 text-[11px] font-black text-white/85 ${social.name === 'Snapchat' ? 'blur-[3px] select-none' : ''}`} dir="ltr">
+                            <span className={`inline-flex items-center gap-1 text-[11px] font-black text-white/85`} dir="ltr">
                                 <svg className="w-3 h-3 text-white/40" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" /></svg>
                                 {social.followerCount}
                             </span>
@@ -543,7 +550,7 @@ const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boole
             onTouchStart={() => setPressed(true)} onTouchEnd={() => setPressed(false)}
             style={{ animationDelay: `${Math.min(index * 60, 400)}ms` }}
             className={`group relative block animate-fade-in-up select-none rounded-[22px] ${launching ? 'z-40' : ''}`}
-            title={`${social.name} - Firas Official`} aria-label={lang === 'ar' ? `تابع Firas على ${social.name}` : `Visit Firas on ${social.name}`}>
+            title={`${social.name} - XTROET Official`} aria-label={lang === 'ar' ? `تابع ناصر العنزي على ${social.name}` : `Visit XTROET on ${social.name}`}>
             {featured ? (
                 <div className="rounded-[24px] p-[1.5px] bg-gradient-to-l from-[#53FC18] via-[#53FC18]/25 to-[#C9A24B]/70 shadow-[0_0_35px_rgba(83,252,24,0.15)]">
                     <div className="rounded-[22.5px] bg-[#0b0b0b]">{card}</div>
@@ -561,13 +568,13 @@ const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boole
 // ============ SUPPORT — modern glass system (no leaderboard, removed per request) ============
 type Supporter = { id: number; name: string; amount: number; currency: string; message?: string; source: string; created_at: string };
 
-// Special alert tiers — modern interactive cards with perks
+// Special alert tiers — emerald empire interactive cards with perks
 const TIERS = [
     { amount: 50, label: '50$', c: '#FFE9B8', glow: 'rgba(255,233,184,0.45)', name: 'BRONZE', nameAr: 'برونزي', perk: 'تنبيه برونزي أنيق يظهر اسمك في الشات', perkEn: 'Sleek bronze on-screen alert', icon: '✦' },
-    { amount: 100, label: '100$', c: '#D9C08A', glow: 'rgba(217,192,138,0.5)', name: 'SILVER', nameAr: 'فضي', perk: 'تنبيه فضي + شكر صوتي مباشر من فراس', perkEn: 'Silver alert + live shoutout', icon: '⬣' },
+    { amount: 100, label: '100$', c: '#E8D5A8', glow: 'rgba(232,213,168,0.5)', name: 'SILVER', nameAr: 'فضي', perk: 'تنبيه فضي + شكر صوتي مباشر من ناصر', perkEn: 'Silver alert + live shoutout', icon: '⬣' },
     { amount: 200, label: '200$', c: '#C9A24B', glow: 'rgba(201,162,75,0.6)', name: 'GOLD', nameAr: 'ذهبي', perk: 'تنبيه ذهبي سينمائي + صوت مخصص باسمك', perkEn: 'Cinematic gold alert + custom sound', icon: '◈', popular: true },
-    { amount: 500, label: '500$', c: '#B388FF', glow: 'rgba(179,136,255,0.55)', name: 'DIAMOND', nameAr: 'ماسي', perk: 'عرض اسمك بحجم الشاشة + مقطع شكر خاص', perkEn: 'Fullscreen takeover + clip', icon: '⬥' },
-    { amount: 1000, label: '1000$', c: '#FF8A5C', glow: 'rgba(255,138,92,0.55)', name: 'RUBY', nameAr: 'أسطوري', perk: 'دخول قاعة الخلود + فيديو تكريم خاص', perkEn: 'Hall of fame + tribute video', icon: '❖' },
+    { amount: 500, label: '500$', c: '#10B981', glow: 'rgba(16,185,129,0.55)', name: 'EMERALD', nameAr: 'زمردي', perk: 'عرض اسمك بحجم الشاشة + مقطع شكر خاص', perkEn: 'Fullscreen takeover + clip', icon: '⬥' },
+    { amount: 1000, label: '1000$', c: '#34D399', glow: 'rgba(52,211,153,0.55)', name: 'LEGEND', nameAr: 'أسطوري', perk: 'دخول قاعة الخلود + فيديو تكريم خاص', perkEn: 'Hall of fame + tribute video', icon: '❖' },
 ];
 
 const AlertTiers: React.FC<{ title: string; note: string; lang: Language }> = ({ title, note, lang }) => {
@@ -575,7 +582,7 @@ const AlertTiers: React.FC<{ title: string; note: string; lang: Language }> = ({
     const max = 1000;
     const isAr = lang === 'ar';
     return (
-        <div className="relative mt-5 md:mt-7 rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden">
+        <div id="store" className="relative mt-5 md:mt-7 rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden scroll-mt-32">
             <div className="absolute -top-24 start-1/4 w-96 h-96 rounded-full bg-[#C9A24B]/[0.10] blur-[110px] pointer-events-none" aria-hidden="true" />
             <div className="absolute -bottom-24 end-0 w-80 h-80 rounded-full bg-[#8B5CF6]/[0.10] blur-[100px] pointer-events-none" aria-hidden="true" />
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#C9A24B]/70 to-transparent" aria-hidden="true" />
@@ -697,14 +704,14 @@ const SupportArena: React.FC<{ lang: Language; supporters: Supporter[] }> = ({ l
         <div className="w-full">
             {/* gates — modern glass duo */}
             <div className="relative">
-                <div className="absolute -top-10 right-0 w-64 h-64 rounded-full bg-[#6FF2C4]/15 blur-[90px] animate-aurora pointer-events-none" aria-hidden="true" />
-                <div className="absolute -bottom-10 left-0 w-72 h-72 rounded-full bg-[#8B5CF6]/20 blur-[100px] animate-aurora pointer-events-none" style={{ animationDelay: '-7s' }} aria-hidden="true" />
+                <div className="absolute -top-10 right-0 w-64 h-64 rounded-full bg-[#10B981]/15 blur-[90px] animate-aurora pointer-events-none" aria-hidden="true" />
+                <div className="absolute -bottom-10 left-0 w-72 h-72 rounded-full bg-[#C9A24B]/20 blur-[100px] animate-aurora pointer-events-none" style={{ animationDelay: '-7s' }} aria-hidden="true" />
                 <div className="relative grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-5" dir="rtl">
-                    <DonateGate lang={lang} title="STREAMLABS" url="https://streamlabs.com/vfiras0" color="#6FF2C4" markImg="/streamlabs-mark.png"
+                    <DonateGate lang={lang} title="STREAMLABS" url="https://streamlabs.com/xtroet" color="#10B981" markImg="/xtroet-logo.webp"
                         label={lang === 'en' ? 'STREAMLABS' : 'ستريم لابس'} secure={lang === 'en' ? 'SECURE • INSTANT ALERT' : 'آمن • تنبيه فوري'} cta={lang === 'en' ? 'Donate via Streamlabs' : 'ادعم عبر ستريم لابس'}
                         sub={lang === 'en' ? 'Global cards • instant on-screen alert' : 'بطاقات عالمية • تنبيه فوري على الشاشة'} />
-                    <DonateGate lang={lang} title="DOKAN" url="https://tip.dokan.sa/vfiras" color="#FF7A59" color2="#8B5CF6" markImg="/creators-mark.png"
-                        label={lang === 'en' ? 'CREATORS • SEND TIP' : 'كريترز • دعم دكان'}
+                    <DonateGate lang={lang} title="DOKAN" url="https://tip.dokan.sa/xtroet" color="#C9A24B" color2="#10B981" markImg="/xtroet-logo.webp"
+                        label={lang === 'en' ? 'DOKAN • SEND TIP' : 'دكان • تيب'}
                         secure={lang === 'en' ? 'SECURE • MADA & APPLE PAY' : 'آمن • مدى وآبل باي'} cta={lang === 'en' ? 'Donate via Dokan' : 'ادعم عبر دكان'}
                         sub={lang === 'en' ? 'Mada • Apple Pay • instant vibe' : 'مدى • آبل باي • تنبيه يهز الشات'} />
                 </div>
@@ -721,13 +728,13 @@ export default function App() {
     const [branding] = useState({ profileImage: DEFAULT_PROFILE_IMAGE, bannerImage: PC_BACKGROUND });
 
     const [socialStats, setSocialStats] = useState<Record<string, string>>({
-        'KICK': '121.1K', 'TikTok': '68.3K+',
-        'X': '68.6K', 'WhatsApp': '36K', 'Discord': '10.5K'
+        'KICK': '—', 'TikTok': '—',
+        'X': '—', 'Instagram': '—', 'Discord': '—', 'YouTube': '—'
     });
 
     const [socials, setSocials] = useState<SocialLink[]>(() => buildDefaultSocials({
-        'KICK': '121.1K', 'TikTok': '68.3K+',
-        'X': '68.6K', 'WhatsApp': '36K', 'Discord': '10.5K'
+        'KICK': '—', 'TikTok': '—',
+        'X': '—', 'Instagram': '—', 'Discord': '—', 'YouTube': '—'
     }));
     const [lastSession, setLastSession] = useState<any>(null);
     const [pastSessions, setPastSessions] = useState<any[]>([]);
@@ -804,7 +811,7 @@ export default function App() {
     }, [fetchKickStatus]);
 
     const handleShare = async () => {
-        const shareUrl = "https://kick.com/firas";
+        const shareUrl = "https://kick.com/xtroet";
         if (navigator.share) { try { await navigator.share({ title: t.shareTitle, text: t.shareText, url: shareUrl }); } catch { /* dismissed */ } }
         else { try { await navigator.clipboard.writeText(shareUrl); } catch { /* clipboard blocked */ } alert(t.copied); }
     };
@@ -823,107 +830,61 @@ export default function App() {
         <div className={`grain relative min-h-screen w-full overflow-x-hidden ${lang === 'ar' ? 'font-arabic' : 'font-sans'}`}>
                 <>
                     <ArenaBackground />
+                    <div className="relative z-20">
+                        <SiteHeader
+                            lang={lang}
+                            onToggleLang={() => setLang(p => p === 'en' ? 'ar' : 'en')}
+                            profileImage={branding.profileImage}
+                            headerTitle={t.headerTitle}
+                            isLive={streamInfo.isLive}
+                            viewers={streamInfo.viewers}
+                            statusText={streamInfo.isLive ? t.status : t.statusOffline}
+                            onRefresh={() => fetchKickStatus()}
+                        />
+                    </div>
                     <div className="relative z-10 w-full max-w-[1200px] mx-auto px-3 sm:px-4 md:px-8 pb-10 overflow-clip">
 
-                        {/* ===== NAV — citadel gate bar ===== */}
-                        <header className="sticky top-2 md:top-5 z-50">
-                            <div className="absolute -top-10 inset-x-10 h-20 bg-[#C9A24B]/[0.13] blur-[60px] rounded-full pointer-events-none" aria-hidden="true" />
-                            <nav className="citadel-frame relative flex items-center justify-between gap-2 px-3 sm:px-4 md:px-5 py-2.5 rounded-[20px] overflow-hidden" aria-label="Main">
-                                <a href="#top" className="flex items-center gap-3 shrink-0 min-w-0">
-                                    <span className="relative block shrink-0">
-                                        <span className="block w-10 h-10 sm:w-11 sm:h-11 rounded-2xl overflow-hidden border border-[#D9C08A]/60 shadow-[0_0_22px_rgba(201,162,75,0.45)]">
-                                            <img src={branding.profileImage} alt="Firas logo" className="w-full h-full object-cover" />
-                                        </span>
-                                        <span className={`absolute -bottom-0.5 -end-0.5 w-3 h-3 rounded-full border-2 border-[#0B0906] ${streamInfo.isLive ? 'bg-[#53FC18] animate-pulse shadow-[0_0_10px_#53FC18]' : 'bg-[#C9A24B]/70'}`} />
-                                    </span>
-                                    <span className="leading-none min-w-0">
-                                        <span className="flex items-center gap-2 font-heading font-black text-lg tracking-tight" dir="ltr">
-                                            <span className="gold-text">FIRAS</span>
-                                            {streamInfo.isLive && <span className="text-[8px] font-black px-2 py-1 rounded-lg bg-[#53FC18] text-black tracking-[0.2em] animate-pulse">LIVE</span>}
-                                        </span>
-                                        <span className="hidden min-[400px]:block text-[8px] font-bold tracking-[0.3em] text-white/40 uppercase truncate mt-0.5">{t.headerTitle}</span>
-                                    </span>
-                                </a>
-                                <div className="hidden lg:flex items-center text-[13px] font-bold text-white/55">
-                                    {[
-                                        { href: '#socials', label: lang === 'en' ? 'Socials' : 'التواصل' },
-                                        { href: '#live', label: lang === 'en' ? 'Live' : 'البث' },
-                                        { href: '#support', label: lang === 'en' ? 'Support' : 'الدعم' },
-                                    ].map((l, i) => (
-                                        <span key={l.href} className="flex items-center">
-                                            {i > 0 && <span className="w-1 h-1 rotate-45 bg-[#C9A24B]/50 mx-1" aria-hidden="true" />}
-                                            <a href={l.href} className="px-4 py-2 rounded-xl hover:text-[#D9C08A] hover:bg-[#C9A24B]/[0.07] transition-colors">{l.label}</a>
-                                        </span>
-                                    ))}
-                                </div>
-                                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                                    <span className={`hidden sm:inline-flex items-center gap-2 text-[11px] font-black px-3.5 py-2.5 rounded-2xl border ${streamInfo.isLive ? 'border-[#53FC18]/50 bg-[#53FC18]/[0.08] text-[#53FC18]' : 'border-[#C9A24B]/30 bg-[#C9A24B]/[0.06] text-white/55'}`}>
-                                        <span className={`w-2 h-2 rounded-full shrink-0 ${streamInfo.isLive ? 'bg-[#53FC18] animate-pulse shadow-[0_0_10px_#53FC18]' : 'bg-[#C9A24B] animate-pulse shadow-[0_0_10px_#C9A24B]'}`} />
-                                        {streamInfo.isLive ? t.status : t.statusOffline}
-                                        {streamInfo.isLive && streamInfo.viewers > 0 && <span dir="ltr">• {streamInfo.viewers.toLocaleString()}</span>}
-                                    </span>
-                                    <button onClick={() => fetchKickStatus()} aria-label="Refresh"
-                                        className="btn-arena w-11 h-11 rounded-2xl bg-[#C9A24B]/[0.06] border border-[#C9A24B]/30 text-[#D9C08A]/80 hover:text-[#D9C08A] active:scale-95 flex items-center justify-center">
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                                    </button>
-                                    <button onClick={() => setLang(p => p === 'en' ? 'ar' : 'en')}
-                                        className="btn-arena btn-gold h-11 px-4 sm:px-5 rounded-2xl text-black text-xs font-black tracking-wider active:scale-95">
-                                        {lang === 'en' ? 'عربي' : 'EN'}
-                                    </button>
-                                </div>
-                            </nav>
-                            {/* mobile: fused status + breaking box */}
-                            <div className="sm:hidden mt-2 citadel-frame rounded-2xl overflow-hidden">
-                                <div className="overflow-hidden">
-                                    <div className={`h-[2px] ${streamInfo.isLive ? 'bg-gradient-to-l from-[#53FC18] via-[#53FC18]/40 to-transparent' : 'bg-gradient-to-l from-[#C9A24B] via-[#C9A24B]/40 to-transparent'}`} />
-                                    <div className="px-4 py-2.5 flex items-center justify-center gap-2">
-                                        <span className={`w-2 h-2 rounded-full shrink-0 ${streamInfo.isLive ? 'bg-[#53FC18] animate-pulse shadow-[0_0_10px_#53FC18]' : 'bg-[#C9A24B] animate-pulse shadow-[0_0_10px_#C9A24B]'}`} />
-                                        <p className={`text-[11px] font-black ${streamInfo.isLive ? 'text-[#53FC18]' : 'text-white/60'}`}>
-                                            {streamInfo.isLive ? `${t.status}${streamInfo.viewers > 0 ? ` • ${streamInfo.viewers.toLocaleString()} ${t.viewers}` : ''}` : t.statusOffline}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </header>
-
-                        {/* ===== HERO — ascension in the citadel void ===== */}
+                        {/* ===== HERO — ascension in the emerald void ===== */}
                         <section id="top" className="relative pt-10 md:pt-20 pb-8 md:pb-12 overflow-clip">
                             <div className="relative mx-auto w-full max-w-3xl text-center">
                                 {/* emblem seal */}
                                 <div className="animate-fade-in relative mx-auto w-fit" onMouseEnter={() => setIsHoveringProfile(true)} onMouseLeave={() => setIsHoveringProfile(false)}>
                                     <span className="halo-conic -inset-3" aria-hidden="true" />
                                     <span className="profile-3d-ring-inner" aria-hidden="true" />
-                                    <span className="relative block w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-[#D9C08A]/70 shadow-[0_0_60px_rgba(201,162,75,0.5)] bg-black">
-                                        <img src={branding.profileImage} alt="Firas official emblem" className={`w-full h-full object-cover transition-transform duration-700 ${isHoveringProfile ? 'scale-110' : ''}`} loading="eager" />
+                                    <span className="relative block w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden border-2 border-[#E8D5A8]/70 shadow-[0_0_60px_rgba(16,185,129,0.5)] bg-black">
+                                        <img src={branding.profileImage} alt="XTROET official emblem" className={`w-full h-full object-cover transition-transform duration-700 ${isHoveringProfile ? 'scale-110' : ''}`} loading="eager" />
                                     </span>
-                                    <span className={`absolute -bottom-1 -end-1 flex items-center gap-1 rounded-full border px-2.5 py-1 text-[9px] font-black tracking-[0.18em] ${streamInfo.isLive ? 'border-[#53FC18]/60 bg-black/85 text-[#53FC18]' : 'border-[#C9A24B]/60 bg-black/85 text-[#D9C08A]'}`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${streamInfo.isLive ? 'bg-[#53FC18] animate-pulse' : 'bg-[#C9A24B] animate-pulse'}`} />
-                                        {streamInfo.isLive ? 'LIVE' : 'FIRAS'}
+                                    <span className={`absolute -bottom-1 -end-1 flex items-center gap-1 rounded-full border px-2.5 py-1 text-[9px] font-black tracking-[0.18em] ${streamInfo.isLive ? 'border-[#53FC18]/60 bg-black/85 text-[#53FC18]' : 'border-[#10B981]/60 bg-black/85 text-[#6EE7B7]'}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${streamInfo.isLive ? 'bg-[#53FC18] animate-pulse' : 'bg-[#10B981] animate-pulse'}`} />
+                                        {streamInfo.isLive ? 'LIVE' : 'XTROET'}
                                     </span>
                                 </div>
 
                                 <div className="animate-fade-in-up mt-6" style={{ animationDelay: '100ms' }}>
                                     <span className="eyebrow-chip">
-                                        <span className={`w-2 h-2 rounded-full shrink-0 ${streamInfo.isLive ? 'bg-[#53FC18] animate-pulse shadow-[0_0_10px_#53FC18]' : 'bg-[#C9A24B] animate-pulse shadow-[0_0_10px_#C9A24B]'}`} />
+                                        <span className={`w-2 h-2 rounded-full shrink-0 ${streamInfo.isLive ? 'bg-[#53FC18] animate-pulse shadow-[0_0_10px_#53FC18]' : 'bg-[#10B981] animate-pulse shadow-[0_0_10px_#10B981]'}`} />
                                         {t.eyebrow}
                                     </span>
                                 </div>
 
                                 {/* giant backdrop word */}
-                                <p className="font-gaming text-stroke-red pointer-events-none select-none absolute inset-x-0 -top-4 md:top-2 text-[26vw] md:text-[190px] leading-none opacity-30" dir="ltr" aria-hidden="true">FIRAS</p>
+                                <p className="font-gaming text-stroke-red pointer-events-none select-none absolute inset-x-0 -top-4 md:top-2 text-[26vw] md:text-[190px] leading-none opacity-30" dir="ltr" aria-hidden="true">XTROET</p>
 
                                 <h1 className="animate-fade-in-up relative font-heading font-black text-white leading-[1.05] tracking-tight text-[clamp(2.6rem,9vw,4.8rem)] mt-3" style={{ animationDelay: '180ms' }}>
                                     {lang === 'ar' ? (
                                         <>
                                             {t.nameAr}
                                             <span className="gold-text"> • </span>
-                                            <span dir="ltr" className="hero-firas">FIRAS</span>
+                                            <span dir="ltr" className="hero-xtroet">XTROET</span>
                                         </>
                                     ) : (
-                                        <span dir="ltr" className="hero-firas">FIRAS</span>
+                                        <span dir="ltr" className="hero-xtroet">XTROET</span>
                                     )}
                                 </h1>
-                                <p className="animate-fade-in-up font-gaming text-lg sm:text-xl md:text-3xl gold-text tracking-[0.12em] mt-2" dir="ltr" style={{ animationDelay: '240ms' }} aria-hidden="true">RISE WITH FIRE</p>
+                                <div className="animate-fade-in-up xt-sub" dir="ltr" style={{ animationDelay: '240ms' }} aria-hidden="true">
+                                    <span className="xt-sub-text">XTROET</span>
+                                    <span className="xt-line"><span className="xt-line-dot" /></span>
+                                </div>
 
                                 <p className="animate-fade-in-up text-white/70 text-[15px] md:text-lg leading-relaxed max-w-2xl mt-4 md:mt-5 font-medium mx-auto" style={{ animationDelay: '300ms' }}>{t.bio}</p>
 
@@ -936,14 +897,16 @@ export default function App() {
                                 </div>
 
                                 <div className="animate-fade-in-up flex flex-col sm:flex-row justify-center gap-2.5 sm:gap-3 mt-7" style={{ animationDelay: '420ms' }}>
-                                    <a href="https://kick.com/firas" target="_blank" rel="noopener noreferrer"
-                                        className="btn-arena btn-gold inline-flex items-center justify-center gap-2.5 px-9 py-4 rounded-2xl font-black text-[15px] md:text-base active:scale-[0.98]">
-                                        <svg className="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                                        {t.watchLive}
-                                        {streamInfo.isLive && streamInfo.viewers > 0 && <span className="rounded-lg bg-black/20 px-2 py-0.5 text-xs font-black" dir="ltr">{streamInfo.viewers.toLocaleString()}</span>}
+                                    <a href="https://kick.com/xtroet" target="_blank" rel="noopener noreferrer"
+                                        className="btn-arena btn-watch inline-flex items-center justify-center gap-3 px-8 py-3.5 rounded-2xl font-black text-[15px] md:text-base active:scale-[0.98]">
+                                        <span className="play-badge shrink-0">
+                                            <svg className="w-4 h-4 fill-current translate-x-[1px]" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                        </span>
+                                        <span className="watch-label">{t.watchLive}</span>
+                                        {streamInfo.isLive && streamInfo.viewers > 0 && <span className="rounded-lg bg-[#C9A24B]/15 border border-[#C9A24B]/30 px-2 py-0.5 text-xs font-black text-[#E8D5A8]" dir="ltr">{streamInfo.viewers.toLocaleString()}</span>}
                                     </a>
-                                    <a href="https://discord.gg/tmfx" target="_blank" rel="noopener noreferrer"
-                                        className="btn-arena btn-ghost-gold inline-flex items-center justify-center gap-2.5 px-9 py-4 rounded-2xl font-black text-[15px] md:text-base active:scale-[0.98]">
+                                    <a href="https://discord.com/invite/eX8DR9Aj9D" target="_blank" rel="noopener noreferrer"
+                                        className="btn-arena btn-discord inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl font-black text-[15px] md:text-base active:scale-[0.98]">
                                         <DiscordIcon className="w-5 h-5 shrink-0" />
                                         {t.joinDiscord}
                                     </a>
@@ -951,7 +914,7 @@ export default function App() {
 
                                 {/* stat band */}
                                 <div className="animate-fade-in-up citadel-frame rounded-3xl mt-8 md:mt-10 overflow-hidden" style={{ animationDelay: '500ms' }}>
-                                    {streamInfo.isLive && <div className="h-[3px] bg-gradient-to-l from-[#53FC18] via-[#53FC18]/40 to-transparent" />}
+                                    {streamInfo.isLive && <div className="h-[3px] bg-gradient-to-l from-[#10B981] via-[#53FC18]/40 to-transparent" />}
                                     <div className="grid grid-cols-2 divide-x divide-x-reverse divide-[#C9A24B]/15">
                                         {[
                                             { v: socialStats['KICK'] || '—', l: t.statsKick },
@@ -1012,7 +975,7 @@ export default function App() {
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0 flex-1">
                                                         <h3 className="text-lg md:text-2xl font-black text-white truncate" title={displayTitle}>{displayTitle}</h3>
-                                                        <p className="text-sm text-white/50 font-bold mt-1"><span className="gold-text font-black" dir="ltr">FIRAS</span> <span className="text-white/25 mx-1">•</span> {displayCategory}</p>
+                                                        <p className="text-sm text-white/50 font-bold mt-1"><span className="gold-text font-black" dir="ltr">XTROET</span> <span className="text-white/25 mx-1">•</span> {displayCategory}</p>
                                                     </div>
                                                     <button onClick={handleShare} aria-label="Share"
                                                         className="btn-arena w-11 h-11 rounded-xl bg-white/[0.06] border border-white/10 text-white/70 hover:text-white flex items-center justify-center shrink-0">
@@ -1039,8 +1002,8 @@ export default function App() {
                         )}
 
                         {/* ===== COMMUNITY ===== */}
-                        <section className="pt-12 md:pt-16">
-                            <Reveal><SectionHeading no={streamInfo.isLive ? '03' : '02'} title={t.communityTitle} en="COMMUNITY HQ" /></Reveal>
+                        <section id="community" className="pt-12 md:pt-16 scroll-mt-28">
+                            <Reveal><SectionHeading no="03" title={t.communityTitle} en="COMMUNITY HQ" /></Reveal>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
                                 <Reveal delay={0}><DiscordWidget lang={lang} /></Reveal>
                                 <Reveal delay={100}><YoutubeWidget lang={lang} /></Reveal>
@@ -1049,26 +1012,34 @@ export default function App() {
 
                         {/* ===== SUPPORT ===== */}
                         <section id="support" className="pt-12 md:pt-16 scroll-mt-28">
-                            <Reveal><SectionHeading no={streamInfo.isLive ? '04' : '03'} title={t.supportTitle} sub={t.supportSub} en="SUPPORT" /></Reveal>
+                            <Reveal><SectionHeading no="04" title={t.supportTitle} sub={t.supportSub} en="SUPPORT" /></Reveal>
                             <Reveal delay={80}><SupportArena lang={lang} supporters={[]} /></Reveal>
                         </section>
 
-                        {/* ===== LAST SESSION ===== */}
+                        {/* ===== LAST SESSION (broadcast archive when offline) ===== */}
                         {!streamInfo.isLive && (
-                            <section className="pt-12 md:pt-16">
+                            <section id="live" className="pt-12 md:pt-16 scroll-mt-28">
                                 <LastSessionReport lang={lang} data={lastSession} clips={clips} past={pastSessions} />
                             </section>
                         )}
 
-                        <section className="pt-12 md:pt-16">
-                            <Reveal><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><StatsSection lang={lang} /></Suspense></Reveal>
+                        {/* ===== HONOR ===== */}
+                        <section id="honor" className="pt-12 md:pt-16 scroll-mt-28">
+                            <Reveal><SectionHeading no="05" title={t.honorTitle} sub={t.honorSub} en="HALL OF FAME" /></Reveal>
+                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><HonorSection lang={lang} /></Suspense></Reveal>
+                        </section>
+
+                        {/* ===== ARCHIVE ===== */}
+                        <section id="archive" className="pt-12 md:pt-16 scroll-mt-28">
+                            <Reveal><SectionHeading no="06" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
+                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><ArchiveSection lang={lang} /></Suspense></Reveal>
                         </section>
 
                         {/* ===== FOOTER ===== */}
                         <footer className="mt-16 md:mt-24 rounded-[28px] border border-white/10 bg-black/60 backdrop-blur-xl overflow-hidden relative">
-                            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#C9A24B]/70 to-transparent" />
+                            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#10B981]/70 to-transparent" />
                             <div className="p-8 md:p-12 text-center relative">
-                                <p className="font-gaming text-[18vw] md:text-[120px] leading-none text-stroke opacity-40 select-none" dir="ltr" aria-hidden="true">FIRAS</p>
+                                <p className="font-gaming text-[18vw] md:text-[120px] leading-none text-stroke opacity-40 select-none" dir="ltr" aria-hidden="true">XTROET</p>
                                 <div className="flex flex-wrap justify-center gap-2.5 -mt-4 md:-mt-8 relative">
                                     {socials.slice(0, 5).map(s => (
                                         <a key={s.name} href={s.url} target="_blank" rel="noopener noreferrer" aria-label={s.name}

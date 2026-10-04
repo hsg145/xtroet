@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://firasx.vercel.app/sitemap.xml
+Sitemap: https://xtroet.vercel.app/sitemap.xml
