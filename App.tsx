@@ -9,7 +9,6 @@ import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
 // Heavy below-fold / on-demand chunks — split out of the first paint
 const HonorSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.HonorSection })));
 const ArchiveSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.ArchiveSection })));
-const AIChat = lazy(() => import('./components/AIChat').then(m => ({ default: m.AIChat })));
 
 // --- Constants (XTROET) ---
 const DEFAULT_PROFILE_IMAGE = "/xtroet-logo.webp";
@@ -1045,8 +1044,6 @@ export default function App() {
                             </div>
                         </footer>
                     </div>
-
-                    <Suspense fallback={null}><AIChat lang={lang} /></Suspense>
                 </>
         </div>
     );
