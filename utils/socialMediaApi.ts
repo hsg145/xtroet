@@ -11,6 +11,7 @@ export interface SocialMediaStats {
   tiktok?: number;
   twitter?: number;
   youtube?: number;
+  snapchat?: number;
 }
 
 export const FALLBACK = {
@@ -36,7 +37,7 @@ async function fetchJson(url: string, timeoutMs = 9000): Promise<any> {
 }
 
 /** Layer 1 — our server API (works in dev + prod, no CORS issues). */
-async function viaServerApi(platform: 'tiktok' | 'instagram' | 'twitter' | 'youtube'): Promise<number | null> {
+async function viaServerApi(platform: 'tiktok' | 'instagram' | 'twitter' | 'youtube' | 'snapchat'): Promise<number | null> {
   try {
     const j = await fetchJson(`/api/social?platform=${platform}`);
     return typeof j?.count === 'number' && j.count > 0 ? j.count : null;
@@ -55,8 +56,21 @@ function num(v: unknown): number | null {
 }
 
 export async function getInstagramFollowers(username = 'xtroet'): Promise<number> {
-  void username;
-  return (await viaServerApi('instagram')) ?? FALLBACK.instagram;
+  const via = await viaServerApi('instagram');
+  if (via) return via;
+  // Layer 2 — Mixerno Instagram counter (usually CORS-open)
+  try {
+    const d = await fetchJson(`https://mixerno.space/api/instagram-user-counter/user/${username}`);
+    const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
+    const n = num(entry?.count);
+    if (n) return n;
+  } catch {}
+  return FALLBACK.instagram;
+}
+
+export async function getSnapchatFollowers(): Promise<number> {
+  // Snapchat has no client-side API (CORS) — server only, 0 when unavailable
+  return (await viaServerApi('snapchat')) ?? 0;
 }
 
 export async function getTikTokFollowers(username = 'ixtroet'): Promise<number> {
@@ -68,7 +82,14 @@ export async function getTikTokFollowers(username = 'ixtroet'): Promise<number> 
     const n = num(d?.data?.follower_count);
     if (n) return n;
   } catch {}
-  // Layer 3 — TikMatrix allows CORS + needs no key
+  // Layer 3 — Mixerno TikTok counter (usually CORS-open)
+  try {
+    const d = await fetchJson(`https://mixerno.space/api/tiktok-user-counter/user/${username}`);
+    const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
+    const n = num(entry?.count);
+    if (n) return n;
+  } catch {}
+  // Layer 4 — TikMatrix allows CORS + needs no key
   try {
     const d = await fetchJson(`https://user.tikmatrix.com/api/user?username=${username}`);
     const n = num(String(d?.stats?.Followers ?? '').replace(/,/g, ''));
@@ -103,13 +124,14 @@ export async function getYouTubeSubscribers(channelId = 'XTROET'): Promise<numbe
 }
 
 export async function getAllSocialMediaStats(): Promise<SocialMediaStats> {
-  const [instagram, tiktok, twitter, youtube] = await Promise.all([
+  const [instagram, tiktok, twitter, youtube, snapchat] = await Promise.all([
     getInstagramFollowers('xtroet'),
     getTikTokFollowers('ixtroet'),
     getTwitterFollowers('xtroet'),
     getYouTubeSubscribers('XTROET'),
+    getSnapchatFollowers(),
   ]);
-  const stats = { instagram, tiktok, twitter, youtube };
+  const stats = { instagram, tiktok, twitter, youtube, snapchat };
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), stats }));
   } catch {}

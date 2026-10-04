@@ -14,6 +14,7 @@ const HANDLES = {
   tiktok: 'ixtroet',
   instagram: 'xtroet',
   twitter: 'xtroet',
+  snapchat: 'xtroet',
   youtube: 'XTROET', // @XTROET — handle-based, graceful fallback if ID lookup fails
 } as const;
 
@@ -72,13 +73,20 @@ async function getTikTok(): Promise<{ count: number; source: string }> {
     const n = parseCompact(d?.data?.follower_count);
     if (n) return { count: n, source: 'tikwm' };
   } catch {}
-  // 1) TikMatrix — open JSON, exact count
+  // 1) Mixerno — dedicated TikTok counter, exact followers
+  try {
+    const d = await fetchJson(`https://mixerno.space/api/tiktok-user-counter/user/${HANDLES.tiktok}`);
+    const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
+    const n = parseCompact(entry?.count);
+    if (n) return { count: n, source: 'mixerno' };
+  } catch {}
+  // 2) TikMatrix — open JSON, exact count
   try {
     const d = await fetchJson(`https://user.tikmatrix.com/api/user?username=${HANDLES.tiktok}`);
     const n = parseCompact(d?.stats?.Followers);
     if (n) return { count: n, source: 'tikmatrix' };
   } catch {}
-  // 2) Countik
+  // 3) Countik
   try {
     const d = await fetchJson(`https://countik.com/api/tiktok/@${HANDLES.tiktok}`);
     const n = parseCompact(d?.followerCount ?? d?.followers ?? d?.follower_count);
@@ -136,7 +144,23 @@ async function getInstagram(): Promise<{ count: number; source: string }> {
     const n = parseCompact(d?.data?.user?.edge_followed_by?.count);
     if (n) return { count: n, source: 'web_profile_info' };
   } catch {}
-  // 2) og:description meta ("21.3K Followers, ...")
+  // 2) Mixerno — dedicated Instagram counter
+  try {
+    const d = await fetchJson(`https://mixerno.space/api/instagram-user-counter/user/${HANDLES.instagram}`);
+    const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
+    const n = parseCompact(entry?.count);
+    if (n) return { count: n, source: 'mixerno' };
+  } catch {}
+  // 3) Picuki public mirror — static HTML with follower count
+  try {
+    const html = await fetchText(`https://www.picuki.com/profile/${HANDLES.instagram}`);
+    const m =
+      html.match(/([\d.,]+[KMB]?)\s*<\/[^>]+>\s*Followers/i) ||
+      html.match(/([\d.,]+[KMB]?)\s+Followers/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'picuki' };
+  } catch {}
+  // 4) og:description meta ("21.3K Followers, ...")
   try {
     const html = await fetchText(`https://www.instagram.com/${HANDLES.instagram}/`);
     const og = html.match(/property="og:description"\s+content="([^"]+)"/)?.[1] || '';
@@ -156,8 +180,22 @@ async function resolveYouTubeId(): Promise<string | null> {
     YT_CHANNEL_ID = HANDLES.youtube;
     return YT_CHANNEL_ID;
   }
+  // YouTube serves a consent wall to datacenters — bypass with CONSENT cookie
   try {
-    const html = await fetchText(`https://www.youtube.com/@${HANDLES.youtube.replace(/^@/, '')}/`);
+    const c = new AbortController();
+    const t = setTimeout(() => c.abort(), 9000);
+    const r = await fetch(`https://www.youtube.com/@${HANDLES.youtube.replace(/^@/, '')}/`, {
+      headers: {
+        'User-Agent': UA,
+        'Accept-Language': 'en-US,en;q=0.9',
+        Accept: 'text/html,application/xhtml+xml',
+        Cookie: 'CONSENT=YES+cb.20210328-17-p0.en+FX+667; SOCS=CAESEwgDEgk0OTE3MjQ1ODg',
+      },
+      signal: c.signal,
+    });
+    clearTimeout(t);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const html = await r.text();
     const m =
       html.match(/"channelId":"(UC[\w-]{22})"/) ||
       html.match(/youtube\.com\/channel\/(UC[\w-]{22})/) ||
@@ -170,12 +208,25 @@ async function resolveYouTubeId(): Promise<string | null> {
   return null;
 }
 
+async function getSnapchat(): Promise<{ count: number; source: string }> {
+  // Snapchat has no official public API — best-effort scrape of the public profile page
+  try {
+    const html = await fetchText(`https://www.snapchat.com/add/${HANDLES.snapchat}`);
+    const m =
+      html.match(/"subscriberCount"\s*:\s*"?(\d[\d,.]*)"?/) ||
+      html.match(/([\d.,]+[KMB]?)\s+Subscribers?/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'profile_page' };
+  } catch {}
+  throw new Error('snapchat: no public counter available');
+}
+
 export default async function handler(request: Request) {
   const { searchParams } = new URL(request.url);
   const platform = (searchParams.get('platform') || '').toLowerCase() as Platform;
 
   if (!platform || !(platform in HANDLES)) {
-    return new Response(JSON.stringify({ error: 'Use ?platform=tiktok|instagram|youtube|twitter' }), {
+    return new Response(JSON.stringify({ error: 'Use ?platform=tiktok|instagram|youtube|twitter|snapchat' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -187,6 +238,7 @@ export default async function handler(request: Request) {
       instagram: getInstagram,
       youtube: getYouTube,
       twitter: getTwitter,
+      snapchat: getSnapchat,
     };
     const { count, source } = await loaders[platform]();
     return new Response(JSON.stringify({ platform, count, source, updatedAt: new Date().toISOString() }), {

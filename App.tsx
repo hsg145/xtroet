@@ -743,13 +743,14 @@ export default function App() {
 
     // Live social counters — dedicated 5-minute loop + instant cache paint (API-style)
     useEffect(() => {
-        const apply = (stats: { instagram?: number; tiktok?: number; twitter?: number; youtube?: number }) => {
+        const apply = (stats: { instagram?: number; tiktok?: number; twitter?: number; youtube?: number; snapchat?: number }) => {
             setSocialStats(prev => ({
                 ...prev,
                 'Instagram': formatFollowerCount(stats.instagram || 0),
                 'TikTok': formatFollowerCount(stats.tiktok || 0),
                 'X': formatFollowerCount(stats.twitter || 0),
                 'YouTube': formatFollowerCount(stats.youtube || 0),
+                'Snapchat': formatFollowerCount(stats.snapchat || 0),
             }));
         };
         const cached = readSocialCache();

@@ -108,7 +108,7 @@ export default defineConfig(({ mode }) => {
               // ---- /api/social : عدّادات التواصل الحية محلياً (مرآة api/social.ts) ----
               const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
               const platform = (url.searchParams.get('platform') || '').toLowerCase();
-              const HANDLES: Record<string, string> = { tiktok: 'ixtroet', instagram: 'xtroet', twitter: 'xtroet', youtube: 'XTROET' };
+              const HANDLES: Record<string, string> = { tiktok: 'ixtroet', instagram: 'xtroet', twitter: 'xtroet', snapchat: 'xtroet', youtube: 'XTROET' };
               const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36';
               const parseCompact = (input: any): number | null => {
                 if (typeof input === 'number' && Number.isFinite(input)) return Math.round(input);
@@ -150,7 +150,7 @@ export default defineConfig(({ mode }) => {
               try {
                 if (!HANDLES[platform]) {
                   res.statusCode = 400;
-                  res.end(JSON.stringify({ error: 'Use ?platform=tiktok|instagram|youtube|twitter' }));
+                  res.end(JSON.stringify({ error: 'Use ?platform=tiktok|instagram|youtube|twitter|snapchat' }));
                   return;
                 }
                 let result: { count: number; source: string };
@@ -161,6 +161,13 @@ export default defineConfig(({ mode }) => {
                       const n = parseCompact(d?.data?.follower_count);
                       if (!n) throw new Error('empty');
                       return { count: n, source: 'tikwm' };
+                    },
+                    async () => {
+                      const d: any = await jget(`https://mixerno.space/api/tiktok-user-counter/user/${HANDLES.tiktok}`);
+                      const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
+                      const n = parseCompact(entry?.count);
+                      if (!n) throw new Error('empty');
+                      return { count: n, source: 'mixerno' };
                     },
                     async () => {
                       const d: any = await jget(`https://user.tikmatrix.com/api/user?username=${HANDLES.tiktok}`);
@@ -216,6 +223,16 @@ export default defineConfig(({ mode }) => {
                       return { count: n, source: 'syndication' };
                     },
                   ]);
+                } else if (platform === 'snapchat') {
+                  result = await tryFirst([
+                    async () => {
+                      const html = await tget(`https://www.snapchat.com/add/${HANDLES.snapchat}/`);
+                      const m = html.match(/"subscriberCount"\s*:\s*"?(\d[\d,.]*)"?/) || html.match(/([\d.,]+[KMB]?)\s+Subscribers?/i);
+                      const n = m ? parseCompact(m[1]) : null;
+                      if (!n) throw new Error('empty');
+                      return { count: n, source: 'profile_page' };
+                    },
+                  ]);
                 } else {
                   result = await tryFirst([
                     async () => {
@@ -227,6 +244,20 @@ export default defineConfig(({ mode }) => {
                       const n = parseCompact(d?.data?.user?.edge_followed_by?.count);
                       if (!n) throw new Error('empty');
                       return { count: n, source: 'web_profile_info' };
+                    },
+                    async () => {
+                      const d: any = await jget(`https://mixerno.space/api/instagram-user-counter/user/${HANDLES.instagram}`);
+                      const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
+                      const n = parseCompact(entry?.count);
+                      if (!n) throw new Error('empty');
+                      return { count: n, source: 'mixerno' };
+                    },
+                    async () => {
+                      const html = await tget(`https://www.picuki.com/profile/${HANDLES.instagram}/`);
+                      const m = html.match(/([\d.,]+[KMB]?)\s*<\/[^>]+>\s*Followers/i) || html.match(/([\d.,]+[KMB]?)\s+Followers/i);
+                      const n = m ? parseCompact(m[1]) : null;
+                      if (!n) throw new Error('empty');
+                      return { count: n, source: 'picuki' };
                     },
                     async () => {
                       const html = await tget(`https://www.instagram.com/${HANDLES.instagram}/`);
