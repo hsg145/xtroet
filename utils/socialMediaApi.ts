@@ -16,13 +16,16 @@ export interface SocialMediaStats {
 
 export const FALLBACK = {
   instagram: 10500, // owner-verified (@xtroet) — live API used when it returns a sane number
-  tiktok: 0,
+  tiktok: 27200, // owner-verified (@ixtroet) — live API used when it returns a sane number
   twitter: 0,
   youtube: 0,
 };
 
 /** Owner-verified Instagram count — shown when the live API reads stale/wrong data. */
 export const VERIFIED_INSTAGRAM = 10500;
+
+/** Owner-verified TikTok count — shown when the live API reads stale/wrong data. */
+export const VERIFIED_TIKTOK = 27200;
 
 const CACHE_KEY = 'xtroet_social_cache_v1';
 export const SOCIAL_TTL_MS = 5 * 60 * 1000;
@@ -100,7 +103,8 @@ export async function getSnapchatFollowers(): Promise<number> {
 
 export async function getTikTokFollowers(username = 'ixtroet'): Promise<number> {
   const via = await viaServerApi('tiktok');
-  if (via) return via;
+  // Live only when sane — otherwise fall back to the owner-verified number
+  if (via && via >= 1000) return via;
   // Layer 2 — TikWM (free, no key, CORS-open)
   try {
     const d = await fetchJson(`https://www.tikwm.com/api/user/info?unique_id=${username}`);
