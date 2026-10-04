@@ -321,13 +321,14 @@ export const DiscordWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
    Live channel data, refreshed every 5 minutes:
      • Latest video  → YouTube RSS feed (public, no key)
      • Subscribers   → Mixerno counter, Piped fallback */
-const CLAN_CHANNEL_ID = 'XTROET';
+const CLAN_CHANNEL_ID = 'UCzTrJVRcJjcpUMKojPsgbDw';
 const CLAN_CHANNEL_URL = 'https://www.youtube.com/@XTROET';
 // XTROET emerald-bronze identity — official banner + logo mark.
 const CLAN_BANNER = '/xtroet-banner.jpg';
 const CLAN_BANNER_FALLBACK = '/xtroet-banner.jpg';
 const CLAN_MARK = '/xtroet-logo.webp';
-const CLAN_AVATAR = '/xtroet-logo.webp';
+const CLAN_AVATAR =
+   'https://yt3.googleusercontent.com/vwmrfjJlizWf7lYCyrBdpz8wD3pVqYkEGn1v2svg0LcxX0N4LNBnGcswFAlVH5BAvoxTyD2Ww-E=s900-c-k-c0x00ffffff-no-rj';
 const CLAN_ORANGE = '#10B981';
 const CLAN_ORANGE_DEEP = '#065F46';
 

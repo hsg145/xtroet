@@ -9,7 +9,7 @@ export const LatestYoutube: React.FC<LatestYoutubeProps> = ({ lang }) => {
   const [video, setVideo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   // XTROET official channel (@XTROET)
-  const channelId = 'XTROET';
+  const channelId = 'UCzTrJVRcJjcpUMKojPsgbDw';
   const channelUrl = 'https://www.youtube.com/@XTROET';
 
   useEffect(() => {

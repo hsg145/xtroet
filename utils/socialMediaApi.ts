@@ -106,6 +106,23 @@ export async function getTikTokFollowers(username = 'ixtroet'): Promise<number> 
       }
     }
   } catch {}
+  // Layer 5 — Urlebird via public proxy (CORS-open, different egress IP)
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://urlebird.com/user/${username}/`)}`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      const html = await res.text();
+      const m = html.match(/([\d.,]+)\s*([KMB])?\s*(?:<\/[^>]+>\s*)?followers/i);
+      if (m) {
+        let v = parseFloat(m[1].replace(/,/g, ''));
+        const u = (m[2] || '').toUpperCase();
+        if (u === 'K') v *= 1e3; else if (u === 'M') v *= 1e6; else if (u === 'B') v *= 1e9;
+        if (Number.isFinite(v) && v > 0) return Math.round(v);
+      }
+    }
+  } catch {}
   return FALLBACK.tiktok;
 }
 
@@ -121,7 +138,7 @@ export async function getTwitterFollowers(username = 'xtroet'): Promise<number> 
   return FALLBACK.twitter;
 }
 
-export async function getYouTubeSubscribers(channelId = 'XTROET'): Promise<number> {
+export async function getYouTubeSubscribers(channelId = 'UCzTrJVRcJjcpUMKojPsgbDw'): Promise<number> {
   const via = await viaServerApi('youtube');
   if (via) return via;
   // Layer 2 — Mixerno (usually CORS-open)
@@ -139,7 +156,7 @@ export async function getAllSocialMediaStats(): Promise<SocialMediaStats> {
     getInstagramFollowers('xtroet'),
     getTikTokFollowers('ixtroet'),
     getTwitterFollowers('xtroet'),
-    getYouTubeSubscribers('XTROET'),
+    getYouTubeSubscribers('UCzTrJVRcJjcpUMKojPsgbDw'),
     getSnapchatFollowers(),
   ]);
   const stats = { instagram, tiktok, twitter, youtube, snapchat };

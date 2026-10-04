@@ -15,12 +15,12 @@ const HANDLES = {
   instagram: 'xtroet',
   twitter: 'xtroet',
   snapchat: 'xtroet',
-  youtube: 'XTROET', // @XTROET — handle-based, graceful fallback if ID lookup fails
+  youtube: 'UCzTrJVRcJjcpUMKojPsgbDw', // @XTROET — verified channel id
 } as const;
 
 type Platform = keyof typeof HANDLES;
 
-async function fetchJson(url: string, timeoutMs = 9000, extraHeaders: Record<string, string> = {}): Promise<any> {
+async function fetchJson(url: string, timeoutMs = 7000, extraHeaders: Record<string, string> = {}): Promise<any> {
   const c = new AbortController();
   const t = setTimeout(() => c.abort(), timeoutMs);
   try {
@@ -35,7 +35,7 @@ async function fetchJson(url: string, timeoutMs = 9000, extraHeaders: Record<str
   }
 }
 
-async function fetchText(url: string, timeoutMs = 9000): Promise<string> {
+async function fetchText(url: string, timeoutMs = 7000): Promise<string> {
   const c = new AbortController();
   const t = setTimeout(() => c.abort(), timeoutMs);
   try {
@@ -69,16 +69,20 @@ function parseCompact(input: unknown): number | null {
 async function getTikTok(): Promise<{ count: number; source: string }> {
   // 0) Urlebird mirror — verified working, real profile stats (e.g. 27.17K followers)
   try {
-    const html = await fetchText(`https://urlebird.com/user/${HANDLES.tiktok}/`, 12000);
+    const html = await fetchText(`https://urlebird.com/user/${HANDLES.tiktok}/`, 8000);
     const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
     const n = m ? parseCompact(m[1]) : null;
     if (n) return { count: n, source: 'urlebird' };
   } catch {}
-  // 1) TikWM — free API, exact follower_count
+  // 1) Same page via public proxy (different egress IP if Vercel is walled)
   try {
-    const d = await fetchJson(`https://www.tikwm.com/api/user/info?unique_id=${HANDLES.tiktok}`);
-    const n = parseCompact(d?.data?.follower_count);
-    if (n) return { count: n, source: 'tikwm' };
+    const proxied = await fetchText(
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://urlebird.com/user/${HANDLES.tiktok}/`)}`,
+      8000
+    );
+    const m = proxied.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'urlebird-proxy' };
   } catch {}
   throw new Error('tiktok: all sources failed');
 }
@@ -124,7 +128,7 @@ async function getTwitter(): Promise<{ count: number; source: string }> {
 async function getInstagram(): Promise<{ count: number; source: string }> {
   // 1) Instagram web API with public app id (works server-side with proper headers)
   try {
-    const d = await fetchJson(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${HANDLES.instagram}`, 9000, {
+    const d = await fetchJson(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${HANDLES.instagram}`, 7000, {
       'X-IG-App-ID': '936619743392459',
       'X-Requested-With': 'XMLHttpRequest',
       Referer: `https://www.instagram.com/${HANDLES.instagram}/`,
@@ -162,7 +166,7 @@ async function resolveYouTubeId(): Promise<string | null> {
   // YouTube serves a consent wall to datacenters — bypass with CONSENT cookie
   try {
     const c = new AbortController();
-    const t = setTimeout(() => c.abort(), 9000);
+    const t = setTimeout(() => c.abort(), 7000);
     const r = await fetch(`https://www.youtube.com/@${HANDLES.youtube.replace(/^@/, '')}/`, {
       headers: {
         'User-Agent': UA,
