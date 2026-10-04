@@ -155,19 +155,35 @@ export default defineConfig(({ mode }) => {
                 }
                 let result: { count: number; source: string };
                 if (platform === 'tiktok') {
+                  const target = `https://urlebird.com/user/${HANDLES.tiktok}/`;
+                  const extract = (html: string): number | null => {
+                    const text = html.replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ');
+                    const m = text.match(/hearts\s+([\d.,]+)\s*([KMB])?\s+followers/i) || text.match(/([\d.,]+)\s*([KMB])?\s+followers/i);
+                    if (!m) return null;
+                    let v = parseFloat(m[1].replace(/,/g, ''));
+                    const u = (m[2] || '').toUpperCase();
+                    if (u === 'K') v *= 1e3; else if (u === 'M') v *= 1e6; else if (u === 'B') v *= 1e9;
+                    if (!Number.isFinite(v)) return null;
+                    const out = Math.round(v);
+                    return out > 0 ? out : null;
+                  };
                   result = await tryFirst([
                     async () => {
-                      const html = await tget(`https://urlebird.com/user/${HANDLES.tiktok}/`, 8000);
-                      const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
-                      const n = m ? parseCompact(m[1]) : null;
-                      if (!n) throw new Error('empty');
+                      const html = await tget(target, 7000);
+                      const n = extract(html);
+                      if (!n) throw new Error('no-match');
                       return { count: n, source: 'urlebird' };
                     },
                     async () => {
-                      const html = await tget(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://urlebird.com/user/${HANDLES.tiktok}/`)}`, 8000);
-                      const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
-                      const n = m ? parseCompact(m[1]) : null;
-                      if (!n) throw new Error('empty');
+                      const html = await tget(`https://urlebird-com.translate.goog/user/${HANDLES.tiktok}/?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en`, 8000);
+                      const n = extract(html);
+                      if (!n) throw new Error('no-match');
+                      return { count: n, source: 'urlebird-google' };
+                    },
+                    async () => {
+                      const html = await tget(`https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`, 8000);
+                      const n = extract(html);
+                      if (!n) throw new Error('no-match');
                       return { count: n, source: 'urlebird-proxy' };
                     },
                     async () => {

@@ -66,25 +66,59 @@ function parseCompact(input: unknown): number | null {
   return out > 0 ? out : null;
 }
 
+/** Extract "N followers" from mirror HTML — tags stripped, anchored on hearts stat. */
+function extractFollowerCount(html: string): number | null {
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ');
+  const m =
+    text.match(/hearts\s+([\d.,]+)\s*([KMB])?\s+followers/i) ||
+    text.match(/([\d.,]+)\s*([KMB])?\s+followers/i);
+  if (!m) return null;
+  let v = parseFloat(m[1].replace(/,/g, ''));
+  const u = (m[2] || '').toUpperCase();
+  if (u === 'K') v *= 1e3;
+  else if (u === 'M') v *= 1e6;
+  else if (u === 'B') v *= 1e9;
+  if (!Number.isFinite(v)) return null;
+  const out = Math.round(v);
+  return out > 0 ? out : null;
+}
+
 async function getTikTok(): Promise<{ count: number; source: string }> {
+  const target = `https://urlebird.com/user/${HANDLES.tiktok}/`;
+  const notes: string[] = [];
+  const fail = (tag: string, e: any) =>
+    notes.push(`${tag}:${String(e?.message || e).replace(/^HTTP (\d+).*/, 'HTTP$1').slice(0, 40)}`);
   // 0) Urlebird mirror — verified working, real profile stats (e.g. 27.17K followers)
   try {
-    const html = await fetchText(`https://urlebird.com/user/${HANDLES.tiktok}/`, 8000);
-    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
-    const n = m ? parseCompact(m[1]) : null;
+    const n = extractFollowerCount(await fetchText(target, 7000));
     if (n) return { count: n, source: 'urlebird' };
-  } catch {}
-  // 1) Same page via public proxy (different egress IP if Vercel is walled)
+    notes.push('urlebird-direct:no-match');
+  } catch (e) { fail('urlebird-direct', e); }
+  // 1) Same page via Google Translate proxy (Google egress IPs are rarely walled)
   try {
-    const proxied = await fetchText(
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://urlebird.com/user/${HANDLES.tiktok}/`)}`,
+    const html = await fetchText(
+      `https://urlebird-com.translate.goog/user/${HANDLES.tiktok}/?_x_tr_sl=auto&_x_tr_tl=en&_x_tr_hl=en`,
       8000
     );
-    const m = proxied.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
-    const n = m ? parseCompact(m[1]) : null;
+    const n = extractFollowerCount(html);
+    if (n) return { count: n, source: 'urlebird-google' };
+    notes.push('urlebird-google:no-match');
+  } catch (e) { fail('urlebird-google', e); }
+  // 2) Same page via AllOrigins (different egress IP + CORS-open)
+  try {
+    const proxied = await fetchText(
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`,
+      8000
+    );
+    const n = extractFollowerCount(proxied);
     if (n) return { count: n, source: 'urlebird-proxy' };
-  } catch {}
-  throw new Error('tiktok: all sources failed');
+    notes.push('urlebird-proxy:no-match');
+  } catch (e) { fail('urlebird-proxy', e); }
+  throw new Error(`tiktok: all failed [${notes.join(' | ')}]`);
 }
 
 async function getYouTube(): Promise<{ count: number; source: string }> {
