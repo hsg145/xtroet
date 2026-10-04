@@ -313,11 +313,11 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
                 {/* cinematic ambient from thumbnail */}
                 <img src={thumbnail} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover blur-3xl opacity-25 scale-110 pointer-events-none" />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80 pointer-events-none" />
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-transparent via-[#C9A24B] to-transparent" />
+                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-l from-transparent via-[#10B981] to-transparent" />
                 <div className="relative p-5 sm:p-8 md:p-10">
                     {/* header */}
                     <div className="flex flex-wrap items-center gap-3 mb-6 md:mb-8 animate-fade-in-up">
-                        <span className="w-2.5 h-2.5 rounded-full bg-[#C9A24B] shadow-[0_0_14px_#C9A24B] animate-pulse shrink-0" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-[#10B981] shadow-[0_0_14px_#10B981] animate-pulse shrink-0" />
                         <span className="text-[11px] font-black tracking-[0.35em] text-white/45 uppercase">{t.lastSessionReport}</span>
                         <span className="ms-auto flex flex-wrap items-center gap-2">
                             <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/10 text-white/70">
@@ -334,11 +334,11 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
                     <div className="flex flex-col lg:flex-row gap-6 md:gap-8 items-start">
                         <div className="[perspective:1200px] w-full lg:w-[380px] shrink-0 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
                             <a href={vodUrl} target="_blank" rel="noopener noreferrer"
-                                className="group relative block aspect-video rounded-2xl overflow-hidden border border-[#C9A24B]/30 bg-black shadow-[0_24px_60px_-16px_rgba(201,162,75,0.4)] [transform:rotateY(-7deg)_rotateX(2deg)] hover:[transform:rotateY(0deg)_rotateX(0deg)] transition-transform duration-700">
+                                className="group relative block aspect-video rounded-2xl overflow-hidden border border-[#10B981]/30 bg-black shadow-[0_24px_60px_-16px_rgba(16,185,129,0.4)] [transform:rotateY(-7deg)_rotateX(2deg)] hover:[transform:rotateY(0deg)_rotateX(0deg)] transition-transform duration-700">
                                 <img src={thumbnail} alt="Last Session" loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
                                 <span className="absolute top-3 start-3 text-[10px] font-black px-2.5 py-1 rounded-full bg-black/70 border border-white/15 text-white/80 backdrop-blur">VOD</span>
-                                <span className="absolute inset-0 m-auto w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#C9A24B]/25 backdrop-blur-md border border-[#C9A24B]/70 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-[0_0_36px_rgba(201,162,75,0.55)]">
+                                <span className="absolute inset-0 m-auto w-14 h-14 md:w-16 md:h-16 rounded-full bg-[#10B981]/25 backdrop-blur-md border border-[#10B981]/70 flex items-center justify-center transition-transform duration-300 group-hover:scale-110 shadow-[0_0_36px_rgba(16,185,129,0.55)]">
                                     <svg className="w-6 h-6 text-white fill-current translate-x-[1px] rtl:-translate-x-[1px]" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                 </span>
                                 <span className="absolute bottom-3 end-3 text-[10px] font-black px-2.5 py-1 rounded-lg bg-black/75 border border-white/15 text-white" dir="ltr">{formatDuration(data.duration)}</span>
@@ -347,7 +347,7 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
                                     {compact(views)}
                                 </span>
                             </a>
-                            <span className="mt-3 w-full min-h-[48px] flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-[#F0DDAE] via-[#C9A24B] to-[#8A6A3A] text-black font-black text-sm shadow-[0_12px_30px_-10px_rgba(201,162,75,0.6)] active:scale-[0.98] transition-transform">
+                            <span className="mt-3 w-full min-h-[48px] flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-[#6EE7B7] via-[#10B981] to-[#047857] text-[#04120D] font-black text-sm shadow-[0_12px_30px_-10px_rgba(16,185,129,0.6)] active:scale-[0.98] transition-transform">
                                 {L.watch}
                                 <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                             </span>
@@ -357,13 +357,13 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
                             <div className="flex flex-wrap items-center gap-2 mb-3 animate-fade-in-up" style={{ animationDelay: '140ms' }}>
                                 <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-white/[0.07] border border-white/10 text-white/70" dir="ltr">{data.language || 'AR'}</span>
                                 <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-white/[0.07] border border-white/10 text-white/70">{data.is_mature ? '18+' : L.family}</span>
-                                {catTags.map((tag, i) => <span key={i} className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#C9A24B]/10 border border-[#C9A24B]/30 text-[#D9C08A]" dir="ltr">#{tag}</span>)}
+                                {catTags.map((tag, i) => <span key={i} className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-[#10B981]/10 border border-[#10B981]/30 text-[#6EE7B7]" dir="ltr">#{tag}</span>)}
                             </div>
                             <h3 className="text-xl sm:text-2xl md:text-3xl font-black text-white leading-snug mb-5 animate-fade-in-up" style={{ animationDelay: '180ms' }}>{data.session_title || data.title}</h3>
                             <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-3">
                                 {stats.map((s, i) => (
-                                    <div key={i} className={`card-sheen relative overflow-hidden rounded-2xl border px-4 py-4 text-center backdrop-blur-md animate-fade-in-up ${s.hot ? 'bg-[#C9A24B]/[0.07] border-[#C9A24B]/25' : 'bg-white/[0.04] border-white/10'}`} style={{ animationDelay: `${220 + i * 80}ms` }}>
-                                        <span className={`mx-auto w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${s.hot ? 'bg-[#C9A24B]/15 text-[#D9C08A]' : 'bg-white/[0.07] text-white/60'}`}>{s.icon}</span>
+                                    <div key={i} className={`card-sheen relative overflow-hidden rounded-2xl border px-4 py-4 text-center backdrop-blur-md animate-fade-in-up ${s.hot ? 'bg-[#10B981]/[0.07] border-[#10B981]/25' : 'bg-white/[0.04] border-white/10'}`} style={{ animationDelay: `${220 + i * 80}ms` }}>
+                                        <span className={`mx-auto w-8 h-8 rounded-xl flex items-center justify-center mb-2 ${s.hot ? 'bg-[#10B981]/15 text-[#6EE7B7]' : 'bg-white/[0.07] text-white/60'}`}>{s.icon}</span>
                                         <p className="text-lg sm:text-xl md:text-2xl font-black text-white">{s.value}</p>
                                         <p className="text-[9px] sm:text-[10px] font-bold text-white/35 uppercase tracking-widest mt-1">{s.label}</p>
                                     </div>
@@ -382,17 +382,17 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
                                             return (
                                                 <a key={s.id || i} href={vodUrlOf(s)} target="_blank" rel="noopener noreferrer" title={s.session_title || s.title}
                                                     className="flex-1 h-full flex flex-col items-center justify-end gap-1.5 group/bar min-w-0">
-                                                    <span className={`text-[10px] sm:text-[11px] font-black ${cur ? 'text-[#D9C08A]' : 'text-white/45'}`} dir="ltr">{compact(v)}</span>
+                                                    <span className={`text-[10px] sm:text-[11px] font-black ${cur ? 'text-[#6EE7B7]' : 'text-white/45'}`} dir="ltr">{compact(v)}</span>
                                                     <span className="tier-bar w-full max-w-[90px] rounded-t-lg border-x border-t relative overflow-hidden"
                                                         style={{
                                                             height: `${h}%`, animationDelay: `${i * 120}ms`,
-                                                            background: cur ? 'linear-gradient(to bottom, #C9A24B, #C9A24B55 60%, rgba(0,0,0,0.5))' : 'linear-gradient(to bottom, rgba(255,255,255,0.35), rgba(255,255,255,0.06))',
-                                                            borderColor: cur ? '#C9A24B88' : 'rgba(255,255,255,0.15)',
-                                                            boxShadow: cur ? '0 0 22px -4px rgba(201,162,75,0.7)' : 'none',
+                                                            background: cur ? 'linear-gradient(to bottom, #10B981, #10B98155 60%, rgba(0,0,0,0.5))' : 'linear-gradient(to bottom, rgba(255,255,255,0.35), rgba(255,255,255,0.06))',
+                                                            borderColor: cur ? '#10B98188' : 'rgba(255,255,255,0.15)',
+                                                            boxShadow: cur ? '0 0 22px -4px rgba(16,185,129,0.7)' : 'none',
                                                         }}>
                                                         <span className="absolute top-0 inset-x-2 h-1 rounded-full bg-white/40 blur-[1px]" />
                                                     </span>
-                                                    <span className={`w-full max-w-[90px] h-1.5 rounded-b bg-black/70 border-x border-b ${cur ? 'border-[#C9A24B]/50' : 'border-white/10'}`} />
+                                                    <span className={`w-full max-w-[90px] h-1.5 rounded-b bg-black/70 border-x border-b ${cur ? 'border-[#10B981]/50' : 'border-white/10'}`} />
                                                 </a>
                                             );
                                         })}
@@ -409,7 +409,7 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
                                             const slug = cat.slug || cat.category?.slug || catName.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
                                             const catImg = cat.banner?.url || cat.banner?.responsive || cat.category?.banner?.url || cat.category?.banner?.responsive || cat.responsive_url || cat.thumbnail?.url || cat.category?.responsive_url || cat.category?.thumbnail?.url || `https://files.kick.com/categories/${slug}/fullsize.png`;
                                             return (
-                                                <span key={i} className="inline-flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-full ps-1 pe-3 py-1 hover:border-[#C9A24B]/40 transition-colors">
+                                                <span key={i} className="inline-flex items-center gap-2 bg-white/[0.05] border border-white/10 rounded-full ps-1 pe-3 py-1 hover:border-[#10B981]/40 transition-colors">
                                                     <span className="w-7 h-7 rounded-full overflow-hidden bg-black border border-white/10 block">
                                                         <img src={catImg} alt={catName} loading="lazy" className="w-full h-full object-cover"
                                                             onError={(e) => { const tg = e.target as HTMLImageElement; tg.src = tg.src.includes('picsum') ? DEFAULT_PROFILE_IMAGE : `https://picsum.photos/seed/${slug}/100/100`; }} />
@@ -433,13 +433,13 @@ const LastSessionReport: React.FC<{ lang: Language; data: any; clips: any[]; pas
                             <div className="grid grid-cols-3 gap-2 md:gap-4">
                                 {clips.slice(0, 3).map((clip: any, i: number) => (
                                     <a key={clip.id || i} href={`https://kick.com/${CHANNEL_SLUG}?clip=${clip.id}`} target="_blank" rel="noopener noreferrer"
-                                        className="group relative aspect-video rounded-xl md:rounded-2xl overflow-hidden border border-white/10 bg-black hover:border-[#C9A24B]/60 hover:-translate-y-1 transition-all duration-300">
+                                        className="group relative aspect-video rounded-xl md:rounded-2xl overflow-hidden border border-white/10 bg-black hover:border-[#10B981]/60 hover:-translate-y-1 transition-all duration-300">
                                         <img src={clip.thumbnail_url || clip.thumbnail?.url || PC_BACKGROUND} alt={clip.title} loading="lazy"
                                             className="w-full h-full object-cover opacity-70 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
                                         <span className="absolute top-1.5 start-1.5 w-5 h-5 md:w-6 md:h-6 rounded-lg bg-black/70 border border-white/15 text-white/80 text-[9px] md:text-[10px] font-black flex items-center justify-center backdrop-blur" dir="ltr">{i + 1}</span>
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <span className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-[#C9A24B]/25 backdrop-blur border border-[#C9A24B]/60 flex items-center justify-center">
+                                            <span className="w-9 h-9 md:w-11 md:h-11 rounded-full bg-[#10B981]/25 backdrop-blur border border-[#10B981]/60 flex items-center justify-center shadow-[0_0_16px_rgba(16,185,129,0.6)]">
                                                 <svg className="w-4 h-4 md:w-5 md:h-5 text-white fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                                             </span>
                                         </div>
@@ -922,7 +922,7 @@ export default function App() {
                                         ].map((s, i) => (
                                             <div key={i} className="px-2 sm:px-4 py-4 sm:py-5 text-center min-w-0">
                                                 <p className="font-heading text-xl sm:text-2xl md:text-3xl font-black text-white truncate" dir="ltr">{s.v}</p>
-                                                <p className="text-[9px] md:text-[10px] font-bold text-[#D9C08A]/60 uppercase tracking-[0.2em] mt-1.5 truncate">{s.l}</p>
+                                                <p className="text-[9px] md:text-[10px] font-bold text-[#6EE7B7]/60 uppercase tracking-[0.2em] mt-1.5 truncate">{s.l}</p>
                                             </div>
                                         ))}
                                     </div>

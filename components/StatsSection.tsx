@@ -52,9 +52,9 @@ const CrownIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" className={className}>
     <defs>
       <linearGradient id="crownGold" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FDE68A" />
-        <stop offset="55%" stopColor="#F59E0B" />
-        <stop offset="100%" stopColor="#B45309" />
+        <stop offset="0%" stopColor="#A7F3D0" />
+        <stop offset="55%" stopColor="#10B981" />
+        <stop offset="100%" stopColor="#047857" />
       </linearGradient>
     </defs>
     <path fill="url(#crownGold)" d="M2.5 8.5 6.5 12l5.5-7 5.5 7 4-3.5L20 18H4L2.5 8.5z" />
@@ -110,16 +110,16 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
   // Modern glass config — vibrant but harmonious with gold identity
   const config = {
     yellow: {
-      border: 'border-[#FFD76A]/25',
-      text: 'text-[#FFD76A]',
-      bgIcon: 'bg-[#FFD76A]/10',
-      gradient: 'from-[#FFE9B8] to-[#C9A24B]',
-      subText: 'text-[#FFE9B8]/50',
-      glowColor: '255,215,106',
-      barBright: '#FFE9B8',
-      barDeep: '#C9A24B',
-      medalBg: 'linear-gradient(160deg,#FFE9B8,#C9A24B 55%,#8A6A3A)',
-      orb: 'bg-[#FFD76A]/15'
+      border: 'border-[#10B981]/25',
+      text: 'text-[#6EE7B7]',
+      bgIcon: 'bg-[#10B981]/10',
+      gradient: 'from-[#A7F3D0] to-[#059669]',
+      subText: 'text-[#6EE7B7]/50',
+      glowColor: '16,185,129',
+      barBright: '#A7F3D0',
+      barDeep: '#059669',
+      medalBg: 'linear-gradient(160deg,#A7F3D0,#10B981 55%,#047857)',
+      orb: 'bg-[#10B981]/15'
     },
     rose: {
       border: 'border-[#10B981]/25',
@@ -150,7 +150,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
   // Helper for Rank Badges — modern pills
   const renderRankBadge = (rank: number) => {
     if (rank === 1) return (
-      <div className="w-9 h-9 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#FFE9B8] to-[#C9A24B] shadow-[0_0_20px_rgba(255,215,106,0.5)] border border-white/40 text-black font-black text-sm shrink-0 rotate-3">
+      <div className="w-9 h-9 rounded-2xl flex items-center justify-center bg-gradient-to-br from-[#A7F3D0] to-[#059669] shadow-[0_0_20px_rgba(16,185,129,0.5)] border border-white/40 text-[#04120D] font-black text-sm shrink-0 rotate-3">
         1
       </div>
     );
@@ -219,8 +219,8 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
         {/* Header — stacks vertically on narrow/mobile cards, single row on desktop */}
         <div className="relative p-4 sm:p-5 md:p-6 pb-4 flex flex-col md:flex-row md:items-center gap-3 border-b border-white/[0.07] z-10">
           <div className="flex items-center gap-3 md:gap-3.5 min-w-0 flex-1">
-            <div className="w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center border border-white/20 shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6"
-              style={{ background: config.medalBg, boxShadow: `0 12px 32px -8px rgba(${config.glowColor},0.6), inset 0 1px 0 rgba(255,255,255,0.5)` }}>
+            <div className="w-11 h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-2xl flex items-center justify-center border shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6"
+              style={{ background: 'linear-gradient(180deg, rgba(4,18,13,0.95), rgba(4,18,13,0.85))', borderColor: `${config.barBright}44`, boxShadow: `0 12px 32px -8px rgba(${config.glowColor},0.55), inset 0 1px 0 rgba(255,255,255,0.12)` }}>
               {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: 'w-6 h-6 md:w-7 md:h-7 drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]' }) : icon}
             </div>
             <div className="min-w-0 flex-1">
@@ -350,7 +350,7 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
           <div className="relative [perspective:1200px]">
             <div className="absolute -inset-2 rounded-[36px] bg-gradient-to-b from-[#10B981]/15 via-transparent to-transparent blur-2xl pointer-events-none" aria-hidden="true" />
             <div className="group card-sheen relative overflow-hidden rounded-[30px] border border-[#10B981]/25 bg-[#04120D]/90 backdrop-blur-xl shadow-[0_30px_80px_-20px_rgba(16,185,129,0.3)] [transform-style:preserve-3d]">
-              <div aria-hidden="true" className="absolute -end-8 -bottom-12 opacity-[0.07] scale-[3.2] origin-bottom-right pointer-events-none text-[#C9A24B]">
+              <div aria-hidden="true" className="absolute -end-8 -bottom-12 opacity-[0.07] scale-[3.2] origin-bottom-right pointer-events-none text-[#10B981]">
                 <KickIcon className="w-24 h-24" />
               </div>
               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-l from-transparent via-[#10B981]/70 to-transparent" />
@@ -367,15 +367,15 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
                     <span className="absolute -bottom-2 inset-x-6 h-3 rounded-full bg-[#53FC18]/50 blur-md" aria-hidden="true" />
                   </div>
                   <div className="min-w-0 text-center sm:text-start [transform:translateZ(18px)]">
-                    <p className="inline-flex items-center gap-1.5 text-[10px] font-black tracking-[0.25em] text-[#D9C08A] uppercase">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#C9A24B] animate-pulse shadow-[0_0_8px_#C9A24B]" />
+                    <p className="inline-flex items-center gap-1.5 text-[10px] font-black tracking-[0.25em] text-[#6EE7B7] uppercase">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse shadow-[0_0_8px_#10B981]" />
                       {t.followers} • KICK
                     </p>
                     <p className="text-4xl sm:text-5xl font-black text-white tracking-tighter leading-none mt-1 drop-shadow-lg">
                       <KickCount value={channelInfo.followers_count} />
                     </p>
                     <a href="https://kick.com/xtroet" target="_blank" rel="noopener noreferrer"
-                      className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-black px-5 py-2.5 rounded-full border border-[#C9A24B]/60 text-[#D9C08A] hover:bg-[#C9A24B] hover:text-black hover:shadow-[0_0_24px_rgba(201,162,75,0.6)] active:scale-95 transition-all duration-300">
+                      className="mt-2.5 inline-flex items-center gap-1.5 text-[11px] font-black px-5 py-2.5 rounded-full border border-[#10B981]/60 text-[#6EE7B7] hover:bg-[#10B981] hover:text-[#04120D] hover:shadow-[0_0_24px_rgba(16,185,129,0.6)] active:scale-95 transition-all duration-300">
                       {lang === 'en' ? 'FOLLOW' : 'تابع الآن'}
                       <svg className={`w-3.5 h-3.5 ${lang === 'ar' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
                     </a>
@@ -388,12 +388,12 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
                     <>
                       <div className="flex items-center justify-center lg:justify-end gap-2.5 mb-4">
                         <span className="text-[10px] text-white/40 font-black uppercase tracking-[0.25em]">{t.subBadges}</span>
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#C9A24B]/15 border border-[#C9A24B]/40 text-[#D9C08A]" dir="ltr">{channelInfo.subscriber_badges.length}</span>
+                        <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#10B981]/15 border border-[#10B981]/40 text-[#6EE7B7]" dir="ltr">{channelInfo.subscriber_badges.length}</span>
                       </div>
                       <div className="flex flex-wrap justify-center lg:justify-end gap-2 sm:gap-3.5">
                         {[...channelInfo.subscriber_badges].sort((a, b) => a.months - b.months).map((badge, i) => (
                           <div key={badge.id} className="flex flex-col items-center basis-[calc(25%-6px)] sm:basis-auto opacity-0 animate-fade-in-up" style={{ animationDelay: `${i * 90}ms` }}>
-                            <div className="group/badge relative w-14 h-14 sm:w-[68px] sm:h-[68px] rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/10 p-2 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#C9A24B]/60 hover:shadow-[0_14px_30px_-8px_rgba(201,162,75,0.55)]">
+                            <div className="group/badge relative w-14 h-14 sm:w-[68px] sm:h-[68px] rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/10 p-2 transition-all duration-300 hover:-translate-y-1.5 hover:border-[#10B981]/60 hover:shadow-[0_14px_30px_-8px_rgba(16,185,129,0.55)]">
                               <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-l from-transparent via-white/40 to-transparent" />
                               <img
                                 src={badge.badge_image.src}
@@ -424,21 +424,21 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
 
           {/* Modern Header */}
           <div className="relative rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden">
-            <div className="absolute -top-20 start-1/3 w-96 h-96 rounded-full bg-[#FFD76A]/[0.08] blur-[100px] pointer-events-none" aria-hidden="true" />
-            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#FFD76A]/60 to-transparent" aria-hidden="true" />
+            <div className="absolute -top-20 start-1/3 w-96 h-96 rounded-full bg-[#10B981]/[0.08] blur-[100px] pointer-events-none" aria-hidden="true" />
+            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#10B981]/60 to-transparent" aria-hidden="true" />
             <div className="relative p-5 sm:p-7 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-start">
-              <span className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] flex items-center justify-center shrink-0 border border-white/20 transition-transform duration-500 hover:scale-110 hover:-rotate-6"
-                style={{ background: 'linear-gradient(160deg,#FFE9B8,#C9A24B 55%,#8A6A3A)', boxShadow: '0 16px 40px -12px rgba(255,215,106,0.6), inset 0 1px 0 rgba(255,255,255,0.5)' }}>
+              <span className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] flex items-center justify-center shrink-0 border border-[#10B981]/50 bg-[#04120D] transition-transform duration-500 hover:scale-110 hover:-rotate-6"
+                style={{ boxShadow: '0 16px 40px -12px rgba(16,185,129,0.65), inset 0 1px 0 rgba(167,243,208,0.25), 0 0 28px -6px rgba(16,185,129,0.5)' }}>
                 <CrownIcon className="w-7 h-7 sm:w-8 sm:h-8" />
               </span>
               <div className="min-w-0 flex-1">
                 <h2 className={`text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-none ${lang === 'ar' ? 'font-arabic' : ''}`}>
                   {t.topGifters}
                 </h2>
-                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.28em] bg-gradient-to-r from-[#FFE9B8] to-[#8A6A3A] bg-clip-text text-transparent mt-2" dir="ltr">HALL OF GENEROSITY • LIVE</p>
+                <p className="text-[10px] sm:text-[11px] font-black uppercase tracking-[0.28em] bg-gradient-to-r from-[#A7F3D0] to-[#059669] bg-clip-text text-transparent mt-2" dir="ltr">HALL OF GENEROSITY • LIVE</p>
               </div>
-              <span className="shrink-0 inline-flex items-center gap-2 text-[10px] font-black px-3.5 py-2 rounded-full bg-[#FFD76A]/10 border border-[#FFD76A]/30 text-[#FFE9B8]">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FFD76A] animate-pulse shadow-[0_0_10px_#FFD76A]" />
+              <span className="shrink-0 inline-flex items-center gap-2 text-[10px] font-black px-3.5 py-2 rounded-full bg-[#10B981]/10 border border-[#10B981]/30 text-[#6EE7B7]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse shadow-[0_0_10px_#10B981]" />
                 {lang === 'en' ? 'UPDATED LIVE' : 'يتحدث مباشرة'}
               </span>
             </div>
@@ -562,8 +562,8 @@ export const ArchiveSection: React.FC<StatsSectionProps> = ({ lang }) => {
             <div className="relative p-4 sm:p-5">
             <div className="flex items-center gap-3">
               <div className="relative shrink-0">
-                <div className="absolute -inset-1.5 bg-[#C9A24B]/40 blur-xl opacity-40 rounded-2xl" aria-hidden="true" />
-                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-b from-[#FFE9B8] via-[#C9A24B] to-[#8A6A3A] border border-white/25 shadow-[0_12px_32px_-8px_rgba(201,162,75,0.6)] flex items-center justify-center transition-transform duration-500 hover:rotate-6 hover:scale-110">
+                <div className="absolute -inset-1.5 bg-[#10B981]/40 blur-xl opacity-40 rounded-2xl" aria-hidden="true" />
+                <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-b from-[#A7F3D0] via-[#10B981] to-[#047857] border border-[#A7F3D0]/40 shadow-[0_12px_32px_-8px_rgba(16,185,129,0.6)] flex items-center justify-center transition-transform duration-500 hover:rotate-6 hover:scale-110">
                   <svg className="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
                 </div>
               </div>
@@ -572,7 +572,7 @@ export const ArchiveSection: React.FC<StatsSectionProps> = ({ lang }) => {
                 <p className="text-[10px] font-black text-white/35 uppercase tracking-[0.24em] mt-1.5" dir="ltr">{clips?.length || 0} CLIPS • FRESH</p>
               </div>
               <a href="https://kick.com/xtroet/clips" target="_blank" rel="noreferrer"
-                className="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-black px-4 py-2.5 rounded-2xl bg-white/[0.05] border border-white/10 text-white/60 hover:text-black hover:bg-[#FFE9B8] hover:border-[#FFE9B8] hover:shadow-[0_0_24px_rgba(255,215,106,0.5)] active:scale-95 transition-all duration-300">
+                className="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-black px-4 py-2.5 rounded-2xl bg-white/[0.05] border border-white/10 text-white/60 hover:text-[#04120D] hover:bg-[#6EE7B7] hover:border-[#6EE7B7] hover:shadow-[0_0_24px_rgba(16,185,129,0.5)] active:scale-95 transition-all duration-300">
                 {lang === 'en' ? 'VIEW ALL' : 'عرض الكل'}
                 <svg className={`w-3.5 h-3.5 ${lang === 'ar' ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
               </a>
@@ -587,7 +587,7 @@ export const ArchiveSection: React.FC<StatsSectionProps> = ({ lang }) => {
                         href={`https://kick.com/xtroet?clip=${clip.id}`}
                         target="_blank"
                         rel="noreferrer"
-                        className="group relative block aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black transition-all duration-500 hover:border-[#FFE9B8]/60 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_-16px_rgba(255,215,106,0.45)]"
+                        className="group relative block aspect-video rounded-3xl overflow-hidden border border-white/10 bg-black transition-all duration-500 hover:border-[#10B981]/60 hover:-translate-y-1.5 hover:shadow-[0_24px_60px_-16px_rgba(16,185,129,0.45)]"
                       >
                         <img
                           src={clip.thumbnail_url || FALLBACK_IMAGE}
@@ -600,7 +600,7 @@ export const ArchiveSection: React.FC<StatsSectionProps> = ({ lang }) => {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent pointer-events-none" />
                         <span className="absolute top-2 start-2 min-w-[26px] h-[26px] px-2 rounded-xl bg-black/70 backdrop-blur border border-white/20 text-white text-[10px] font-black flex items-center justify-center" dir="ltr">#{i + 1}</span>
-                        <span className="absolute top-2 end-2 inline-flex items-center gap-1 text-[9px] font-black px-2 py-1 rounded-lg bg-[#FFE9B8] text-black opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                        <span className="absolute top-2 end-2 inline-flex items-center gap-1 text-[9px] font-black px-2 py-1 rounded-lg bg-[#10B981] text-[#04120D] opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
                           <svg className="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
                           PLAY
                         </span>
@@ -615,7 +615,7 @@ export const ArchiveSection: React.FC<StatsSectionProps> = ({ lang }) => {
                               <span dir="ltr">{formatNumber(clip.view_count)}</span>
                             </span>
                             {(clip.creator as any)?.username && (
-                              <span className="text-[9px] sm:text-[10px] text-[#FFE9B8] font-bold truncate" dir="auto">@{(clip.creator as any).username}</span>
+                              <span className="text-[9px] sm:text-[10px] text-[#6EE7B7] font-bold truncate" dir="auto">@{(clip.creator as any).username}</span>
                             )}
                           </div>
                         </div>

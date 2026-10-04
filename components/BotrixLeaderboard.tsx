@@ -167,7 +167,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
 
   const podium = rich.slice(0, 3);
   const ringOf = (rank: number) =>
-    rank === 1 ? 'conic-gradient(from 200deg,#ffe977,#8a6a00,#fff6c8,#8a6a00,#ffe977)'
+    rank === 1 ? 'conic-gradient(from 200deg,#a7f3d0,#047857,#ecfdf5,#047857,#a7f3d0)'
     : rank === 2 ? 'conic-gradient(from 200deg,#e8e8e8,#6f7b8a,#ffffff,#6f7b8a,#e8e8e8)'
     : rank === 3 ? 'conic-gradient(from 200deg,#f0a35e,#6e3c10,#ffd9ae,#6e3c10,#f0a35e)'
     : 'rgba(255,255,255,0.12)';
@@ -175,26 +175,26 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
   return (
     <div className="w-full animate-fade-in-up">
       <div className="group relative rounded-[28px] overflow-hidden bg-white/[0.03] border border-white/10 backdrop-blur-2xl transition-colors duration-500 hover:border-white/20">
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#FFE9B8]/60 to-transparent" aria-hidden="true" />
-        <div className="absolute -top-24 start-1/4 w-96 h-96 bg-[#FFE9B8]/[0.08] blur-[110px] pointer-events-none" aria-hidden="true" />
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-[#10B981]/60 to-transparent" aria-hidden="true" />
+        <div className="absolute -top-24 start-1/4 w-96 h-96 bg-[#10B981]/[0.08] blur-[110px] pointer-events-none" aria-hidden="true" />
         <div className="absolute -bottom-32 end-0 w-96 h-96 bg-[#10B981]/[0.08] blur-[110px] pointer-events-none" aria-hidden="true" />
 
         {/* header — modern */}
         <div className="relative p-5 md:p-7 pb-4 flex items-center gap-4">
           <div className="relative shrink-0">
-            <div className="absolute -inset-2 bg-[#FFE9B8]/40 blur-2xl opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full" aria-hidden="true" />
-            <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-[20px] bg-gradient-to-b from-[#FFE9B8] via-[#C9A24B] to-[#8A6A3A] border border-[#E8D5A8]/40 shadow-[0_16px_40px_-12px_rgba(255,215,106,0.6)] flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6 ring-1 ring-[#10B981]/25">
-              <svg className="w-7 h-7 md:w-8 md:h-8 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+            <div className="absolute -inset-2 bg-[#10B981]/40 blur-2xl opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full" aria-hidden="true" />
+            <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-[20px] bg-[#04120D] border border-[#10B981]/50 shadow-[0_16px_40px_-12px_rgba(16,185,129,0.6)] flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6 ring-1 ring-[#C9A24B]/30">
+              <svg className="w-7 h-7 md:w-8 md:h-8 text-[#10B981] drop-shadow-[0_0_12px_rgba(16,185,129,0.7)]" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
             </div>
             <span className="absolute -bottom-1.5 -end-1.5 w-6 h-6 rounded-full bg-[#53FC18] border-4 border-[#0B0906] animate-pulse shadow-[0_0_14px_#53FC18]" aria-hidden="true" />
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-xl md:text-2xl font-black text-white tracking-tight leading-none">{t.title}</h3>
-            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.24em] bg-gradient-to-r from-[#FFE9B8] to-[#8A6A3A] bg-clip-text text-transparent mt-2">{t.subtitle}</p>
+            <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.24em] bg-gradient-to-r from-[#A7F3D0] to-[#059669] bg-clip-text text-transparent mt-2">{t.subtitle}</p>
           </div>
           <div className="hidden sm:flex items-center gap-2 shrink-0">
             <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3.5 py-2 rounded-2xl bg-white/[0.05] border border-white/10 text-white/60">{rich.length} {t.legends}</span>
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3.5 py-2 rounded-2xl bg-[#FFE9B8]/10 border border-[#FFE9B8]/30 text-[#FFE9B8]" dir="ltr">{formatDuration(totalWatch)}</span>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3.5 py-2 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/30 text-[#6EE7B7]" dir="ltr">{formatDuration(totalWatch)}</span>
           </div>
         </div>
 
@@ -228,17 +228,17 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
                         {e.avatar
                           ? <img src={e.avatar} alt={e.name} loading="lazy" className="w-full h-full rounded-full object-cover bg-black" />
                           : <span className="w-full h-full rounded-full bg-white/[0.06] backdrop-blur flex items-center justify-center font-black text-lg text-white/80">{e.name.charAt(0).toUpperCase()}</span>}
-                        <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-[10px] font-black px-2 py-0.5 rounded-lg border ${rank === 1 ? 'bg-[#FFE9B8] text-black border-white/50' : 'bg-black/80 text-white/80 border-white/20'}`} dir="ltr">#{rank}</span>
+                        <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-[10px] font-black px-2 py-0.5 rounded-lg border ${rank === 1 ? 'bg-[#10B981] text-[#04120D] border-white/50' : 'bg-black/80 text-white/80 border-white/20'}`} dir="ltr">#{rank}</span>
                         {rank === 1 && (
-                          <svg className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_10px_rgba(255,215,106,0.9)] animate-float-soft" viewBox="0 0 24 24" fill="none">
-                            <path fill="#FFD76A" d="M2.5 8.5 6.5 12l5.5-7 5.5 7 4-3.5L20 18H4L2.5 8.5z" />
-                            <rect x="4" y="18.6" width="16" height="2.2" rx="1.1" fill="#8A6A3A" />
+                          <svg className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] animate-float-soft" viewBox="0 0 24 24" fill="none">
+                            <path fill="#6EE7B7" d="M2.5 8.5 6.5 12l5.5-7 5.5 7 4-3.5L20 18H4L2.5 8.5z" />
+                            <rect x="4" y="18.6" width="16" height="2.2" rx="1.1" fill="#047857" />
                           </svg>
                         )}
                       </span>
                       <p className="mt-3 text-xs sm:text-sm font-black text-white truncate max-w-full flex items-center gap-1" dir="auto">
                         <span className="truncate">{e.name}</span>
-                        {e.verified && <svg className="w-3.5 h-3.5 text-[#FFE9B8] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>}
+                        {e.verified && <svg className="w-3.5 h-3.5 text-[#6EE7B7] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>}
                       </p>
                       <span className="mt-1.5 flex items-center gap-1.5">
                         {e.role && <RoleBadge role={e.role} />}
@@ -268,11 +268,11 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] sm:text-sm font-black text-white/90 truncate flex items-center gap-1.5" dir="auto">
                             <span className="truncate">{e.name}</span>
-                            {e.verified && <svg className="w-3.5 h-3.5 text-[#FFE9B8] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>}
+                            {e.verified && <svg className="w-3.5 h-3.5 text-[#6EE7B7] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>}
                             {e.role && <RoleBadge role={e.role} />}
                           </p>
                           <p className="mt-1 flex items-center gap-2 text-[10px] text-white/40 font-bold">
-                            <span className="inline-flex items-center gap-1 rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr"><MiniIcon d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" className="w-3 h-3 text-[#FFE9B8]/80" />{formatDuration(e.watchtime)}</span>
+                            <span className="inline-flex items-center gap-1 rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr"><MiniIcon d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" className="w-3 h-3 text-[#6EE7B7]/80" />{formatDuration(e.watchtime)}</span>
                             <span className="rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr">Lv.{e.level}</span>
                             <span className="hidden md:inline rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr">{formatNum(e.xp)} XP</span>
                             {e.followers != null && <span className="hidden sm:inline-flex items-center gap-1 rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr"><MiniIcon d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" className="w-3 h-3 text-white/30" />{formatNum(e.followers)}</span>}
@@ -282,7 +282,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
                         <span className="text-[11px] font-black px-2.5 py-1.5 rounded-xl bg-white/[0.05] border border-white/10 text-white/60 shrink-0" dir="ltr">{formatDuration(e.watchtime)}</span>
                       </div>
                       <div className="mt-2 ms-[76px] h-1 rounded-full bg-white/[0.06] overflow-hidden" dir="ltr">
-                        <div className="bar-grow h-full rounded-full bg-gradient-to-r from-[#FFE9B8] via-[#C9A24B] to-[#059669]" style={{ width: `${pct}%`, animationDelay: `${Math.min(idx * 60, 480)}ms` }} />
+                        <div className="bar-grow h-full rounded-full bg-gradient-to-r from-[#A7F3D0] via-[#10B981] to-[#047857]" style={{ width: `${pct}%`, animationDelay: `${Math.min(idx * 60, 480)}ms` }} />
                       </div>
                     </div>
                   );
