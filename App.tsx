@@ -1016,17 +1016,10 @@ export default function App() {
                             <Reveal delay={80}><SupportArena lang={lang} supporters={[]} /></Reveal>
                         </section>
 
-                        {/* ===== LAST SESSION (broadcast archive when offline) ===== */}
-                        {!streamInfo.isLive && (
-                            <section id="live" className="pt-12 md:pt-16 scroll-mt-28">
-                                <LastSessionReport lang={lang} data={lastSession} clips={clips} past={pastSessions} />
-                            </section>
-                        )}
-
-                        {/* ===== HONOR ===== */}
+                        {/* ===== HONOR (gifters + last session when offline + chat legends) ===== */}
                         <section id="honor" className="pt-12 md:pt-16 scroll-mt-28">
                             <Reveal><SectionHeading no="05" title={t.honorTitle} sub={t.honorSub} en="HALL OF FAME" /></Reveal>
-                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><HonorSection lang={lang} /></Suspense></Reveal>
+                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><HonorSection lang={lang} report={!streamInfo.isLive ? (<div id="live" className="scroll-mt-28"><LastSessionReport lang={lang} data={lastSession} clips={clips} past={pastSessions} /></div>) : null} /></Suspense></Reveal>
                         </section>
 
                         {/* ===== ARCHIVE ===== */}

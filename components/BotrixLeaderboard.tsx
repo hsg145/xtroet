@@ -183,7 +183,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
         <div className="relative p-5 md:p-7 pb-4 flex items-center gap-4">
           <div className="relative shrink-0">
             <div className="absolute -inset-2 bg-[#FFE9B8]/40 blur-2xl opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full" aria-hidden="true" />
-            <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-[20px] bg-gradient-to-b from-[#FFE9B8] via-[#C9A24B] to-[#8A6A3A] border border-white/25 shadow-[0_16px_40px_-12px_rgba(255,215,106,0.6)] flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+            <div className="relative w-14 h-14 md:w-16 md:h-16 rounded-[20px] bg-gradient-to-b from-[#FFE9B8] via-[#C9A24B] to-[#8A6A3A] border border-[#E8D5A8]/40 shadow-[0_16px_40px_-12px_rgba(255,215,106,0.6)] flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6 ring-1 ring-[#10B981]/25">
               <svg className="w-7 h-7 md:w-8 md:h-8 text-black" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
             </div>
             <span className="absolute -bottom-1.5 -end-1.5 w-6 h-6 rounded-full bg-[#53FC18] border-4 border-[#0B0906] animate-pulse shadow-[0_0_14px_#53FC18]" aria-hidden="true" />
@@ -257,7 +257,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
                   const rank = idx + 4;
                   const pct = Math.max(4, Math.round(((e.watchtime || 0) / maxWatch) * 100));
                   return (
-                    <div key={e.name} className="relative rounded-2xl p-2.5 sm:p-3 border border-transparent hover:border-white/10 hover:bg-white/[0.04] hover:-translate-y-0.5 hover:shadow-[0_14px_36px_-14px_rgba(0,0,0,0.8)] transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${Math.min(idx * 60, 480)}ms` }}>
+                    <div key={e.name} className="relative rounded-2xl p-2.5 sm:p-3 border border-transparent hover:border-[#10B981]/20 hover:bg-white/[0.04] hover:-translate-y-0.5 hover:shadow-[0_16px_38px_-14px_rgba(16,185,129,0.35)] transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${Math.min(idx * 60, 480)}ms` }}>
                       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <span className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[11px] font-black text-white/40 shrink-0" dir="ltr">{rank < 10 ? `0${rank}` : rank}</span>
                         <span className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[2px] shrink-0 block" style={{ background: e.role ? ROLE_RING[e.role] : 'rgba(255,255,255,0.14)' }}>

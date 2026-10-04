@@ -27,3 +27,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Local backup copy (has its own git history, must not be committed)
+/iABS_AR-main - Copy/

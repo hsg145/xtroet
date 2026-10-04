@@ -7,6 +7,7 @@ import { kickFetch } from '../utils/kickApi';
 
 interface StatsSectionProps {
   lang: Language;
+  report?: React.ReactNode;
 }
 
 const FALLBACK_IMAGE = "/xtroet-logo.webp";
@@ -170,23 +171,32 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
     );
   };
 
-  // Render Empty State — modern glass
+  // Render Empty State — premium emerald glass (matches filled cards)
   if (!data || data.length === 0) {
     return (
       <div className={`
                  relative flex flex-col items-center justify-center p-6 text-center rounded-[28px] overflow-hidden
-                 bg-white/[0.03] backdrop-blur-2xl border border-dashed border-white/10
-                 transition-all duration-500 hover:border-white/25 hover:bg-white/[0.05] group
+                 bg-white/[0.04] backdrop-blur-2xl border border-white/10
+                 transition-all duration-500 hover:border-[#10B981]/30 hover:bg-white/[0.05] hover:-translate-y-1 group
                  ${isMain ? 'lg:-mt-4 z-10 min-h-[220px] md:min-h-[300px]' : 'min-h-[200px] md:min-h-[280px]'}
                  ${className}
              `}
         style={{ animationDelay: `${delay}ms` }}>
         <div className={`absolute -top-16 start-1/4 w-64 h-64 rounded-full ${config.orb} blur-[80px] pointer-events-none`} aria-hidden="true" />
-        <div className={`p-4 md:p-5 rounded-3xl ${config.bgIcon} mb-4 opacity-70 group-hover:opacity-100 group-hover:scale-110 group-hover:-rotate-6 transition-all duration-500 border border-white/10`}>
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-l from-transparent via-white/30 to-transparent" aria-hidden="true" />
+        <div className="absolute opacity-[0.05] scale-[3] pointer-events-none transition-transform duration-700 group-hover:scale-[3.3]" aria-hidden="true">
+          {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: `w-10 h-10 ${config.text}` })}
+        </div>
+        <div className={`relative p-4 md:p-5 rounded-3xl ${config.bgIcon} mb-4 transition-all duration-500 group-hover:scale-110 border border-white/10`}
+          style={{ boxShadow: `0 12px 32px -12px rgba(${config.glowColor},0.5), inset 0 1px 0 rgba(255,255,255,0.15)` }}>
           {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: `w-6 h-6 md:w-8 md:h-8 ${config.text} drop-shadow-lg` })}
         </div>
-        <h3 className={`text-sm md:text-base font-black text-white/70 mb-1 uppercase tracking-[0.2em]`}>{title}</h3>
-        <p className={`text-[10px] md:text-xs ${config.subText} font-medium`}>{emptyLabel || t.noData}</p>
+        <h3 className={`relative text-sm md:text-base font-black text-white/80 mb-1 uppercase tracking-[0.2em]`}>{title}</h3>
+        <p className={`relative text-[10px] md:text-xs ${config.subText} font-medium`}>{emptyLabel || t.noData}</p>
+        <span className="relative mt-4 inline-flex items-center gap-1.5 text-[9px] font-black tracking-[0.22em] px-3 py-1.5 rounded-full bg-black/40 border border-white/10 text-white/35 uppercase">
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: config.barBright, boxShadow: `0 0 8px ${config.barBright}` }} />
+          {lang === 'ar' ? 'بانتظار الأبطال' : 'WAITING FOR HEROES'}
+        </span>
       </div>
     );
   }
@@ -247,7 +257,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
             const rank = idx + 2;
             const pct = Math.max(4, Math.round(((entry.quantity || 0) / maxQ) * 100));
             return (
-              <div key={idx} className="relative rounded-2xl p-2.5 md:p-3 transition-all duration-300 group/row hover:bg-white/[0.05] hover:-translate-y-0.5 hover:shadow-[0_12px_30px_-12px_rgba(0,0,0,0.7)] border border-transparent hover:border-white/10 animate-fade-in-up"
+              <div key={idx} className="relative rounded-2xl p-2.5 md:p-3 transition-all duration-300 group/row hover:bg-white/[0.05] hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-14px_rgba(16,185,129,0.35)] border border-transparent hover:border-[#10B981]/25 animate-fade-in-up"
                 style={{ animationDelay: `${Math.min(idx * 70, 420)}ms` }}>
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="shrink-0 flex justify-center">
@@ -259,7 +269,8 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
                   <span className="flex-1 min-w-0 text-[13px] md:text-sm font-bold text-white/90 truncate group-hover/row:text-white transition-colors" dir="auto">
                     {entry.username}
                   </span>
-                  <span className={`text-[13px] md:text-sm font-black tracking-wide ${config.text} shrink-0 rounded-lg bg-black/30 border border-white/10 px-2 py-1`} dir="ltr">
+                  <span className={`text-[13px] md:text-sm font-black tracking-wide ${config.text} shrink-0 rounded-lg bg-black/30 border border-white/10 group-hover/row:border-white/25 px-2 py-1 transition-colors duration-300`} dir="ltr"
+                    style={{ boxShadow: `0 0 14px -6px rgba(${config.glowColor},0.7)` }}>
                     {formatNumber(entry.quantity)}
                   </span>
                 </div>
@@ -280,7 +291,7 @@ const LeaderboardCard: React.FC<LeaderboardCardProps> = ({ title, subtitle, data
 };
 
 
-export const HonorSection: React.FC<StatsSectionProps> = ({ lang }) => {
+export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
   // Initialize as null to indicate "loading"
   const [leaderboards, setLeaderboards] = useState<LeaderboardData | null>(null);
   const [channelInfo, setChannelInfo] = useState<ChannelInfo | null>(null);
@@ -488,6 +499,9 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang }) => {
             </div>
           )}
         </div>
+
+        {/* --- LAST SESSION REPORT (right under top gifters when offline) --- */}
+        {report}
 
         {/* --- BOTRIX LEADERBOARD (Most Active Across Streams) --- */}
         <div className="pt-8 border-t border-white/5">
