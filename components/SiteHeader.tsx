@@ -245,22 +245,21 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
             @media(min-width:768px){.dock-mob{display:none}}
             .dock-mob-shell{position:relative;width:100%;
                 animation:dock-in .8s cubic-bezier(.16,1,.3,1) both}
-            .dock-mob-bar{position:relative;overflow:hidden;
-                background:linear-gradient(180deg,rgba(6,26,20,.94),rgba(3,11,8,.82));
-                backdrop-filter:blur(22px) saturate(1.25);-webkit-backdrop-filter:blur(22px) saturate(1.25);
-                box-shadow:0 18px 44px -26px rgba(0,0,0,.95),inset 0 -1px 0 rgba(255,255,255,.06)}
-            .dock-mob-bar::before{content:"";position:absolute;top:0;left:6%;right:6%;height:1px;border-radius:99px;
-                background:linear-gradient(90deg,transparent,rgba(244,217,138,.6),rgba(16,185,129,.75),transparent);pointer-events:none}
-            .dock-mob-bar::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.85;
-                background:radial-gradient(320px 90px at 88% -40%,rgba(201,162,75,.14),transparent 70%),
-                           radial-gradient(320px 90px at 6% -30%,rgba(16,185,129,.2),transparent 70%)}
-            .dock-mob-row{position:relative;z-index:1;display:flex;align-items:center;gap:9px;padding:9px 12px}
+            .dock-mob-bar{position:relative}
+            .dock-mob-row{position:relative;z-index:1;display:flex;align-items:center;padding:10px 12px}
+            /* soft aurora puddle so the pill never floats on dead black */
+            .dock-mob-row::before{content:"";position:absolute;inset-inline-start:-14px;top:50%;width:230px;height:86px;
+                transform:translateY(-50%);pointer-events:none;
+                background:radial-gradient(closest-side,rgba(16,185,129,.26),transparent 72%);
+                -webkit-mask-image:radial-gradient(closest-side,#000,transparent 72%);
+                mask-image:radial-gradient(closest-side,#000,transparent 72%)}
             /* the one and only phone control */
             .dock-mob-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;gap:10px;
-                height:46px;padding:0 14px 0 8px;border-radius:99px;cursor:pointer;font-family:inherit;
+                height:48px;padding:0 15px 0 9px;border-radius:99px;cursor:pointer;font-family:inherit;
                 color:#04120D;background:linear-gradient(180deg,#A7F3D0 0%,#10B981 52%,#047857 100%);
-                border:1px solid rgba(201,162,75,.32);
-                box-shadow:0 14px 30px -12px rgba(16,185,129,.8),inset 0 1px 0 rgba(255,255,255,.55);
+                border:1px solid rgba(201,162,75,.34);
+                box-shadow:0 20px 40px -14px rgba(16,185,129,.8),0 12px 28px -16px rgba(0,0,0,.95),
+                    inset 0 1px 0 rgba(255,255,255,.55),0 0 32px -12px rgba(16,185,129,.55);
                 transition:transform .3s ease,box-shadow .3s ease}
             .dock-mob-btn:active{transform:scale(.97)}
             .dock-mob-btn::after{content:"";position:absolute;top:-40%;bottom:-40%;width:34%;left:-75%;z-index:0;pointer-events:none;
@@ -268,11 +267,15 @@ export const SiteHeader: React.FC<SiteHeaderProps> = ({
                 animation:mob-shine 5.5s ease-in-out infinite}
             @keyframes mob-shine{0%{left:-75%;opacity:0}14%{opacity:1}36%,100%{left:150%;opacity:0}}
             .dock-mob-btn>*{position:relative;z-index:1}
-            .dock-mob-btn-ic{width:32px;height:32px;border-radius:11px;flex:none;display:inline-flex;align-items:center;justify-content:center;
-                background:#04120D;color:#6EE7B7;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
-            .dock-mob-btn-tx{display:flex;flex-direction:column;align-items:start;line-height:1.08;gap:1px}
+            .dock-mob-btn-ic{position:relative;width:32px;height:32px;border-radius:11px;flex:none;display:inline-flex;align-items:center;justify-content:center;
+                background:#04120D;color:#6EE7B7;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 0 0 1px rgba(201,162,75,.22)}
+            .dock-mob-btn-ic::before{content:"";position:absolute;inset:-4px;border-radius:14px;padding:1.5px;
+                background:conic-gradient(from 0deg,transparent 0 62%,rgba(16,185,129,.9) 78%,rgba(244,217,138,.95) 88%,transparent 96%);
+                -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+                animation:dock-spin 12s linear infinite;opacity:.85}
+            .dock-mob-btn-tx{display:flex;flex-direction:column;align-items:start;line-height:1.1;gap:1px}
             .dock-mob-btn-tx b{font-size:13.5px;font-weight:900;white-space:nowrap}
-            .dock-mob-btn-tx small{font-size:9.5px;font-weight:800;letter-spacing:.06em;opacity:.72;white-space:nowrap;
+            .dock-mob-btn-tx small{font-size:9.5px;font-weight:800;letter-spacing:.06em;opacity:.75;white-space:nowrap;
                 max-width:44vw;overflow:hidden;text-overflow:ellipsis}
             .dock-mob-chev{flex:none;display:inline-flex;transition:transform .4s cubic-bezier(.16,1,.3,1)}
             .dock-mob.is-open .dock-mob-chev{transform:rotate(180deg)}

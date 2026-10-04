@@ -241,6 +241,11 @@
     .glass { background: linear-gradient(180deg, rgba(10,38,32,0.82), rgba(4,14,11,0.86)); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
     .glass-soft { background: rgba(16,185,129,0.06); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 
+    /* Arabic must never be letter-spaced — tracking is for latin only.
+       Kills tracking on any tracked element that is not explicitly LTR. */
+    html[dir="rtl"] [class*="tracking-"]:not([dir="ltr"]) { letter-spacing: normal !important; }
+    html[dir="rtl"] .kicker { letter-spacing: normal; }
+
     /* Emerald empire panel: hairline bronze border + top inner highlight + deep body */
     .citadel-frame {
       position: relative;

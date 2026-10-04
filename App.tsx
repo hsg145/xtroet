@@ -847,7 +847,7 @@ export default function App() {
                     <div className="relative z-10 w-full max-w-[1200px] mx-auto px-3 sm:px-4 md:px-8 pb-10 overflow-clip">
 
                         {/* ===== HERO — ascension in the emerald void ===== */}
-                        <section id="top" className="relative pt-14 md:pt-20 pb-8 md:pb-12 overflow-clip">
+                        <section id="top" className="relative pt-4 md:pt-20 pb-8 md:pb-12 overflow-clip">
                             <div className="relative mx-auto w-full max-w-3xl text-center">
                                 {/* emblem seal */}
                                 <div className="animate-fade-in relative mx-auto w-fit" onMouseEnter={() => setIsHoveringProfile(true)} onMouseLeave={() => setIsHoveringProfile(false)}>
@@ -870,13 +870,15 @@ export default function App() {
                                 </div>
 
                                 {/* giant backdrop word */}
-                                <p className="font-gaming text-stroke-red pointer-events-none select-none absolute inset-x-0 -top-4 md:top-2 text-[26vw] md:text-[190px] leading-none opacity-30" dir="ltr" aria-hidden="true">XTROET</p>
+                                <p className="font-gaming text-stroke-red pointer-events-none select-none absolute inset-x-0 top-[6%] md:top-2 text-[23vw] md:text-[190px] leading-none opacity-20 md:opacity-30" dir="ltr" aria-hidden="true">XTROET</p>
 
                                 <h1 className="animate-fade-in-up relative font-heading font-black text-white leading-[1.05] tracking-tight text-[clamp(2.6rem,9vw,4.8rem)] mt-3" style={{ animationDelay: '180ms' }}>
                                     {lang === 'ar' ? (
                                         <>
                                             {t.nameAr}
-                                            <span className="gold-text"> • </span>
+                                            <span className="gold-text mx-2 inline-flex align-middle" aria-hidden="true">
+                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="translate-y-[-1px]"><path d="M12 2l4.5 7.5L12 22 7.5 9.5z" /></svg>
+                                            </span>
                                             <span dir="ltr" className="hero-xtroet">XTROET</span>
                                         </>
                                     ) : (
