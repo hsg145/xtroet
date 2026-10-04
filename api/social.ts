@@ -67,44 +67,18 @@ function parseCompact(input: unknown): number | null {
 }
 
 async function getTikTok(): Promise<{ count: number; source: string }> {
-  // 0) TikWM — free, no key, exact follower_count
+  // 0) Urlebird mirror — verified working, real profile stats (e.g. 27.17K followers)
+  try {
+    const html = await fetchText(`https://urlebird.com/user/${HANDLES.tiktok}/`, 12000);
+    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'urlebird' };
+  } catch {}
+  // 1) TikWM — free API, exact follower_count
   try {
     const d = await fetchJson(`https://www.tikwm.com/api/user/info?unique_id=${HANDLES.tiktok}`);
     const n = parseCompact(d?.data?.follower_count);
     if (n) return { count: n, source: 'tikwm' };
-  } catch {}
-  // 1) Mixerno — dedicated TikTok counter, exact followers
-  try {
-    const d = await fetchJson(`https://mixerno.space/api/tiktok-user-counter/user/${HANDLES.tiktok}`);
-    const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
-    const n = parseCompact(entry?.count);
-    if (n) return { count: n, source: 'mixerno' };
-  } catch {}
-  // 2) TikMatrix — open JSON, exact count
-  try {
-    const d = await fetchJson(`https://user.tikmatrix.com/api/user?username=${HANDLES.tiktok}`);
-    const n = parseCompact(d?.stats?.Followers);
-    if (n) return { count: n, source: 'tikmatrix' };
-  } catch {}
-  // 3) Countik
-  try {
-    const d = await fetchJson(`https://countik.com/api/tiktok/@${HANDLES.tiktok}`);
-    const n = parseCompact(d?.followerCount ?? d?.followers ?? d?.follower_count);
-    if (n) return { count: n, source: 'countik' };
-  } catch {}
-  // 4) Urlebird public mirror — server-rendered profile stats
-  try {
-    const html = await fetchText(`https://urlebird.com/user/${HANDLES.tiktok}/`, 6000);
-    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-    const n = m ? parseCompact(m[1]) : null;
-    if (n) return { count: n, source: 'urlebird' };
-  } catch {}
-  // 5) Exolyt public mirror — server-rendered profile stats
-  try {
-    const html = await fetchText(`https://exolyt.com/user/${HANDLES.tiktok}`, 6000);
-    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-    const n = m ? parseCompact(m[1]) : null;
-    if (n) return { count: n, source: 'exolyt' };
   } catch {}
   throw new Error('tiktok: all sources failed');
 }
@@ -158,37 +132,14 @@ async function getInstagram(): Promise<{ count: number; source: string }> {
     const n = parseCompact(d?.data?.user?.edge_followed_by?.count);
     if (n) return { count: n, source: 'web_profile_info' };
   } catch {}
-  // 2) Mixerno — dedicated Instagram counter
+  // 2) Mixerno — dedicated Instagram counter (works from browsers)
   try {
     const d = await fetchJson(`https://mixerno.space/api/instagram-user-counter/user/${HANDLES.instagram}`);
     const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => /follow/i.test(c?.value || '')) : null;
     const n = parseCompact(entry?.count);
     if (n) return { count: n, source: 'mixerno' };
   } catch {}
-  // 3) Dumpor public mirror
-  try {
-    const html = await fetchText(`https://dumpor.com/v/${HANDLES.instagram}/`, 6000);
-    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-    const n = m ? parseCompact(m[1]) : null;
-    if (n) return { count: n, source: 'dumpor' };
-  } catch {}
-  // 4) Greatfon public mirror
-  try {
-    const html = await fetchText(`https://greatfon.com/v/${HANDLES.instagram}`, 6000);
-    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-    const n = m ? parseCompact(m[1]) : null;
-    if (n) return { count: n, source: 'greatfon' };
-  } catch {}
-  // 5) Picuki public mirror — static HTML with follower count
-  try {
-    const html = await fetchText(`https://www.picuki.com/profile/${HANDLES.instagram}`);
-    const m =
-      html.match(/([\d.,]+[KMB]?)\s*<\/[^>]+>\s*Followers/i) ||
-      html.match(/([\d.,]+[KMB]?)\s+Followers/i);
-    const n = m ? parseCompact(m[1]) : null;
-    if (n) return { count: n, source: 'picuki' };
-  } catch {}
-  // 6) og:description meta ("21.3K Followers, ...")
+  // 3) og:description meta ("21.3K Followers, ...")
   try {
     const html = await fetchText(`https://www.instagram.com/${HANDLES.instagram}/`);
     const og = html.match(/property="og:description"\s+content="([^"]+)"/)?.[1] || '';

@@ -89,11 +89,22 @@ export async function getTikTokFollowers(username = 'ixtroet'): Promise<number> 
     const n = num(entry?.count);
     if (n) return n;
   } catch {}
-  // Layer 4 — TikMatrix allows CORS + needs no key
+  // Layer 4 — Urlebird mirror page (best-effort, needs CORS)
   try {
-    const d = await fetchJson(`https://user.tikmatrix.com/api/user?username=${username}`);
-    const n = num(String(d?.stats?.Followers ?? '').replace(/,/g, ''));
-    if (n) return n;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(`https://urlebird.com/user/${username}/`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      const html = await res.text();
+      const m = html.match(/([\d.,]+)\s*([KMB])?\s*(?:<\/[^>]+>\s*)?followers/i);
+      if (m) {
+        let v = parseFloat(m[1].replace(/,/g, ''));
+        const u = (m[2] || '').toUpperCase();
+        if (u === 'K') v *= 1e3; else if (u === 'M') v *= 1e6; else if (u === 'B') v *= 1e9;
+        if (Number.isFinite(v) && v > 0) return Math.round(v);
+      }
+    }
   } catch {}
   return FALLBACK.tiktok;
 }

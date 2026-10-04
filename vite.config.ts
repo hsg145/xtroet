@@ -157,6 +157,13 @@ export default defineConfig(({ mode }) => {
                 if (platform === 'tiktok') {
                   result = await tryFirst([
                     async () => {
+                      const html = await tget(`https://urlebird.com/user/${HANDLES.tiktok}/`, 12000);
+                      const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?followers/i);
+                      const n = m ? parseCompact(m[1]) : null;
+                      if (!n) throw new Error('empty');
+                      return { count: n, source: 'urlebird' };
+                    },
+                    async () => {
                       const d: any = await jget(`https://www.tikwm.com/api/user/info?unique_id=${HANDLES.tiktok}`);
                       const n = parseCompact(d?.data?.follower_count);
                       if (!n) throw new Error('empty');
@@ -168,32 +175,6 @@ export default defineConfig(({ mode }) => {
                       const n = parseCompact(entry?.count);
                       if (!n) throw new Error('empty');
                       return { count: n, source: 'mixerno' };
-                    },
-                    async () => {
-                      const d: any = await jget(`https://user.tikmatrix.com/api/user?username=${HANDLES.tiktok}`);
-                      const n = parseCompact(d?.stats?.Followers);
-                      if (!n) throw new Error('empty');
-                      return { count: n, source: 'tikmatrix' };
-                    },
-                    async () => {
-                      const d: any = await jget(`https://countik.com/api/tiktok/@${HANDLES.tiktok}`);
-                      const n = parseCompact(d?.followerCount ?? d?.followers ?? d?.follower_count);
-                      if (!n) throw new Error('empty');
-                      return { count: n, source: 'countik' };
-                    },
-                    async () => {
-                      const html = await tget(`https://urlebird.com/user/${HANDLES.tiktok}/`);
-                      const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-                      const n = m ? parseCompact(m[1]) : null;
-                      if (!n) throw new Error('empty');
-                      return { count: n, source: 'urlebird' };
-                    },
-                    async () => {
-                      const html = await tget(`https://exolyt.com/user/${HANDLES.tiktok}`);
-                      const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-                      const n = m ? parseCompact(m[1]) : null;
-                      if (!n) throw new Error('empty');
-                      return { count: n, source: 'exolyt' };
                     },
                   ]);
                 } else if (platform === 'youtube') {
@@ -265,20 +246,6 @@ export default defineConfig(({ mode }) => {
                       const n = parseCompact(entry?.count);
                       if (!n) throw new Error('empty');
                       return { count: n, source: 'mixerno' };
-                    },
-                    async () => {
-                      const html = await tget(`https://dumpor.com/v/${HANDLES.instagram}/`);
-                      const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-                      const n = m ? parseCompact(m[1]) : null;
-                      if (!n) throw new Error('empty');
-                      return { count: n, source: 'dumpor' };
-                    },
-                    async () => {
-                      const html = await tget(`https://greatfon.com/v/${HANDLES.instagram}`);
-                      const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
-                      const n = m ? parseCompact(m[1]) : null;
-                      if (!n) throw new Error('empty');
-                      return { count: n, source: 'greatfon' };
                     },
                     async () => {
                       const html = await tget(`https://www.picuki.com/profile/${HANDLES.instagram}/`);
