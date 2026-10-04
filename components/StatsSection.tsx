@@ -473,7 +473,7 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
                 t={t}
                 delay={100}
                 emptyLabel={t.noDataWeekly}
-                className="col-span-1 md:col-span-1 order-2 md:order-1"
+                className="col-span-1 md:col-span-1 order-2 md:order-1 md:mt-5"
               />
 
               {/* Monthly (Right on Desktop, Side-by-side on Mobile) - Cyan/Blue Theme */}
@@ -487,7 +487,7 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
                 t={t}
                 delay={200}
                 emptyLabel={t.noDataMonthly}
-                className="col-span-1 md:col-span-1 order-3 md:order-3"
+                className="col-span-1 md:col-span-1 order-3 md:order-3 md:mt-16"
               />
 
             </div>
