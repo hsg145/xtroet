@@ -522,7 +522,7 @@ const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boole
                     </div>
                     <p className={`font-black text-white truncate leading-tight mt-0.5 ${featured ? 'text-[22px] sm:text-2xl' : 'text-[17px]'}`} dir="ltr">{social.username}</p>
                     <div className="flex items-center gap-1.5 mt-1">
-                        {social.followerCount && (
+                        {social.followerCount && social.followerCount !== '—' && (
                             <span className={`inline-flex items-center gap-1 text-[11px] font-black text-white/85`} dir="ltr">
                                 <svg className="w-3 h-3 text-white/40" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" /></svg>
                                 {social.followerCount}

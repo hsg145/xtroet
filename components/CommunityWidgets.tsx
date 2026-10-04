@@ -379,6 +379,12 @@ export const YoutubeWidget: React.FC<CommunityWidgetsProps> = ({ lang }) => {
           }
        };
       const fetchSubs = async () => {
+         // 0) Our server API — resolves @handle to channel id live
+         try {
+            const res = await fetch(`/api/social?platform=youtube`);
+            const j = await res.json();
+            if (!dead && typeof j?.count === 'number' && j.count > 0) { setSubs(fmtSubs(j.count)); return; }
+         } catch {}
          // 1) Mixerno — exact subscriber count
          try {
             const res = await fetch(`https://mixerno.space/api/youtube-channel-counter/user/${channelId}`);

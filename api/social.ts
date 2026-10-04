@@ -19,12 +19,12 @@ const HANDLES = {
 
 type Platform = keyof typeof HANDLES;
 
-async function fetchJson(url: string, timeoutMs = 9000): Promise<any> {
+async function fetchJson(url: string, timeoutMs = 9000, extraHeaders: Record<string, string> = {}): Promise<any> {
   const c = new AbortController();
   const t = setTimeout(() => c.abort(), timeoutMs);
   try {
     const r = await fetch(url, {
-      headers: { Accept: 'application/json', 'User-Agent': UA, 'Accept-Language': 'en-US,en;q=0.9' },
+      headers: { Accept: 'application/json', 'User-Agent': UA, 'Accept-Language': 'en-US,en;q=0.9', ...extraHeaders },
       signal: c.signal,
     });
     if (!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
@@ -66,6 +66,12 @@ function parseCompact(input: unknown): number | null {
 }
 
 async function getTikTok(): Promise<{ count: number; source: string }> {
+  // 0) TikWM — free, no key, exact follower_count
+  try {
+    const d = await fetchJson(`https://www.tikwm.com/api/user/info?unique_id=${HANDLES.tiktok}`);
+    const n = parseCompact(d?.data?.follower_count);
+    if (n) return { count: n, source: 'tikwm' };
+  } catch {}
   // 1) TikMatrix — open JSON, exact count
   try {
     const d = await fetchJson(`https://user.tikmatrix.com/api/user?username=${HANDLES.tiktok}`);
@@ -82,16 +88,19 @@ async function getTikTok(): Promise<{ count: number; source: string }> {
 }
 
 async function getYouTube(): Promise<{ count: number; source: string }> {
+  // 0) Resolve @handle -> UC channel id (cached per isolate)
+  const id = (await resolveYouTubeId()) || (HANDLES.youtube.startsWith('UC') ? HANDLES.youtube : null);
+  if (!id) throw new Error('youtube: could not resolve channel id');
   // 1) Mixerno — exact subscriber count
   try {
-    const d = await fetchJson(`https://mixerno.space/api/youtube-channel-counter/user/${HANDLES.youtube}`);
+    const d = await fetchJson(`https://mixerno.space/api/youtube-channel-counter/user/${id}`);
     const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => c?.value === 'subscribers') : null;
     const n = parseCompact(entry?.count);
     if (n) return { count: n, source: 'mixerno' };
   } catch {}
   // 2) Piped
   try {
-    const d = await fetchJson(`https://pipedapi.kavin.rocks/channel/${HANDLES.youtube}`);
+    const d = await fetchJson(`https://pipedapi.kavin.rocks/channel/${id}`);
     const n = parseCompact(d?.subscriberCount);
     if (n) return { count: n, source: 'piped' };
   } catch {}
@@ -117,9 +126,13 @@ async function getTwitter(): Promise<{ count: number; source: string }> {
 }
 
 async function getInstagram(): Promise<{ count: number; source: string }> {
-  // 1) Instagram private web API (works server-side when not walled)
+  // 1) Instagram web API with public app id (works server-side with proper headers)
   try {
-    const d = await fetchJson(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${HANDLES.instagram}`);
+    const d = await fetchJson(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${HANDLES.instagram}`, 9000, {
+      'X-IG-App-ID': '936619743392459',
+      'X-Requested-With': 'XMLHttpRequest',
+      Referer: `https://www.instagram.com/${HANDLES.instagram}/`,
+    });
     const n = parseCompact(d?.data?.user?.edge_followed_by?.count);
     if (n) return { count: n, source: 'web_profile_info' };
   } catch {}
@@ -132,6 +145,29 @@ async function getInstagram(): Promise<{ count: number; source: string }> {
     if (n) return { count: n, source: 'og_description' };
   } catch {}
   throw new Error('instagram: all sources failed (login-walled)');
+}
+
+/** Resolve a YouTube @handle to its UC channel id (cached). */
+let YT_CHANNEL_ID: string | null = null;
+
+async function resolveYouTubeId(): Promise<string | null> {
+  if (YT_CHANNEL_ID) return YT_CHANNEL_ID;
+  if (HANDLES.youtube.startsWith('UC')) {
+    YT_CHANNEL_ID = HANDLES.youtube;
+    return YT_CHANNEL_ID;
+  }
+  try {
+    const html = await fetchText(`https://www.youtube.com/@${HANDLES.youtube.replace(/^@/, '')}/`);
+    const m =
+      html.match(/"channelId":"(UC[\w-]{22})"/) ||
+      html.match(/youtube\.com\/channel\/(UC[\w-]{22})/) ||
+      html.match(/"browseId":"(UC[\w-]{22})"/);
+    if (m) {
+      YT_CHANNEL_ID = m[1];
+      return YT_CHANNEL_ID;
+    }
+  } catch {}
+  return null;
 }
 
 export default async function handler(request: Request) {

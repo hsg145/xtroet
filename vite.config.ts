@@ -122,11 +122,11 @@ export default defineConfig(({ mode }) => {
                 const out = Math.round(n);
                 return out > 0 ? out : null;
               };
-              const jget = async (u: string, timeoutMs = 12000) => {
+              const jget = async (u: string, timeoutMs = 12000, extraHeaders: Record<string, string> = {}) => {
                 const controller = new AbortController();
                 const timer = setTimeout(() => controller.abort(), timeoutMs);
                 try {
-                  const r = await fetch(u, { headers: { Accept: 'application/json', 'User-Agent': UA }, signal: controller.signal });
+                  const r = await fetch(u, { headers: { Accept: 'application/json', 'User-Agent': UA, ...extraHeaders }, signal: controller.signal });
                   if (!r.ok) throw new Error(`HTTP ${r.status}`);
                   return await r.json();
                 } finally { clearTimeout(timer); }
@@ -157,6 +157,12 @@ export default defineConfig(({ mode }) => {
                 if (platform === 'tiktok') {
                   result = await tryFirst([
                     async () => {
+                      const d: any = await jget(`https://www.tikwm.com/api/user/info?unique_id=${HANDLES.tiktok}`);
+                      const n = parseCompact(d?.data?.follower_count);
+                      if (!n) throw new Error('empty');
+                      return { count: n, source: 'tikwm' };
+                    },
+                    async () => {
                       const d: any = await jget(`https://user.tikmatrix.com/api/user?username=${HANDLES.tiktok}`);
                       const n = parseCompact(d?.stats?.Followers);
                       if (!n) throw new Error('empty');
@@ -170,16 +176,26 @@ export default defineConfig(({ mode }) => {
                     },
                   ]);
                 } else if (platform === 'youtube') {
+                  // resolve @handle -> UC id first
+                  let ytId: string | null = HANDLES.youtube.startsWith('UC') ? HANDLES.youtube : null;
+                  if (!ytId) {
+                    try {
+                      const html = await tget(`https://www.youtube.com/@${HANDLES.youtube.replace(/^@/, '')}/`);
+                      const m = html.match(/"channelId":"(UC[\w-]{22})"/) || html.match(/youtube\.com\/channel\/(UC[\w-]{22})/) || html.match(/"browseId":"(UC[\w-]{22})"/);
+                      if (m) ytId = m[1];
+                    } catch {}
+                  }
+                  if (!ytId) throw new Error('could not resolve channel id');
                   result = await tryFirst([
                     async () => {
-                      const d: any = await jget(`https://mixerno.space/api/youtube-channel-counter/user/${HANDLES.youtube}`);
+                      const d: any = await jget(`https://mixerno.space/api/youtube-channel-counter/user/${ytId}`);
                       const entry = Array.isArray(d?.counts) ? d.counts.find((c: any) => c?.value === 'subscribers') : null;
                       const n = parseCompact(entry?.count);
                       if (!n) throw new Error('empty');
                       return { count: n, source: 'mixerno' };
                     },
                     async () => {
-                      const d: any = await jget(`https://pipedapi.kavin.rocks/channel/${HANDLES.youtube}`);
+                      const d: any = await jget(`https://pipedapi.kavin.rocks/channel/${ytId}`);
                       const n = parseCompact(d?.subscriberCount);
                       if (!n) throw new Error('empty');
                       return { count: n, source: 'piped' };
@@ -203,7 +219,11 @@ export default defineConfig(({ mode }) => {
                 } else {
                   result = await tryFirst([
                     async () => {
-                      const d: any = await jget(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${HANDLES.instagram}`);
+                      const d: any = await jget(`https://i.instagram.com/api/v1/users/web_profile_info/?username=${HANDLES.instagram}`, 12000, {
+                        'X-IG-App-ID': '936619743392459',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        Referer: `https://www.instagram.com/${HANDLES.instagram}/`,
+                      });
                       const n = parseCompact(d?.data?.user?.edge_followed_by?.count);
                       if (!n) throw new Error('empty');
                       return { count: n, source: 'web_profile_info' };

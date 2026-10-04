@@ -62,7 +62,13 @@ export async function getInstagramFollowers(username = 'xtroet'): Promise<number
 export async function getTikTokFollowers(username = 'ixtroet'): Promise<number> {
   const via = await viaServerApi('tiktok');
   if (via) return via;
-  // Layer 2 — TikMatrix allows CORS + needs no key
+  // Layer 2 — TikWM (free, no key, CORS-open)
+  try {
+    const d = await fetchJson(`https://www.tikwm.com/api/user/info?unique_id=${username}`);
+    const n = num(d?.data?.follower_count);
+    if (n) return n;
+  } catch {}
+  // Layer 3 — TikMatrix allows CORS + needs no key
   try {
     const d = await fetchJson(`https://user.tikmatrix.com/api/user?username=${username}`);
     const n = num(String(d?.stats?.Followers ?? '').replace(/,/g, ''));
