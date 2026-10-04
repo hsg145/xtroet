@@ -881,7 +881,7 @@ export default function App() {
                                         <span dir="ltr" className="hero-xtroet">XTROET</span>
                                     )}
                                 </h1>
-                                <p className="animate-fade-in-up text-white/70 text-[15px] md:text-lg leading-relaxed max-w-2xl mt-4 md:mt-5 font-medium mx-auto" style={{ animationDelay: '300ms' }}>{t.bio}</p>
+                                <p className="animate-fade-in-up text-white/70 text-[15px] md:text-lg leading-relaxed max-w-2xl mt-6 md:mt-7 font-medium mx-auto" style={{ animationDelay: '300ms' }}>{t.bio}</p>
 
                                 <div className="animate-fade-in-up flex flex-wrap justify-center gap-2 sm:gap-2.5 mt-5" style={{ animationDelay: '360ms' }}>
                                     {t.tags.map((tag, i) => (
