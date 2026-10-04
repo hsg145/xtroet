@@ -92,6 +92,20 @@ async function getTikTok(): Promise<{ count: number; source: string }> {
     const n = parseCompact(d?.followerCount ?? d?.followers ?? d?.follower_count);
     if (n) return { count: n, source: 'countik' };
   } catch {}
+  // 4) Urlebird public mirror — server-rendered profile stats
+  try {
+    const html = await fetchText(`https://urlebird.com/user/${HANDLES.tiktok}/`, 6000);
+    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'urlebird' };
+  } catch {}
+  // 5) Exolyt public mirror — server-rendered profile stats
+  try {
+    const html = await fetchText(`https://exolyt.com/user/${HANDLES.tiktok}`, 6000);
+    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'exolyt' };
+  } catch {}
   throw new Error('tiktok: all sources failed');
 }
 
@@ -151,7 +165,21 @@ async function getInstagram(): Promise<{ count: number; source: string }> {
     const n = parseCompact(entry?.count);
     if (n) return { count: n, source: 'mixerno' };
   } catch {}
-  // 3) Picuki public mirror — static HTML with follower count
+  // 3) Dumpor public mirror
+  try {
+    const html = await fetchText(`https://dumpor.com/v/${HANDLES.instagram}/`, 6000);
+    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'dumpor' };
+  } catch {}
+  // 4) Greatfon public mirror
+  try {
+    const html = await fetchText(`https://greatfon.com/v/${HANDLES.instagram}`, 6000);
+    const m = html.match(/([\d.,]+[KMB]?)\s*(?:<\/[^>]+>\s*)?Followers/i);
+    const n = m ? parseCompact(m[1]) : null;
+    if (n) return { count: n, source: 'greatfon' };
+  } catch {}
+  // 5) Picuki public mirror — static HTML with follower count
   try {
     const html = await fetchText(`https://www.picuki.com/profile/${HANDLES.instagram}`);
     const m =
@@ -160,7 +188,7 @@ async function getInstagram(): Promise<{ count: number; source: string }> {
     const n = m ? parseCompact(m[1]) : null;
     if (n) return { count: n, source: 'picuki' };
   } catch {}
-  // 4) og:description meta ("21.3K Followers, ...")
+  // 6) og:description meta ("21.3K Followers, ...")
   try {
     const html = await fetchText(`https://www.instagram.com/${HANDLES.instagram}/`);
     const og = html.match(/property="og:description"\s+content="([^"]+)"/)?.[1] || '';
