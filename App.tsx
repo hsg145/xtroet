@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
-import { KickIcon, XIcon, DiscordIcon, TikTokIcon, InstagramIcon, YoutubeIcon } from './components/Icons';
+import { KickIcon, XIcon, SnapchatIcon, DiscordIcon, TikTokIcon, InstagramIcon, YoutubeIcon } from './components/Icons';
 import { SocialLink, Language } from './types';
 import { StreamPlayer } from './components/StreamPlayer';
 import { SiteHeader } from './components/SiteHeader';
@@ -31,6 +31,7 @@ const createSocialLink = (key: string, value: string, followerCount?: string, sp
         case 'instagram': return { name: 'Instagram', url: value.startsWith('http') ? value : `https://instagram.com/${handle}`, icon: <InstagramIcon className="w-7 h-7" />, color: '', username: `@${handle}`, hex: '#E1306C', followerCount, specialDetail };
         case 'youtube': return { name: 'YouTube', url: value.startsWith('http') ? value : `https://youtube.com/@${handle}`, icon: <YoutubeIcon className="w-7 h-7" />, color: '', username: '@XTROET', hex: '#FF0000', followerCount, specialDetail };
         case 'discord': return { name: 'Discord', url: value.startsWith('http') ? value : `https://discord.gg/${handle}`, icon: <DiscordIcon className="w-7 h-7" />, color: '', username: 'Emerald Community', hex: '#5865F2', followerCount, specialDetail };
+        case 'snapchat': return { name: 'Snapchat', url: value.startsWith('http') ? value : `https://snapchat.com/add/${handle}`, icon: <SnapchatIcon className="w-7 h-7" />, color: '', username: `@${handle}`, hex: '#FFFC00', followerCount, specialDetail };
         case 'tiktok': return { name: 'TikTok', url: value.startsWith('http') ? value : `https://tiktok.com/@${handle}`, icon: <TikTokIcon className="w-7 h-7" />, color: '', username: `@${handle}`, hex: '#FE2C55', followerCount, specialDetail };
         default: return null;
     }
@@ -53,7 +54,7 @@ const buildDefaultSocials = (stats: Record<string, string>): SocialLink[] => ([
     { ...KICK_SOCIAL, followerCount: stats['KICK'] || KICK_SOCIAL.followerCount },
     createSocialLink('tiktok', 'https://www.tiktok.com/@ixtroet', stats['TikTok'], 'أقوى المقاطع والترند'),
     createSocialLink('twitter', 'https://x.com/xtroet', stats['X'], 'الأخبار والتحديثات أول بأول'),
-    createSocialLink('discord', 'https://discord.com/invite/eX8DR9Aj9D', stats['Discord'], 'مجتمع الزمرد الرسمي'),
+    createSocialLink('snapchat', 'https://www.snapchat.com/@xtroet', stats['Snapchat'], 'سنابات ويوميات حصرية'),
     createSocialLink('instagram', 'https://www.instagram.com/xtroet/', stats['Instagram'], 'الكواليس والستوري والصور'),
 ].filter(Boolean) as SocialLink[]);
 
@@ -464,7 +465,7 @@ const BRAND_GRADIENTS: Record<string, string> = {
     Instagram: 'linear-gradient(135deg, rgba(225,48,108,0.28), rgba(129,52,175,0.14) 50%, rgba(255,170,60,0.08))',
     TikTok: 'linear-gradient(135deg, rgba(254,44,85,0.24), rgba(37,244,238,0.12) 60%, transparent)',
     X: 'linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.02) 60%, transparent)',
-    Discord: 'linear-gradient(135deg, rgba(88,101,242,0.30), rgba(88,101,242,0.07) 55%, transparent)',
+    Snapchat: 'linear-gradient(135deg, rgba(255,252,0,0.20), rgba(255,170,0,0.08) 55%, transparent)',
     YouTube: 'linear-gradient(135deg, rgba(255,0,0,0.26), rgba(255,0,0,0.05) 55%, transparent)',
 };
 
@@ -474,7 +475,7 @@ const SocialCard: React.FC<{ social: SocialLink; index: number; featured?: boole
     const [launching, setLaunching] = useState(false);
     const [pressed, setPressed] = useState(false);
     const brand = social.hex || '#ffffff';
-    const bright = social.name === 'KICK';
+    const bright = social.name === 'Snapchat' || social.name === 'KICK';
     const go = (e: React.MouseEvent) => {
         e.preventDefault();
         if (launching) return;
@@ -729,12 +730,12 @@ export default function App() {
 
     const [socialStats, setSocialStats] = useState<Record<string, string>>({
         'KICK': '—', 'TikTok': '—',
-        'X': '—', 'Instagram': '—', 'Discord': '—', 'YouTube': '—'
+        'X': '—', 'Instagram': '—', 'Snapchat': '—', 'YouTube': '—'
     });
 
     const [socials, setSocials] = useState<SocialLink[]>(() => buildDefaultSocials({
         'KICK': '—', 'TikTok': '—',
-        'X': '—', 'Instagram': '—', 'Discord': '—', 'YouTube': '—'
+        'X': '—', 'Instagram': '—', 'Snapchat': '—', 'YouTube': '—'
     }));
     const [lastSession, setLastSession] = useState<any>(null);
     const [pastSessions, setPastSessions] = useState<any[]>([]);
