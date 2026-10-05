@@ -67,10 +67,17 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
         return () => window.clearTimeout(id);
     }, [active, paused, box, go]);
 
-    /* keep the active filmstrip chip in view */
+    /* keep the active filmstrip chip in view — scrolls the STRIP only,
+       never the page (scrollIntoView would yank the whole site down) */
     useEffect(() => {
-        const el = stripRef.current?.querySelector<HTMLElement>(`[data-i="${active}"]`);
-        el?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const strip = stripRef.current;
+        const el = strip?.querySelector<HTMLElement>(`[data-i="${active}"]`);
+        if (strip && el) {
+            strip.scrollTo({
+                left: el.offsetLeft - strip.clientWidth / 2 + el.clientWidth / 2,
+                behavior: 'smooth',
+            });
+        }
     }, [active]);
 
     /* lightbox: lock scroll + keyboard */
