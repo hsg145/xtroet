@@ -12,21 +12,41 @@ const PHOTOS = Array.from({ length: 17 }, (_, i) => ({
     n: i + 1,
 }));
 
-/* ---------- EDITABLE COPY — replace the bio here when the final text arrives ---------- */
+/* ---------- EDITABLE COPY — replace the text here when the final version arrives ---------- */
 const IDENTITY = {
     ar: {
+        kicker: 'شخصية ناصر العنزي',
         name: 'ناصر العنزي',
-        handle: 'XTROET',
-        role: 'ستريمر على KICK',
-        bio: 'ستريمر سعودي على KICK، يبني مجتمعه حول البث: ألعاب، تحديات، ودردوس ما يهدى مع الجمهور. وكل صورة في هذا الألبوم هي لحظة من إحدى السهرات.',
-        chips: ['KICK', 'ألعاب', 'تحديات', 'دردوس'],
+        latin: 'Nasser Alanazi',
+        role: 'عسكري مثابر • رئيس شرطة',
+        bio: 'عسكري مثابر، قديم في مدينة مستري تاون. صعد رتبةً بعد رتبة، بخدمة مباشرة في الميدان وبالامتياز في الحالات، حتى صار رئيس الشرطة قبل أكثر من سنتين.\nواجه بكر باكور، واختُطف على يده عدة مرات، وبكر حاول اغتياله أكثر من مرة.\nثم تولّى عبدالصمد القرشي قضية بكر باكور مع فرقة SSF، حتى قبض عليه. وفي موقع بار ساندي كان ناصر العنزي معه.\nحين ظنّوا أن العسكري الشريف ناصر العنزي فاسد — بسبب فساد عبدالصمد القرشي وتحيز القادة له — نُفّذ فيه حكم الإعدام على يد عبدالصمد القرشي الفاسد بتاريخ 05/05/2024.',
+        chips: ['مستري تاون', 'رئيس شرطة', 'بار ساندي', 'SSF'],
     },
     en: {
+        kicker: 'The character of Nasser Alanazi',
         name: 'Nasser Alanazi',
-        handle: 'XTROET',
-        role: 'Streamer on KICK',
-        bio: 'A Saudi streamer on KICK, building his community around the stream: games, challenges, and endless chat with the audience. Every photo in this album is a moment from one of the late nights.',
-        chips: ['KICK', 'GAMES', 'CHALLENGES', 'CHAT'],
+        latin: 'Nasser Alanazi',
+        role: 'Veteran officer • Police chief',
+        bio: 'A stubborn veteran officer, long rooted in Mistri Town. He climbed rank after rank — serving directly in the field and earning merit in every case — until he became police chief a little over two years ago.\nHe faced Bakor Bakor, was abducted by him several times, and Bakor attempted to have him assassinated more than once.\nAbdulSamad Al-Qurshi then took over the Bakor Bakor case with the SSF squad, and Bakor was finally arrested. At the Bar Sandy site, Nasser Alanazi was with him.\nWhen they assumed the honest officer Nasser Alanazi was corrupt — because of AbdulSamad Al-Qurshi’s corruption and the commanders’ bias toward him — he was executed by the corrupt AbdulSamad Al-Qurshi on 05/05/2024.',
+        chips: ['Mistri Town', 'Police chief', 'Bar Sandy', 'SSF'],
+    },
+} as const;
+
+/* second dossier — the counterpart character */
+const IDENTITY_2 = {
+    ar: {
+        kicker: 'الشخصية الثانية',
+        name: 'بكر باكور',
+        latin: 'Bakor Bakor',
+        role: 'المطلوب • الخصم',
+        bio: 'الخصم الذي واجه ناصر العنزي. خطفه أكثر من مرة وحاول اغتياله، لكن عبدالصمد القرشي مع فرقة SSF وضعوا يده، وانتهت القضية في موقع بار ساندي.',
+    },
+    en: {
+        kicker: 'Second character',
+        name: 'Bakor Bakor',
+        latin: 'Bakor Bakor',
+        role: 'The wanted • The adversary',
+        bio: 'The adversary who faced Nasser Alanazi. He abducted him several times and tried to have him killed — until AbdulSamad Al-Qurshi and the SSF squad closed in, ending the case at the Bar Sandy site.',
     },
 } as const;
 
@@ -45,6 +65,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
     const isAr = lang === 'ar';
     const copy = isAr ? IDENTITY.ar : IDENTITY.en;
+    const copy2 = isAr ? IDENTITY_2.ar : IDENTITY_2.en;
     const dir = isAr ? -1 : 1;
 
     const total = PHOTOS.length;
@@ -218,6 +239,14 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
             .alb-rule::before{content:"";position:absolute;inset-inline-start:0;top:50%;width:56px;height:2px;
                 transform:translateY(-50%);border-radius:99px;
                 background:linear-gradient(90deg,#F4D98A,#C9A24B);box-shadow:0 0 16px rgba(201,162,75,.75)}
+            .alb-badge{position:relative;width:56px;height:56px;border-radius:18px;display:inline-flex;
+                align-items:center;justify-content:center;color:#04120D;
+                background:linear-gradient(180deg,#F4D98A 0%,#C9A24B 55%,#8A6A3A 100%);
+                box-shadow:0 14px 30px -10px rgba(201,162,75,.75),inset 0 1px 0 rgba(255,255,255,.55)}
+            .alb-badge::after{content:"";position:absolute;inset:-5px;border-radius:22px;padding:1.5px;
+                background:conic-gradient(from 0deg,transparent 0 66%,rgba(201,162,75,.9) 80%,rgba(167,243,208,.95) 90%,transparent 97%);
+                -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+                animation:dock-spin 14s linear infinite;opacity:.75}
             .alb-tag{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;
                 font-size:11px;font-weight:800;color:rgba(255,255,255,.68);
                 background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);transition:all .3s ease}
@@ -234,17 +263,17 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 display:inline-flex;align-items:center;justify-content:center;color:rgba(255,255,255,.75);
                 background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);transition:all .3s ease}
             .alb-x:hover{color:#04120D;background:#A7F3D0;border-color:transparent;transform:rotate(90deg)}
-            @media(prefers-reduced-motion:reduce){.alb-aura,.alb-sheen,.alb-auto{animation:none}.alb-stage>div{transition:none}}
+            @keyframes dock-spin{to{transform:rotate(360deg)}}
+            @media(prefers-reduced-motion:reduce){.alb-aura,.alb-sheen,.alb-auto,.alb-badge::after{animation:none}.alb-stage>div{transition:none}}
             a:focus-visible,button:focus-visible{outline:2px solid #10B981;outline-offset:3px;border-radius:12px}
             `}</style>
 
-            {/* minmax(0,…) is required: plain `fr` has an auto minimum, so a wide child
-            (the horizontal filmstrip) would push the whole grid off-screen. */}
-            <div className="grid gap-4 md:gap-6 lg:gap-7 xl:gap-9 items-stretch
-                lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)]">
+            {/* flexbox, not grid: a wide child (the filmstrip / the fanned deck) can never
+                stretch a flex track, so the panel can never escape the container. */}
+            <div className="flex flex-col gap-4 md:gap-6 lg:flex-row lg:items-stretch lg:gap-7 xl:gap-9">
 
                 {/* ================= DECK ================= */}
-                <div className="alb-shell order-1 min-w-0">
+                <div className="alb-shell order-1 w-full lg:w-[46%] lg:max-w-[540px] lg:shrink-0">
                     <div className="alb-shell-in">
                         <span className="alb-aura" aria-hidden="true" />
 
@@ -278,8 +307,8 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                 </span>
                             </div>
 
-                            {/* stacked cards */}
-                            <div className="alb-stage">{deck}</div>
+                            {/* overflow-hidden clips the fanned neighbours so the deck stays inside its panel */}
+                            <div className="alb-stage overflow-hidden">{deck}</div>
                             <span className="alb-reflect" aria-hidden="true" />
 
                             {/* controls */}
@@ -354,7 +383,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 </div>
 
                 {/* ================= IDENTITY ================= */}
-                <aside className="order-2 min-w-0 flex flex-col justify-center">
+                <aside className="order-2 w-full min-w-0 flex-1 flex flex-col justify-center">
                     <div className="relative h-full rounded-[28px] border border-white/10 bg-white/[0.03] backdrop-blur-2xl overflow-hidden">
                         <div
                             className="absolute -top-24 start-0 h-72 w-72 rounded-full blur-[100px] pointer-events-none"
@@ -369,32 +398,35 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                         <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-l from-transparent via-[#C9A24B]/60 to-transparent" aria-hidden="true" />
 
                         <div className="relative p-6 sm:p-9 lg:p-10 xl:p-11">
+                            {/* ---- primary dossier ---- */}
                             <div className="flex items-center gap-2.5 text-[10px] font-black uppercase text-white/35">
                                 <span className="h-1.5 w-1.5 rotate-45 bg-[#C9A24B]" aria-hidden="true" />
-                                <span dir="ltr">// THE MAN BEHIND XTROET</span>
+                                <span>{copy.kicker}</span>
                             </div>
 
-                            <h3 className={`alb-id-name mt-5 text-[38px] leading-[1.05] font-black tracking-tight sm:text-[52px] lg:text-[62px] xl:text-[70px] ${isAr ? 'font-arabic' : ''}`}>
+                            <h3 className={`alb-id-name mt-4 text-[34px] leading-[1.05] font-black tracking-tight sm:text-[46px] lg:text-[56px] xl:text-[62px] ${isAr ? 'font-arabic' : ''}`}>
                                 {copy.name}
                             </h3>
 
-                            <p className="mt-2.5 text-[11px] sm:text-xs font-black uppercase text-white/25" dir="ltr">
-                                {isAr ? 'Nasser Alanazi' : 'XTROET — Nasser Alanazi'}
+                            <p className="mt-2 text-[11px] sm:text-xs font-black uppercase text-white/25" dir="ltr">
+                                {copy.latin}
                             </p>
 
-                            <div className="mt-5 flex items-center gap-3">
-                                <span className="text-[15px] font-black text-[#6EE7B7]" dir="ltr">{copy.handle}</span>
-                                <span className="h-1 w-1 rotate-45 bg-[#C9A24B]/70" aria-hidden="true" />
-                                <span className="text-[14px] font-bold text-white/45">{copy.role}</span>
+                            <div className="mt-4 flex items-center gap-3 flex-wrap">
+                                <span className="text-[14px] font-bold text-white/50">{copy.role}</span>
                             </div>
 
-                            <span className="alb-rule mt-7 block" aria-hidden="true" />
+                            <span className="alb-rule mt-6 block" aria-hidden="true" />
 
-                            <p className="mt-7 text-[16px] sm:text-[17px] lg:text-[18px] leading-[2.05] font-medium text-white/70 max-w-[46ch]">
-                                {copy.bio}
-                            </p>
+                            <div className="mt-6 space-y-3.5">
+                                {copy.bio.split('\n').map((line, i) => (
+                                    <p key={i} className="text-[15px] sm:text-[16px] lg:text-[17px] leading-[1.95] font-medium text-white/70">
+                                        {line}
+                                    </p>
+                                ))}
+                            </div>
 
-                            <div className="mt-7 flex flex-wrap gap-2">
+                            <div className="mt-6 flex flex-wrap gap-2">
                                 {copy.chips.map((c) => (
                                     <span key={c} className="alb-tag" dir={/^[\x00-\x7F]+$/.test(c) ? 'ltr' : undefined}>
                                         <span className="h-1 w-1 rotate-45 bg-[#10B981]" aria-hidden="true" />
@@ -423,6 +455,32 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                     </svg>
                                     {isAr ? `كل الصور (${total})` : `All photos (${total})`}
                                 </button>
+                            </div>
+
+                            {/* ---- second dossier: the counterpart ---- */}
+                            <div className="mt-9 pt-8 border-t border-white/[0.08]">
+                                <div className="flex items-center gap-2.5 text-[10px] font-black uppercase text-white/30">
+                                    <span className="h-1.5 w-1.5 rotate-45 bg-[#C9A24B]/70" aria-hidden="true" />
+                                    <span>{copy2.kicker}</span>
+                                </div>
+
+                                <div className="mt-4 flex items-center gap-4">
+                                    <span className="alb-badge shrink-0" aria-hidden="true">
+                                        <span className="text-[13px] font-black tracking-[0.06em]">MT</span>
+                                    </span>
+                                    <div className="min-w-0">
+                                        <h4 className={`text-[24px] sm:text-[28px] lg:text-[32px] font-black leading-tight ${isAr ? 'font-arabic' : ''}`}>
+                                            {copy2.name}
+                                        </h4>
+                                        <p className="mt-1 text-[10px] font-black uppercase text-white/25" dir="ltr">{copy2.latin}</p>
+                                    </div>
+                                </div>
+
+                                <p className="mt-3.5 text-[13px] font-bold text-[#C9A24B]/85">{copy2.role}</p>
+
+                                <p className="mt-3.5 text-[14px] sm:text-[15px] leading-[1.9] font-medium text-white/55">
+                                    {copy2.bio}
+                                </p>
                             </div>
                         </div>
                     </div>
