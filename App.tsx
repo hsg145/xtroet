@@ -9,8 +9,8 @@ import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
 // Heavy below-fold / on-demand chunks — split out of the first paint
 const HonorSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.HonorSection })));
 const ArchiveSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.ArchiveSection })));
-const ThreadSection = lazy(() => import('./components/ThreadSection').then(m => ({ default: m.ThreadSection })));
 const AlbumSection = lazy(() => import('./components/AlbumSection').then(m => ({ default: m.AlbumSection })));
+const StoryPage = lazy(() => import('./components/StoryPage').then(m => ({ default: m.StoryPage })));
 
 // --- Constants (XTROET) ---
 const DEFAULT_PROFILE_IMAGE = "/xtroet-logo.webp";
@@ -840,6 +840,38 @@ export default function App() {
         document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     }, [lang]);
 
+    /* standalone cinematic route — when the hash is #story the whole site
+       steps aside and the story page owns the screen */
+    const [route, setRoute] = useState<string>(() => (typeof window !== 'undefined' ? window.location.hash : ''));
+    useEffect(() => {
+        const onH = () => {
+            setRoute(window.location.hash);
+            window.scrollTo(0, 0);
+        };
+        window.addEventListener('hashchange', onH);
+        return () => window.removeEventListener('hashchange', onH);
+    }, []);
+    /* leaving the story: land smoothly on the requested section if it exists */
+    useEffect(() => {
+        if (route && route !== '#story' && route.startsWith('#')) {
+            const id = route.slice(1);
+            const t = window.setTimeout(() => {
+                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 120);
+            return () => window.clearTimeout(t);
+        }
+    }, [route]);
+
+    if (route === '#story') {
+        return (
+            <div className={`relative min-h-screen w-full overflow-hidden bg-black ${lang === 'ar' ? 'font-arabic' : 'font-sans'}`}>
+                <Suspense fallback={null}>
+                    <StoryPage lang={lang} />
+                </Suspense>
+            </div>
+        );
+    }
+
     return (
         <div className={`grain relative min-h-screen w-full overflow-x-hidden ${lang === 'ar' ? 'font-arabic' : 'font-sans'}`}>
                 <>
@@ -1038,11 +1070,6 @@ export default function App() {
                             <Reveal><SectionHeading no="06" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
                             <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><ArchiveSection lang={lang} /></Suspense></Reveal>
                         </section>
-
-                        {/* ===== THREAD — the cinematic chapter that leads into the album ===== */}
-                        <Suspense fallback={null}>
-                            <ThreadSection lang={lang} />
-                        </Suspense>
 
                         {/* ===== ALBUM — final section: Nasser's photo deck ===== */}
                         <section id="album" className="pt-12 md:pt-16 scroll-mt-28">

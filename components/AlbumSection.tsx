@@ -498,6 +498,14 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                     </svg>
                                     {isAr ? `كل الصور (${total})` : `All photos (${total})`}
                                 </button>
+
+                                <a
+                                    href="#story"
+                                    className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[14px] text-[#F4D98A] transition-all duration-300 bg-[#C9A24B]/[0.08] border border-[#C9A24B]/35 hover:bg-[#C9A24B]/[0.16] hover:border-[#C9A24B]/60 hover:-translate-y-0.5 active:scale-[0.98]"
+                                >
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3.2c-2.6 3.4-4.2 6-4.2 8.4a4.2 4.2 0 008.4 0c0-2.4-1.6-5-4.2-8.4z" /><path d="M5 20h14" /></svg>
+                                    {isAr ? 'السيرة السينمائية' : 'The cinematic story'}
+                                </a>
                             </div>
 
                             {/* ---- second dossier: the counterpart ---- */}
