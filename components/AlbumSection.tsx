@@ -230,10 +230,10 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 transform:skewX(-18deg);animation:alb-prime-shine 4.6s ease-in-out infinite}
             @keyframes alb-prime-shine{0%{left:-75%;opacity:0}14%{opacity:1}36%,100%{left:150%;opacity:0}}
             .alb-prime>*{position:relative;z-index:1}
-            .alb-prime-live{position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);
-                width:7px;height:7px;border-radius:99px;background:#04120D;opacity:.55;
-                animation:alb-prime-blink 2.2s ease-in-out infinite}
-            @keyframes alb-prime-blink{0%,100%{opacity:.25}50%{opacity:.9}}
+            .alb-prime-ic{box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 1.5px rgba(110,231,183,.45),0 0 18px rgba(110,231,183,.55);
+                transition:transform .35s cubic-bezier(.16,1,.3,1),box-shadow .35s ease}
+            .alb-prime:hover .alb-prime-ic{transform:scale(1.1) rotate(-6deg);
+                box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 0 0 1.5px rgba(110,231,183,.7),0 0 26px rgba(110,231,183,.8)}
             .alb-tag{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;
                 font-size:11px;font-weight:800;color:rgba(255,255,255,.68);
                 background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);transition:all .3s ease}
@@ -250,7 +250,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 display:inline-flex;align-items:center;justify-content:center;color:rgba(255,255,255,.75);
                 background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);transition:all .3s ease}
             .alb-x:hover{color:#04120D;background:#A7F3D0;border-color:transparent;transform:rotate(90deg)}
-            @media(prefers-reduced-motion:reduce){.alb-aura,.alb-sheen,.alb-auto,.alb-prime::after,.alb-prime-live{animation:none}.alb-stage>div{transition:none}}
+            @media(prefers-reduced-motion:reduce){.alb-aura,.alb-sheen,.alb-auto,.alb-prime::after{animation:none}.alb-stage>div{transition:none}}
             a:focus-visible,button:focus-visible{outline:2px solid #10B981;outline-offset:3px;border-radius:12px}
             `}</style>
 
@@ -435,11 +435,10 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                     href="#story"
                                     className="alb-prime group relative inline-flex items-center justify-center gap-3 w-full px-6 py-4 rounded-2xl font-black text-[15px] sm:text-base text-[#04120D] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.99]"
                                 >
-                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#04120D] text-[#6EE7B7] shrink-0" aria-hidden="true">
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.2c-2.6 3.4-4.2 6-4.2 8.4a4.2 4.2 0 008.4 0c0-2.4-1.6-5-4.2-8.4z" /><path d="M5 20h14" /></svg>
+                                    <span className="alb-prime-ic inline-flex items-center justify-center w-9 h-9 rounded-full bg-[#04120D] text-[#6EE7B7] shrink-0" aria-hidden="true">
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M10.3 9.3l4.9 2.7-4.9 2.7z" fill="currentColor" stroke="none" /></svg>
                                     </span>
                                     {isAr ? 'السيرة السينمائية' : 'The cinematic story'}
-                                    <span className="alb-prime-live" aria-hidden="true" />
                                 </a>
 
                                 <div className="flex flex-wrap items-center gap-3">
