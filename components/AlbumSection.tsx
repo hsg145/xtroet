@@ -18,13 +18,7 @@ const IDENTITY = {
         kicker: 'شخصية ناصر العنزي',
         name: 'ناصر العنزي',
         latin: 'Nasser Alanazi',
-        role: 'عسكري مثابر • رئيس شرطة',
-        beats: [
-            'عسكري مثابر قديم في مدينة مستري تاون، ثابر لصعوده السلم العسكري رتبةً بعد رتبة، بمباشرة الميدان وبالامتياز في الحالات، حتى أصبح رئيس الشرطة قبل أكثر من سنتين.',
-            'واجه بكر باكور، وتم خطفه من قبل بكر عدة مرات، وقام بكر بمحاولات اغتيال لناصر العنزي.',
-            'ثم قام عبدالصمد القرشي بمباشرة حالة بكر باكور مع فرقة SSF، واستمرت الأحداث حتى قبض عبدالصمد القرشي على بكر، وكان معه ناصر العنزي في موقع بار ساندي.',
-            'ثم ظنّوا أن العسكري الشريف ناصر العنزي فاسد، بسبب فساد عبدالصمد القرشي وتحيز القادة له، ثم تم إعدام ناصر العنزي من قبل عبدالصمد القرشي الفاسد.',
-        ],
+        short: 'عسكري مثابر قديم في مدينة مستري تاون، صعد حتى رئاسة الشرطة.',
         date: '05 / 05 / 2024',
         chips: ['مستري تاون', 'رئيس شرطة', 'بار ساندي', 'SSF'],
     },
@@ -32,33 +26,9 @@ const IDENTITY = {
         kicker: 'The character of Nasser Alanazi',
         name: 'Nasser Alanazi',
         latin: 'Nasser Alanazi',
-        role: 'Veteran officer • Police chief',
-        beats: [
-            'A stubborn veteran officer long rooted in Mistri Town. He kept climbing the military ladder, rank after rank — serving directly in the field and earning merit in every case — until he became police chief a little over two years ago.',
-            'He faced Bakor Bakor, was abducted by him several times, and Bakor made multiple attempts on Nasser Alanazi’s life.',
-            'AbdulSamad Al-Qurshi then took over the Bakor Bakor case with the SSF squad. The events ran until Al-Qurshi arrested Bakor, with Nasser Alanazi alongside him at the Bar Sandy site.',
-            'They then assumed that the honorable officer Nasser Alanazi was corrupt — because of AbdulSamad Al-Qurshi’s corruption and the commanders’ bias toward him. Nasser Alanazi was executed by the corrupt AbdulSamad Al-Qurshi.',
-        ],
+        short: 'A veteran officer from Mistri Town who rose to police chief.',
         date: '05 / 05 / 2024',
         chips: ['Mistri Town', 'Police chief', 'Bar Sandy', 'SSF'],
-    },
-} as const;
-
-/* second dossier — the counterpart character */
-const IDENTITY_2 = {
-    ar: {
-        kicker: 'الشخصية الثانية',
-        name: 'بكر باكور',
-        latin: 'Bakor Bakor',
-        role: 'المطلوب • الخصم',
-        bio: 'الخصم الذي واجه ناصر العنزي. خطفه أكثر من مرة وحاول اغتياله، لكن عبدالصمد القرشي مع فرقة SSF وضعوا يده، وانتهت القضية في موقع بار ساندي.',
-    },
-    en: {
-        kicker: 'Second character',
-        name: 'Bakor Bakor',
-        latin: 'Bakor Bakor',
-        role: 'The wanted • The adversary',
-        bio: 'The adversary who faced Nasser Alanazi. He abducted him several times and tried to have him killed — until AbdulSamad Al-Qurshi and the SSF squad closed in, ending the case at the Bar Sandy site.',
     },
 } as const;
 
@@ -77,7 +47,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
 export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
     const isAr = lang === 'ar';
     const copy = isAr ? IDENTITY.ar : IDENTITY.en;
-    const copy2 = isAr ? IDENTITY_2.ar : IDENTITY_2.en;
     const dir = isAr ? -1 : 1;
 
     const total = PHOTOS.length;
@@ -251,26 +220,20 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
             .alb-rule::before{content:"";position:absolute;inset-inline-start:0;top:50%;width:56px;height:2px;
                 transform:translateY(-50%);border-radius:99px;
                 background:linear-gradient(90deg,#F4D98A,#C9A24B);box-shadow:0 0 16px rgba(201,162,75,.75)}
-            .alb-beats{position:relative}
-            .alb-beats::before{content:"";position:absolute;top:10px;bottom:10px;inset-inline-start:11px;width:1px;
-                background:linear-gradient(180deg,rgba(16,185,129,.55),rgba(201,162,75,.35),transparent)}
-            .alb-beat{position:relative;display:flex;align-items:flex-start;gap-3.5}
-            .alb-beat-n{position:relative;z-index:1;flex:none;width:23px;height:23px;border-radius:8px;margin-top:1px;
-                display:inline-flex;align-items:center;justify-content:center;
-                font-size:9.5px;font-weight:900;letter-spacing:.04em;direction:ltr;
-                color:#04120D;background:linear-gradient(180deg,#A7F3D0,#10B981 60%,#047857);
-                box-shadow:0 6px 16px -6px rgba(16,185,129,.8),inset 0 1px 0 rgba(255,255,255,.5)}
-            .alb-beat:last-child .alb-beat-n{background:linear-gradient(180deg,#F4D98A,#C9A24B 60%,#8A6A3A);
-                box-shadow:0 6px 16px -6px rgba(201,162,75,.85),inset 0 1px 0 rgba(255,255,255,.5)}
-            .alb-badge{position:relative;width:56px;height:56px;border-radius:18px;display:inline-flex;
-                align-items:center;justify-content:center;color:#04120D;
-                background:linear-gradient(180deg,#F4D98A 0%,#C9A24B 55%,#8A6A3A 100%);
-                box-shadow:0 14px 30px -10px rgba(201,162,75,.75),inset 0 1px 0 rgba(255,255,255,.55)}
-            .alb-badge::after{content:"";position:absolute;inset:-5px;border-radius:22px;padding:1.5px;
-                background:conic-gradient(from 0deg,transparent 0 66%,rgba(201,162,75,.9) 80%,rgba(167,243,208,.95) 90%,transparent 97%);
-                -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
-                animation:dock-spin 14s linear infinite;opacity:.75}
             .alb-pill{padding:6px 13px;border-radius:99px;background:rgba(201,162,75,.1);border:1px solid rgba(201,162,75,.28)}
+            /* primary cinematic CTA — emerald, glowing, with a shine sweep + rain shimmer */
+            .alb-prime{background:linear-gradient(180deg,#A7F3D0 0%,#10B981 52%,#047857 100%);
+                box-shadow:0 20px 44px -14px rgba(16,185,129,.85),inset 0 1px 0 rgba(255,255,255,.55),0 0 34px -10px rgba(16,185,129,.6)}
+            .alb-prime:hover{box-shadow:0 26px 56px -14px rgba(16,185,129,.95),inset 0 1px 0 rgba(255,255,255,.55),0 0 44px -10px rgba(16,185,129,.75)}
+            .alb-prime::after{content:"";position:absolute;top:-40%;bottom:-40%;width:34%;left:-75%;
+                background:linear-gradient(105deg,transparent,rgba(255,255,255,.6),transparent);
+                transform:skewX(-18deg);animation:alb-prime-shine 4.6s ease-in-out infinite}
+            @keyframes alb-prime-shine{0%{left:-75%;opacity:0}14%{opacity:1}36%,100%{left:150%;opacity:0}}
+            .alb-prime>*{position:relative;z-index:1}
+            .alb-prime-live{position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);
+                width:7px;height:7px;border-radius:99px;background:#04120D;opacity:.55;
+                animation:alb-prime-blink 2.2s ease-in-out infinite}
+            @keyframes alb-prime-blink{0%,100%{opacity:.25}50%{opacity:.9}}
             .alb-tag{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;
                 font-size:11px;font-weight:800;color:rgba(255,255,255,.68);
                 background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);transition:all .3s ease}
@@ -287,8 +250,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 display:inline-flex;align-items:center;justify-content:center;color:rgba(255,255,255,.75);
                 background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);transition:all .3s ease}
             .alb-x:hover{color:#04120D;background:#A7F3D0;border-color:transparent;transform:rotate(90deg)}
-            @keyframes dock-spin{to{transform:rotate(360deg)}}
-            @media(prefers-reduced-motion:reduce){.alb-aura,.alb-sheen,.alb-auto,.alb-badge::after{animation:none}.alb-stage>div{transition:none}}
+            @media(prefers-reduced-motion:reduce){.alb-aura,.alb-sheen,.alb-auto,.alb-prime::after,.alb-prime-live{animation:none}.alb-stage>div{transition:none}}
             a:focus-visible,button:focus-visible{outline:2px solid #10B981;outline-offset:3px;border-radius:12px}
             `}</style>
 
@@ -436,23 +398,12 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                 {copy.latin}
                             </p>
 
-                            <div className="mt-4 flex items-center gap-3 flex-wrap">
-                                <span className="text-[14px] font-bold text-white/50">{copy.role}</span>
-                            </div>
-
                             <span className="alb-rule mt-6 block" aria-hidden="true" />
 
-{/* story beats — a numbered timeline rail, each beat with its own marker */}
-                            <ol className="alb-beats mt-6 space-y-3.5">
-                                {copy.beats.map((beat, i) => (
-                                    <li key={i} className="alb-beat">
-                                        <span className="alb-beat-n" aria-hidden="true">{pad(i + 1)}</span>
-                                        <p className="text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.95] font-medium text-white/72">
-                                            {beat}
-                                        </p>
-                                    </li>
-                                ))}
-                            </ol>
+                            {/* نبذة بسيطة جداً — سطر واحد فقط */}
+                            <p className="mt-6 text-[15px] sm:text-[16px] leading-[1.9] font-medium text-white/65">
+                                {copy.short}
+                            </p>
 
                             {/* verdict date */}
                             <div className="mt-6 flex items-center gap-3 rounded-2xl border border-[#C9A24B]/25 bg-[#C9A24B]/[0.07] px-4 py-3">
@@ -478,62 +429,40 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                 ))}
                             </div>
 
-                            <div className="mt-8 flex flex-wrap items-center gap-3">
-                                <a href="https://kick.com/xtroet" target="_blank" rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-black text-[14px] text-[#04120D] transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.98]"
-                                    style={{ background: 'linear-gradient(180deg,#A7F3D0,#10B981 55%,#047857)', boxShadow: '0 16px 34px -12px rgba(16,185,129,.8), inset 0 1px 0 rgba(255,255,255,.5)' }}>
-                                    <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-[#04120D] text-[#6EE7B7]" aria-hidden="true">
-                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
-                                    </span>
-                                    {isAr ? 'شاهد البث' : 'Watch Live'}
-                                </a>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setBox(true)}
-                                    className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[14px] text-white/70 transition-all duration-300 bg-white/[0.05] border border-white/10 hover:text-white hover:border-[#10B981]/50 active:scale-[0.98]"
-                                >
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" aria-hidden="true">
-                                        <rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="11" r="2" /><path d="M21 16l-4.5-4.5L7 19" />
-                                    </svg>
-                                    {isAr ? `كل الصور (${total})` : `All photos (${total})`}
-                                </button>
-
+                            <div className="mt-8 flex flex-col gap-3">
+                                {/* primary: the cinematic story */}
                                 <a
                                     href="#story"
-                                    className="inline-flex items-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[14px] text-[#F4D98A] transition-all duration-300 bg-[#C9A24B]/[0.08] border border-[#C9A24B]/35 hover:bg-[#C9A24B]/[0.16] hover:border-[#C9A24B]/60 hover:-translate-y-0.5 active:scale-[0.98]"
+                                    className="alb-prime group relative inline-flex items-center justify-center gap-3 w-full px-6 py-4 rounded-2xl font-black text-[15px] sm:text-base text-[#04120D] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.99]"
                                 >
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3.2c-2.6 3.4-4.2 6-4.2 8.4a4.2 4.2 0 008.4 0c0-2.4-1.6-5-4.2-8.4z" /><path d="M5 20h14" /></svg>
-                                    {isAr ? 'السيرة السينمائية' : 'The cinematic story'}
-                                </a>
-                            </div>
-
-                            {/* ---- second dossier: the counterpart ---- */}
-                            <div className="mt-9 pt-8 border-t border-white/[0.08]">
-                                <div className="flex items-center gap-2.5 text-[10px] font-black uppercase text-white/30">
-                                    <span className="h-1.5 w-1.5 rotate-45 bg-[#C9A24B]/70" aria-hidden="true" />
-                                    <span>{copy2.kicker}</span>
-                                </div>
-
-                                <div className="mt-4 flex items-center gap-4">
-                                    <span className="alb-badge shrink-0" aria-hidden="true">
-                                        <span className="text-[13px] font-black tracking-[0.06em]">MT</span>
+                                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#04120D] text-[#6EE7B7] shrink-0" aria-hidden="true">
+                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round"><path d="M12 3.2c-2.6 3.4-4.2 6-4.2 8.4a4.2 4.2 0 008.4 0c0-2.4-1.6-5-4.2-8.4z" /><path d="M5 20h14" /></svg>
                                     </span>
-                                    <div className="min-w-0">
-                                        <h4 className={`text-[24px] sm:text-[28px] lg:text-[32px] font-black leading-tight ${isAr ? 'font-arabic' : ''}`}>
-                                            {copy2.name}
-                                        </h4>
-                                        <p className="mt-1 text-[10px] font-black uppercase text-white/25" dir="ltr">{copy2.latin}</p>
-                                    </div>
+                                    {isAr ? 'السيرة السينمائية' : 'The cinematic story'}
+                                    <span className="alb-prime-live" aria-hidden="true" />
+                                </a>
+
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <a href="https://kick.com/xtroet" target="_blank" rel="noopener noreferrer"
+                                        className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2.5 px-5 py-3.5 rounded-2xl font-black text-[14px] text-white/75 transition-all duration-300 bg-white/[0.05] border border-white/10 hover:text-white hover:border-[#10B981]/50 active:scale-[0.98]"
+                                    >
+                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-[#10B981]/20 text-[#6EE7B7]" aria-hidden="true">
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+                                        </span>
+                                        {isAr ? 'شاهد البث' : 'Watch Live'}
+                                    </a>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setBox(true)}
+                                        className="flex-1 min-w-[150px] inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-black text-[14px] text-white/70 transition-all duration-300 bg-white/[0.05] border border-white/10 hover:text-white hover:border-[#10B981]/50 active:scale-[0.98]"
+                                    >
+                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" aria-hidden="true">
+                                            <rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="11" r="2" /><path d="M21 16l-4.5-4.5L7 19" />
+                                        </svg>
+                                        {isAr ? `كل الصور (${total})` : `All photos (${total})`}
+                                    </button>
                                 </div>
-
-                                <p className="mt-3.5 inline-flex items-center gap-2 text-[11px] font-black uppercase text-[#C9A24B]/85 alb-pill">
-                                    {copy2.role}
-                                </p>
-
-                                <p className="mt-3.5 text-[13.5px] sm:text-[14.5px] leading-[1.9] font-medium text-white/55">
-                                    {copy2.bio}
-                                </p>
                             </div>
                         </div>
                     </div>
