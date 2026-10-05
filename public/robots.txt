@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://xtroet.vercel.app/sitemap.xml
+Sitemap: https://ixtroet.vercel.app/sitemap.xml

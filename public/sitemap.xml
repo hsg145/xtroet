@@ -1,9 +1,86 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
-    <loc>https://xtroet.vercel.app/</loc>
-    <lastmod>2026-10-04</lastmod>
+    <loc>https://ixtroet.vercel.app/</loc>
+    <lastmod>2026-10-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/xtroet-banner.jpg</image:loc>
+      <image:title>ناصر العنزي | XTROET — شعار الزمرد والبرونز الرسمي</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/xtroet-logo.webp</image:loc>
+      <image:title>XTROET — الشعار الرسمي لناصر العنزي</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/01.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 01</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/02.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 02</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/03.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 03</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/04.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 04</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/05.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 05</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/06.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 06</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/07.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 07</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/08.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 08</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/09.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 09</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/10.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 10</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/11.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 11</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/12.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 12</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/13.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 13</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/14.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 14</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/15.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 15</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/16.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 16</image:title>
+    </image:image>
+    <image:image>
+      <image:loc>https://ixtroet.vercel.app/album/17.jpg</image:loc>
+      <image:title>ألبوم ناصر العنزي — صورة 17</image:title>
+    </image:image>
   </url>
 </urlset>
