@@ -193,6 +193,30 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
     );
     const touchX = useRef<number | null>(null);
 
+    /* theme music — starts the instant the story opens (the entry click is the
+       user gesture, so playback is allowed), loops, stops on exit */
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const [musicOn, setMusicOn] = useState(true);
+    useEffect(() => {
+        const a = new Audio('/1005.MP3');
+        a.loop = true;
+        a.volume = 0.75;
+        a.preload = 'auto';
+        audioRef.current = a;
+        a.play().catch(() => setMusicOn(false));
+        return () => {
+            a.pause();
+            try { a.removeAttribute('src'); a.load(); } catch { /* noop */ }
+            audioRef.current = null;
+        };
+    }, []);
+    useEffect(() => {
+        const a = audioRef.current;
+        if (!a) return;
+        if (musicOn) a.play().catch(() => setMusicOn(false));
+        else a.pause();
+    }, [musicOn]);
+
     const exit = useCallback((to = '#top') => {
         if (window.location.hash === to) {
             document.getElementById(to.slice(1))?.scrollIntoView({ behavior: 'smooth' });
@@ -457,6 +481,13 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
                         </button>
                         <span className="st-count" dir="ltr"><b>{pad(ch + 1)}</b><span>/ {pad(total)}</span></span>
+                        <button type="button" className="st-play" onClick={() => setMusicOn((m) => !m)} aria-label={isAr ? (musicOn ? 'كتم الموسيقى' : 'تشغيل الموسيقى') : (musicOn ? 'Mute music' : 'Play music')}>
+                            {musicOn ? (
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18V6l11-3.5V16" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="17.5" cy="16" r="2.5" /></svg>
+                            ) : (
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 18V6l11-3.5V16" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="17.5" cy="16" r="2.5" /><path d="M3 3l18 18" /></svg>
+                            )}
+                        </button>
                         <button type="button" className="st-play" onClick={() => setPlaying((p) => !p)} aria-label={isAr ? (playing ? 'إيقاف' : 'تشغيل') : (playing ? 'Pause' : 'Play')}>
                             {playing ? (
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
