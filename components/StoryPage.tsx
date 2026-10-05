@@ -8,7 +8,7 @@ import type { Language } from '../types';
    Reached through #story, exits back to the site.
    ============================================================ */
 
-const CHAPTER_MS = 8000;
+const CHAPTER_MS = 7000;
 
 interface Chapter {
     photo: number;
@@ -20,38 +20,73 @@ interface Chapter {
 const CHAPTERS: Chapter[] = [
     {
         photo: 16,
-        kickerAr: 'المستري تاون', kickerEn: 'Mistri Town',
+        kickerAr: 'مستري تاون', kickerEn: 'Mistri Town',
+        headAr: 'المدينة التي لا تنام', headEn: 'The city that never sleeps',
+        textAr: 'مدينة مستري تاون. شوارع لا تهدأ، وليل أطول من النهار. وهنا بدأ كل شيء.',
+        textEn: 'Mistri Town. Restless streets, and nights longer than the days. Everything began here.',
+    },
+    {
+        photo: 4,
+        kickerAr: 'البداية', kickerEn: 'The beginning',
         headAr: 'عسكري قديم', headEn: 'A veteran officer',
-        textAr: 'عسكري مثابر قديم في مدينة مستري تاون. حاضر في الميدان كل يوم، وحاضر في كل حالة.',
-        textEn: 'A stubborn veteran officer long rooted in Mistri Town — present in the field every day, present in every case.',
+        textAr: 'عسكري مثابر قديم في المدينة. حاضر في الميدان كل يوم، وحاضر في كل حالة.',
+        textEn: 'A stubborn veteran officer of the city. Present in the field every day, present in every case.',
+    },
+    {
+        photo: 9,
+        kickerAr: 'السلم العسكري', kickerEn: 'The ladder',
+        headAr: 'رتبةً بعد رتبة', headEn: 'Rank after rank',
+        textAr: 'ثابر لصعوده السلم العسكري رتبةً بعد رتبة، بمباشرة الميدان وبالامتياز في الحالات.',
+        textEn: 'He kept climbing the ladder, rank after rank — serving directly in the field, earning merit in every case.',
     },
     {
         photo: 3,
-        kickerAr: 'السلم العسكري', kickerEn: 'The ladder',
-        headAr: 'رتبةً بعد رتبة', headEn: 'Rank after rank',
-        textAr: 'ثابر لصعوده السلم العسكري رتبةً بعد رتبة، بمباشرة الميدان وبالامتياز في الحالات، حتى أصبح رئيس الشرطة قبل أكثر من سنتين.',
-        textEn: 'He kept climbing, rank after rank — serving directly in the field, earning merit in every case — until he became police chief a little over two years ago.',
+        kickerAr: 'القيادة', kickerEn: 'The command',
+        headAr: 'رئيس الشرطة', headEn: 'Police chief',
+        textAr: 'حتى أصبح رئيس الشرطة قبل أكثر من سنتين. الاسم صار يُقال بثقة.',
+        textEn: 'Until he became police chief a little over two years ago. The name was spoken with confidence.',
     },
     {
-        photo: 2,
-        kickerAr: 'بكر باكور', kickerEn: 'Bakor Bakor',
-        headAr: 'الاختطاف والمحاولات', headEn: 'Abduction & attempts',
-        textAr: 'واجه بكر باكور، وتم خطفه من قبل بكر عدة مرات، وقام بكر بمحاولات اغتيال لناصر العنزي.',
-        textEn: 'He faced Bakor Bakor, was abducted by him several times, and Bakor made multiple attempts on his life.',
+        photo: 11,
+        kickerAr: 'الرجال', kickerEn: 'The men',
+        headAr: 'إخوان الميدان', headEn: 'Brothers of the field',
+        textAr: 'رجاله معه في كل ليلة. سهر وتعب وضحك — قبل أن يتغير كل شيء.',
+        textEn: 'His men beside him every night. Late hours, hard work, laughter — before everything changed.',
     },
     {
         photo: 5,
+        kickerAr: 'بكر باكور', kickerEn: 'Bakor Bakor',
+        headAr: 'الاسم الذي هز المدينة', headEn: 'The name that shook the city',
+        textAr: 'واجه بكر باكور. وتم خطفه من قبل بكر عدة مرات.',
+        textEn: 'He faced Bakor Bakor — and was abducted by him several times.',
+    },
+    {
+        photo: 2,
+        kickerAr: 'الظلام', kickerEn: 'The darkness',
+        headAr: 'محاولات الاغتيال', headEn: 'The assassination attempts',
+        textAr: 'وقام بكر بمحاولات اغتيال لناصر العنزي. والمطر كان يهطل على المستري تاون كل ليلة.',
+        textEn: 'And Bakor made attempts on Nasser Alanazi’s life. The rain kept falling over Mistri Town every night.',
+    },
+    {
+        photo: 8,
         kickerAr: 'فرقة SSF', kickerEn: 'The SSF squad',
         headAr: 'حالة بكر باكور', headEn: 'The Bakor Bakor case',
         textAr: 'ثم قام عبدالصمد القرشي بمباشرة حالة بكر باكور مع فرقة SSF، واستمرت الأحداث حتى قبض عبدالصمد القرشي على بكر، وكان معه ناصر العنزي في موقع بار ساندي.',
         textEn: 'AbdulSamad Al-Qurshi took over the Bakor Bakor case with the SSF squad. It ran until Al-Qurshi arrested Bakor — with Nasser Alanazi beside him at the Bar Sandy site.',
     },
     {
+        photo: 14,
+        kickerAr: 'الاتهام', kickerEn: 'The accusation',
+        headAr: 'العسكري الشريف متهم', headEn: 'The honest officer, accused',
+        textAr: 'ثم ظنّوا أن العسكري الشريف ناصر العنزي فاسد، بسبب فساد عبدالصمد القرشي وتحيز القادة له.',
+        textEn: 'They then assumed the honorable officer Nasser Alanazi was corrupt — because of Al-Qurshi’s corruption and the commanders’ bias toward him.',
+    },
+    {
         photo: 15,
         kickerAr: '05 / 05 / 2024', kickerEn: '05 / 05 / 2024',
         headAr: 'حكم ناصر العنزي', headEn: 'The verdict',
-        textAr: 'ثم ظنّوا أن العسكري الشريف ناصر العنزي فاسد، بسبب فساد عبدالصمد القرشي وتحيز القادة له، ثم تم إعدام ناصر العنزي من قبل عبدالصمد القرشي الفاسد.',
-        textEn: 'They assumed the honorable officer Nasser Alanazi was corrupt — because of Al-Qurshi’s corruption and the commanders’ bias toward him. He was executed by the corrupt AbdulSamad Al-Qurshi.',
+        textAr: 'تم إعدام ناصر العنزي من قبل عبدالصمد القرشي الفاسد. والمطر لم يتوقف.',
+        textEn: 'Nasser Alanazi was executed by the corrupt AbdulSamad Al-Qurshi. And the rain never stopped.',
     },
 ];
 
@@ -292,7 +327,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
             .st-seg.cur .st-seg-fill{position:absolute;inset-block:0;inset-inline-start:0;border-radius:999px;
                 background:linear-gradient(90deg,#F4D98A,#A7F3D0 55%,#10B981);
                 box-shadow:0 0 12px rgba(167,243,208,.8);
-                animation:st-fill 8s linear forwards}
+                animation:st-fill 7s linear forwards}
             @keyframes st-fill{from{width:0%}to{width:100%}}
             .st-hint{display:none;font-size:10px;font-weight:800;letter-spacing:.14em;color:rgba(255,255,255,.35);
                 text-transform:uppercase;white-space:nowrap}
@@ -347,7 +382,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 key={started ? (ended ? 'end' : `ch-${ch}`) : 'intro'}
                 className="st-photo"
                 style={{
-                    backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '01'}.jpg)`,
+                    backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '06'}.jpg)`,
                     zIndex: 1,
                 }}
                 aria-hidden="true"
@@ -388,7 +423,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                             <i aria-hidden="true" />
                             <span dir="ltr">05 / 05 / 2024</span>
                             <i aria-hidden="true" />
-                            <span>{isAr ? '٥ فصول' : '5 chapters'}</span>
+                            <span>{isAr ? '١٠ فصول' : '10 chapters'}</span>
                         </div>
                         <div>
                             <button type="button" className="st-begin" onClick={() => setStarted(true)} autoFocus>
