@@ -39,6 +39,13 @@ const CHAPTERS: Chapter[] = [
         zoom: 1.07,
     },
     {
+        photo: 1,
+        kickerAr: 'الميدان', kickerEn: 'The field',
+        headAr: 'رجلٌ لا يتراجع', headEn: 'A man who never steps back',
+        textAr: 'لم تكن طريق ناصر العنزي سهلة. كان الميدان هو المكان الذي أثبت فيه نفسه، حالةً بعد حالة، وليلةً بعد ليلة.',
+        textEn: 'Nasser Alanazi’s path was never easy. The field was where he proved himself — case after case, night after night.',
+    },
+    {
         photo: 9,
         kickerAr: 'السلم العسكري', kickerEn: 'The ladder',
         headAr: 'رتبةً بعد رتبة', headEn: 'Rank after rank',
@@ -53,11 +60,25 @@ const CHAPTERS: Chapter[] = [
         textEn: 'Until he became police chief a little over two years ago. The name was spoken with confidence.',
     },
     {
+        photo: 6,
+        kickerAr: 'السنوات', kickerEn: 'The years',
+        headAr: 'سنواتٌ من التعب', headEn: 'Years of toil',
+        textAr: 'مرت السنوات، وبقي ناصر حاضرًا في الميدان. لم يكن يبحث عن الطريق الأسهل، بل عن الطريق الذي يستحق أن يصعده.',
+        textEn: 'The years passed, and Nasser stayed present in the field. He never looked for the easier road — only the one worth climbing.',
+    },
+    {
         photo: 11,
         kickerAr: 'الرجال', kickerEn: 'The men',
         headAr: 'إخوان الميدان', headEn: 'Brothers of the field',
         textAr: 'رجاله معه في كل ليلة. سهر وتعب وضحك — قبل أن يتغير كل شيء.',
         textEn: 'His men beside him every night. Late hours, hard work, laughter — before everything changed.',
+    },
+    {
+        photo: 10,
+        kickerAr: 'الثقة', kickerEn: 'The trust',
+        headAr: 'حين يصبح الاسم هدفًا', headEn: 'When a name becomes a target',
+        textAr: 'مع ازدياد مسؤولياته، ازداد عدد من عرفوه ومن وقفوا إلى جانبه. لكن في مدينة كهذه، قد تتحول الثقة إلى هدف، وقد يصبح اسم الرجل عبئًا عليه.',
+        textEn: 'As his responsibilities grew, so did the number of those who knew him and stood beside him. But in a city like this, trust can turn into a target — and a man’s name can become a burden.',
     },
     {
         photo: 5,
@@ -76,6 +97,13 @@ const CHAPTERS: Chapter[] = [
         textEn: 'And Bakor made attempts on Nasser Alanazi’s life. The rain kept falling over Mistri Town every night.',
     },
     {
+        photo: 12,
+        kickerAr: 'المواجهة', kickerEn: 'The confrontation',
+        headAr: 'حالةٌ لم تنتهِ', headEn: 'A case never closed',
+        textAr: 'لم تنتهِ المواجهة عند الخطف ومحاولات الاغتيال. بقيت القضية مفتوحة، وبقي ناصر في قلب الأحداث، حتى دخلت فرقة SSF على الخط.',
+        textEn: 'The confrontation did not end with abduction and assassination attempts. The case stayed open, Nasser stayed at the heart of events — until the SSF squad entered the line.',
+    },
+    {
         photo: 8,
         kickerAr: 'فرقة SSF', kickerEn: 'The SSF squad',
         headAr: 'حالة بكر باكور', headEn: 'The Bakor Bakor case',
@@ -83,11 +111,25 @@ const CHAPTERS: Chapter[] = [
         textEn: 'AbdulSamad Al-Qurshi took over the Bakor Bakor case with the SSF squad. It ran until Al-Qurshi arrested Bakor — with Nasser Alanazi beside him at the Bar Sandy site.',
     },
     {
+        photo: 7,
+        kickerAr: 'ما بعد القبض', kickerEn: 'After the arrest',
+        headAr: 'حين انقلبت الرواية', headEn: 'When the narrative flipped',
+        textAr: 'بعد القبض على بكر، لم تنتهِ الحكاية كما توقع الجميع. بدأت الشكوك تدور حول ناصر، وتحوّل العسكري الذي عرفه الميدان إلى رجلٍ تحاصره الاتهامات.',
+        textEn: 'After Bakor’s arrest, the story did not end the way everyone expected. Doubts began circling Nasser, and the officer the field had known became a man cornered by accusations.',
+    },
+    {
         photo: 14,
         kickerAr: 'الاتهام', kickerEn: 'The accusation',
         headAr: 'العسكري الشريف متهم', headEn: 'The honest officer, accused',
         textAr: 'ثم ظنّوا أن العسكري الشريف ناصر العنزي فاسد، بسبب فساد عبدالصمد القرشي وتحيز القادة له.',
         textEn: 'They then assumed the honorable officer Nasser Alanazi was corrupt — because of Al-Qurshi’s corruption and the commanders’ bias toward him.',
+    },
+    {
+        photo: 13,
+        kickerAr: 'النهاية', kickerEn: 'The end',
+        headAr: 'حين لا ينصف الحكم صاحبه', headEn: 'When the verdict fails its man',
+        textAr: 'ضاقت الدائرة حول ناصر العنزي. وبين الاتهام والتحيز والفساد، وصل الأمر إلى النهاية التي لم يكن يتوقعها أحد لرجلٍ قضى سنواته في الميدان.',
+        textEn: 'The circle tightened around Nasser Alanazi. Between accusation, bias, and corruption, it came to the end no one had imagined for a man who spent his years in the field.',
     },
     {
         photo: 15,
@@ -414,7 +456,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 key={started ? (ended ? 'end' : `ch-${ch}`) : 'intro'}
                 className="st-photo"
                 style={{
-                    backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '06'}.jpg)`,
+                    backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '17'}.jpg)`,
                     backgroundPosition: started && !ended ? (CHAPTERS[ch].pos || 'center') : 'center',
                     ['--kb' as string]: started && !ended ? (CHAPTERS[ch].zoom || 1.14) : 1.1,
                     zIndex: 1,
@@ -457,7 +499,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                             <i aria-hidden="true" />
                             <span dir="ltr">05 / 05 / 2024</span>
                             <i aria-hidden="true" />
-                            <span>{isAr ? '١٠ فصول' : '10 chapters'}</span>
+                            <span>{isAr ? '١٦ فصلًا' : '16 chapters'}</span>
                         </div>
                         <div>
                             <button type="button" className="st-begin" onClick={() => setStarted(true)} autoFocus>
