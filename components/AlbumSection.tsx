@@ -230,13 +230,15 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 transform:skewX(-18deg);animation:alb-prime-shine 4.6s ease-in-out infinite}
             @keyframes alb-prime-shine{0%{left:-75%;opacity:0}14%{opacity:1}36%,100%{left:150%;opacity:0}}
             .alb-prime>*{position:relative;z-index:1}
-            .alb-prime-ic{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 0 1.5px rgba(244,217,138,.6),0 0 20px rgba(244,217,138,.65);
+            .alb-prime-ic{display:inline-flex;align-items:center;justify-content:center;flex:none;
+                width:44px;height:44px;border-radius:999px;
+                background:linear-gradient(180deg,rgba(255,255,255,.5),rgba(255,255,255,.08) 55%,rgba(4,18,13,.18));
+                box-shadow:inset 0 1px 0 rgba(255,255,255,.6),inset 0 -2px 6px rgba(4,18,13,.25),0 0 0 1.5px rgba(4,18,13,.35),0 8px 20px -8px rgba(4,18,13,.6);
                 animation:alb-ic-pulse 2.8s ease-in-out infinite;
                 transition:transform .35s cubic-bezier(.16,1,.3,1)}
             @keyframes alb-ic-pulse{
-                0%,100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 0 1.5px rgba(244,217,138,.55),0 0 14px rgba(244,217,138,.5)}
-                50%{box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 0 1.5px rgba(244,217,138,.95),0 0 30px rgba(244,217,138,.9)}}
-            .alb-prime:hover .alb-prime-ic{transform:scale(1.12) rotate(-8deg)}
+                0%,100%{transform:scale(1)}
+                50%{transform:scale(1.07)}}
             .alb-tag{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;
                 font-size:11px;font-weight:800;color:rgba(255,255,255,.68);
                 background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);transition:all .3s ease}
@@ -253,6 +255,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 display:inline-flex;align-items:center;justify-content:center;color:rgba(255,255,255,.75);
                 background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);transition:all .3s ease}
             .alb-x:hover{color:#04120D;background:#A7F3D0;border-color:transparent;transform:rotate(90deg)}
+            .alb-prime:hover .alb-prime-ic{transform:scale(1.12) rotate(-8deg)}
             @media(prefers-reduced-motion:reduce){.alb-aura,.alb-sheen,.alb-auto,.alb-prime::after,.alb-prime-ic{animation:none}.alb-stage>div{transition:none}}
             a:focus-visible,button:focus-visible{outline:2px solid #10B981;outline-offset:3px;border-radius:12px}
             `}</style>
@@ -438,8 +441,8 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                     href="#story"
                                     className="alb-prime group relative inline-flex items-center justify-center gap-3 w-full px-6 py-4 rounded-2xl font-black text-[15px] sm:text-base text-[#04120D] overflow-hidden transition-all duration-300 hover:-translate-y-0.5 active:scale-[0.99]"
                                 >
-                                    <span className="alb-prime-ic inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#04120D] text-[#F4D98A] shrink-0" aria-hidden="true">
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
+                                    <span className="alb-prime-ic" aria-hidden="true">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="#04120D" aria-hidden="true"><path d="M8 5v14l11-7z" /></svg>
                                     </span>
                                     {isAr ? 'السيرة السينمائية' : 'The cinematic story'}
                                 </a>

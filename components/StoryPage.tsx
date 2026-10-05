@@ -237,18 +237,27 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
     );
     const touchX = useRef<number | null>(null);
 
-    /* theme music — starts the instant the story opens (the entry click is the
-       user gesture, so playback is allowed), loops, stops on exit */
+    /* theme music — must stay on: it starts on mount AND retries on every
+       tap/key until it is actually playing. Only the mute button can stop it. */
     const audioRef = useRef<HTMLAudioElement | null>(null);
     const [musicOn, setMusicOn] = useState(true);
+    const musicOnRef = useRef(true);
+    useEffect(() => { musicOnRef.current = musicOn; }, [musicOn]);
     useEffect(() => {
         const a = new Audio('/1005.MP3');
         a.loop = true;
         a.volume = 0.75;
         a.preload = 'auto';
         audioRef.current = a;
-        a.play().catch(() => setMusicOn(false));
+        const kick = () => {
+            if (musicOnRef.current && a.paused) a.play().catch(() => { /* retry on next tap */ });
+        };
+        kick();
+        window.addEventListener('pointerdown', kick);
+        window.addEventListener('keydown', kick);
         return () => {
+            window.removeEventListener('pointerdown', kick);
+            window.removeEventListener('keydown', kick);
             a.pause();
             try { a.removeAttribute('src'); a.load(); } catch { /* noop */ }
             audioRef.current = null;
@@ -257,7 +266,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
     useEffect(() => {
         const a = audioRef.current;
         if (!a) return;
-        if (musicOn) a.play().catch(() => setMusicOn(false));
+        if (musicOn) a.play().catch(() => { /* user will tap; the kick above starts it */ });
         else a.pause();
     }, [musicOn]);
 
@@ -458,7 +467,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 key={started ? (ended ? 'end' : `ch-${ch}`) : 'intro'}
                 className="st-photo"
                 style={{
-                    backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '17'}.jpg)`,
+                    backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '01'}.jpg)`,
                     backgroundPosition: started && !ended ? (CHAPTERS[ch].pos || 'center') : 'center',
                     ['--kb' as string]: started && !ended ? (CHAPTERS[ch].zoom || 1.14) : 1.1,
                     zIndex: 1,
