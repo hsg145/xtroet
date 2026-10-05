@@ -19,7 +19,13 @@ const IDENTITY = {
         name: 'ناصر العنزي',
         latin: 'Nasser Alanazi',
         role: 'عسكري مثابر • رئيس شرطة',
-        bio: 'عسكري مثابر، قديم في مدينة مستري تاون. صعد رتبةً بعد رتبة، بخدمة مباشرة في الميدان وبالامتياز في الحالات، حتى صار رئيس الشرطة قبل أكثر من سنتين.\nواجه بكر باكور، واختُطف على يده عدة مرات، وبكر حاول اغتياله أكثر من مرة.\nثم تولّى عبدالصمد القرشي قضية بكر باكور مع فرقة SSF، حتى قبض عليه. وفي موقع بار ساندي كان ناصر العنزي معه.\nحين ظنّوا أن العسكري الشريف ناصر العنزي فاسد — بسبب فساد عبدالصمد القرشي وتحيز القادة له — نُفّذ فيه حكم الإعدام على يد عبدالصمد القرشي الفاسد بتاريخ 05/05/2024.',
+        beats: [
+            'عسكري مثابر قديم في مدينة مستري تاون، ثابر لصعوده السلم العسكري رتبةً بعد رتبة، بمباشرة الميدان وبالامتياز في الحالات، حتى أصبح رئيس الشرطة قبل أكثر من سنتين.',
+            'واجه بكر باكور، وتم خطفه من قبل بكر عدة مرات، وقام بكر بمحاولات اغتيال لناصر العنزي.',
+            'ثم قام عبدالصمد القرشي بمباشرة حالة بكر باكور مع فرقة SSF، واستمرت الأحداث حتى قبض عبدالصمد القرشي على بكر، وكان معه ناصر العنزي في موقع بار ساندي.',
+            'ثم ظنّوا أن العسكري الشريف ناصر العنزي فاسد، بسبب فساد عبدالصمد القرشي وتحيز القادة له، ثم تم إعدام ناصر العنزي من قبل عبدالصمد القرشي الفاسد.',
+        ],
+        date: '05 / 05 / 2024',
         chips: ['مستري تاون', 'رئيس شرطة', 'بار ساندي', 'SSF'],
     },
     en: {
@@ -27,7 +33,13 @@ const IDENTITY = {
         name: 'Nasser Alanazi',
         latin: 'Nasser Alanazi',
         role: 'Veteran officer • Police chief',
-        bio: 'A stubborn veteran officer, long rooted in Mistri Town. He climbed rank after rank — serving directly in the field and earning merit in every case — until he became police chief a little over two years ago.\nHe faced Bakor Bakor, was abducted by him several times, and Bakor attempted to have him assassinated more than once.\nAbdulSamad Al-Qurshi then took over the Bakor Bakor case with the SSF squad, and Bakor was finally arrested. At the Bar Sandy site, Nasser Alanazi was with him.\nWhen they assumed the honest officer Nasser Alanazi was corrupt — because of AbdulSamad Al-Qurshi’s corruption and the commanders’ bias toward him — he was executed by the corrupt AbdulSamad Al-Qurshi on 05/05/2024.',
+        beats: [
+            'A stubborn veteran officer long rooted in Mistri Town. He kept climbing the military ladder, rank after rank — serving directly in the field and earning merit in every case — until he became police chief a little over two years ago.',
+            'He faced Bakor Bakor, was abducted by him several times, and Bakor made multiple attempts on Nasser Alanazi’s life.',
+            'AbdulSamad Al-Qurshi then took over the Bakor Bakor case with the SSF squad. The events ran until Al-Qurshi arrested Bakor, with Nasser Alanazi alongside him at the Bar Sandy site.',
+            'They then assumed that the honorable officer Nasser Alanazi was corrupt — because of AbdulSamad Al-Qurshi’s corruption and the commanders’ bias toward him. Nasser Alanazi was executed by the corrupt AbdulSamad Al-Qurshi.',
+        ],
+        date: '05 / 05 / 2024',
         chips: ['Mistri Town', 'Police chief', 'Bar Sandy', 'SSF'],
     },
 } as const;
@@ -239,6 +251,17 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
             .alb-rule::before{content:"";position:absolute;inset-inline-start:0;top:50%;width:56px;height:2px;
                 transform:translateY(-50%);border-radius:99px;
                 background:linear-gradient(90deg,#F4D98A,#C9A24B);box-shadow:0 0 16px rgba(201,162,75,.75)}
+            .alb-beats{position:relative}
+            .alb-beats::before{content:"";position:absolute;top:10px;bottom:10px;inset-inline-start:11px;width:1px;
+                background:linear-gradient(180deg,rgba(16,185,129,.55),rgba(201,162,75,.35),transparent)}
+            .alb-beat{position:relative;display:flex;align-items:flex-start;gap-3.5}
+            .alb-beat-n{position:relative;z-index:1;flex:none;width:23px;height:23px;border-radius:8px;margin-top:1px;
+                display:inline-flex;align-items:center;justify-content:center;
+                font-size:9.5px;font-weight:900;letter-spacing:.04em;direction:ltr;
+                color:#04120D;background:linear-gradient(180deg,#A7F3D0,#10B981 60%,#047857);
+                box-shadow:0 6px 16px -6px rgba(16,185,129,.8),inset 0 1px 0 rgba(255,255,255,.5)}
+            .alb-beat:last-child .alb-beat-n{background:linear-gradient(180deg,#F4D98A,#C9A24B 60%,#8A6A3A);
+                box-shadow:0 6px 16px -6px rgba(201,162,75,.85),inset 0 1px 0 rgba(255,255,255,.5)}
             .alb-badge{position:relative;width:56px;height:56px;border-radius:18px;display:inline-flex;
                 align-items:center;justify-content:center;color:#04120D;
                 background:linear-gradient(180deg,#F4D98A 0%,#C9A24B 55%,#8A6A3A 100%);
@@ -247,6 +270,7 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                 background:conic-gradient(from 0deg,transparent 0 66%,rgba(201,162,75,.9) 80%,rgba(167,243,208,.95) 90%,transparent 97%);
                 -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
                 animation:dock-spin 14s linear infinite;opacity:.75}
+            .alb-pill{padding:6px 13px;border-radius:99px;background:rgba(201,162,75,.1);border:1px solid rgba(201,162,75,.28)}
             .alb-tag{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:99px;
                 font-size:11px;font-weight:800;color:rgba(255,255,255,.68);
                 background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);transition:all .3s ease}
@@ -418,12 +442,31 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
 
                             <span className="alb-rule mt-6 block" aria-hidden="true" />
 
-                            <div className="mt-6 space-y-3.5">
-                                {copy.bio.split('\n').map((line, i) => (
-                                    <p key={i} className="text-[15px] sm:text-[16px] lg:text-[17px] leading-[1.95] font-medium text-white/70">
-                                        {line}
-                                    </p>
+{/* story beats — a numbered timeline rail, each beat with its own marker */}
+                            <ol className="alb-beats mt-6 space-y-3.5">
+                                {copy.beats.map((beat, i) => (
+                                    <li key={i} className="alb-beat">
+                                        <span className="alb-beat-n" aria-hidden="true">{pad(i + 1)}</span>
+                                        <p className="text-[14px] sm:text-[15px] lg:text-[16px] leading-[1.95] font-medium text-white/72">
+                                            {beat}
+                                        </p>
+                                    </li>
                                 ))}
+                            </ol>
+
+                            {/* verdict date */}
+                            <div className="mt-6 flex items-center gap-3 rounded-2xl border border-[#C9A24B]/25 bg-[#C9A24B]/[0.07] px-4 py-3">
+                                <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-[#C9A24B]/15 border border-[#C9A24B]/40 shrink-0" aria-hidden="true">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C9A24B" strokeWidth={2.2} strokeLinecap="round">
+                                        <rect x="3" y="5" width="18" height="16" rx="3" /><path d="M8 3v4M16 3v4M3 11h18" />
+                                    </svg>
+                                </span>
+                                <div className="min-w-0">
+                                    <p className="text-[10px] font-black uppercase text-white/35">
+                                        {isAr ? 'تاريخ التنفيذ' : 'Date of execution'}
+                                    </p>
+                                    <p className="text-[15px] sm:text-base font-black text-[#F4D98A] mt-0.5" dir="ltr">{copy.date}</p>
+                                </div>
                             </div>
 
                             <div className="mt-6 flex flex-wrap gap-2">
@@ -476,9 +519,11 @@ export const AlbumSection: React.FC<{ lang: Language }> = ({ lang }) => {
                                     </div>
                                 </div>
 
-                                <p className="mt-3.5 text-[13px] font-bold text-[#C9A24B]/85">{copy2.role}</p>
+                                <p className="mt-3.5 inline-flex items-center gap-2 text-[11px] font-black uppercase text-[#C9A24B]/85 alb-pill">
+                                    {copy2.role}
+                                </p>
 
-                                <p className="mt-3.5 text-[14px] sm:text-[15px] leading-[1.9] font-medium text-white/55">
+                                <p className="mt-3.5 text-[13.5px] sm:text-[14.5px] leading-[1.9] font-medium text-white/55">
                                     {copy2.bio}
                                 </p>
                             </div>
