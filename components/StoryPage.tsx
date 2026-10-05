@@ -35,6 +35,8 @@ const CHAPTERS: Chapter[] = [
         headAr: 'عسكري قديم', headEn: 'A veteran officer',
         textAr: 'عسكري مثابر قديم في المدينة. حاضر في الميدان كل يوم، وحاضر في كل حالة.',
         textEn: 'A stubborn veteran officer of the city. Present in the field every day, present in every case.',
+        pos: 'center 20%',
+        zoom: 1.07,
     },
     {
         photo: 9,
