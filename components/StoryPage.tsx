@@ -15,6 +15,10 @@ interface Chapter {
     kickerAr: string; kickerEn: string;
     headAr: string; headEn: string;
     textAr: string; textEn: string;
+    /** where the camera sits on this photo (portrait art needs the top) */
+    pos?: string;
+    /** Ken Burns end-zoom — gentler on tall art so nothing gets eaten */
+    zoom?: number;
 }
 
 const CHAPTERS: Chapter[] = [
@@ -59,6 +63,8 @@ const CHAPTERS: Chapter[] = [
         headAr: 'الاسم الذي هز المدينة', headEn: 'The name that shook the city',
         textAr: 'واجه بكر باكور. وتم خطفه من قبل بكر عدة مرات.',
         textEn: 'He faced Bakor Bakor — and was abducted by him several times.',
+        pos: 'center 22%',
+        zoom: 1.05,
     },
     {
         photo: 2,
@@ -253,9 +259,9 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 font-family:inherit;animation:st-in .7s ease both}
             @keyframes st-in{from{opacity:0}to{opacity:1}}
             /* cinema frame */
-            .st-photo{position:absolute;inset:0;background-size:cover;background-position:center;
+            .st-photo{position:absolute;inset:0;background-size:cover;
                 animation:st-kb 9.5s ease-out forwards;will-change:transform}
-            @keyframes st-kb{from{transform:scale(1)}to{transform:scale(1.14)}}
+            @keyframes st-kb{from{transform:scale(1)}to{transform:scale(var(--kb,1.14))}}
             .st-scrim{position:absolute;inset:0;pointer-events:none;
                 background:
                     linear-gradient(180deg,rgba(0,0,0,.82) 0%,rgba(0,0,0,.25) 26%,rgba(0,0,0,.18) 52%,rgba(0,0,0,.62) 76%,rgba(0,0,0,.94) 100%),
@@ -383,6 +389,8 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 className="st-photo"
                 style={{
                     backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '06'}.jpg)`,
+                    backgroundPosition: started && !ended ? (CHAPTERS[ch].pos || 'center') : 'center',
+                    ['--kb' as string]: started && !ended ? (CHAPTERS[ch].zoom || 1.14) : 1.1,
                     zIndex: 1,
                 }}
                 aria-hidden="true"
