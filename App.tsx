@@ -9,6 +9,7 @@ import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
 // Heavy below-fold / on-demand chunks — split out of the first paint
 const HonorSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.HonorSection })));
 const ArchiveSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.ArchiveSection })));
+const ThreadSection = lazy(() => import('./components/ThreadSection').then(m => ({ default: m.ThreadSection })));
 const AlbumSection = lazy(() => import('./components/AlbumSection').then(m => ({ default: m.AlbumSection })));
 
 // --- Constants (XTROET) ---
@@ -1037,6 +1038,11 @@ export default function App() {
                             <Reveal><SectionHeading no="06" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
                             <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><ArchiveSection lang={lang} /></Suspense></Reveal>
                         </section>
+
+                        {/* ===== THREAD — the cinematic chapter that leads into the album ===== */}
+                        <Suspense fallback={null}>
+                            <ThreadSection lang={lang} />
+                        </Suspense>
 
                         {/* ===== ALBUM — final section: Nasser's photo deck ===== */}
                         <section id="album" className="pt-12 md:pt-16 scroll-mt-28">
