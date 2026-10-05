@@ -130,6 +130,8 @@ const CHAPTERS: Chapter[] = [
         headAr: 'حين لا ينصف الحكم صاحبه', headEn: 'When the verdict fails its man',
         textAr: 'ضاقت الدائرة حول ناصر العنزي. وبين الاتهام والتحيز والفساد، وصل الأمر إلى النهاية التي لم يكن يتوقعها أحد لرجلٍ قضى سنواته في الميدان.',
         textEn: 'The circle tightened around Nasser Alanazi. Between accusation, bias, and corruption, it came to the end no one had imagined for a man who spent his years in the field.',
+        pos: 'center 18%',
+        zoom: 1.06,
     },
     {
         photo: 15,
