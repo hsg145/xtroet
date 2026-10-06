@@ -35,6 +35,10 @@ const NAV_DEFS = [
         icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 20s-7.5-4.6-7.5-10.3C4.5 6.6 6.7 5 8.8 5c1.4 0 2.6.7 3.2 1.8C12.6 5.7 13.8 5 15.2 5c2.1 0 4.3 1.6 4.3 4.7C19.5 15.4 12 20 12 20z" /></svg>,
     },
     {
+        href: '#album', id: 'album', ar: 'سيرة', en: 'Sirah',
+        icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="10.5" r="1.8" /><path d="M21 15.5l-4.5-4.5L7 19" /></svg>,
+    },
+    {
         href: '#honor', id: 'honor', ar: 'الشرف', en: 'Honor',
         icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v6a5 5 0 01-10 0V4z" /><path d="M7 6H4a1 1 0 00-1 1c0 2.5 2 4.5 5 4.5M17 6h3a1 1 0 011 1c0 2.5-2 4.5-5 4.5" /></svg>,
     },
@@ -45,10 +49,6 @@ const NAV_DEFS = [
     {
         href: '#story', id: 'story', ar: 'السيرة', en: 'Story',
         icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3.2c-2.6 3.4-4.2 6-4.2 8.4a4.2 4.2 0 008.4 0c0-2.4-1.6-5-4.2-8.4z" /><path d="M5 20h14" /></svg>,
-    },
-    {
-        href: '#album', id: 'album', ar: 'الألبوم', en: 'Album',
-        icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3" /><circle cx="9" cy="10.5" r="1.8" /><path d="M21 15.5l-4.5-4.5L7 19" /></svg>,
     },
 ] as const;
 

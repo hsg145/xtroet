@@ -19,7 +19,11 @@ interface Chapter {
     pos?: string;
     /** Ken Burns end-zoom — gentler on tall art so nothing gets eaten */
     zoom?: number;
+    /** custom full image path — overrides /album/XX.jpg when set */
+    img?: string;
 }
+
+const END_IMG = '/album/i222mage.png';
 
 const CHAPTERS: Chapter[] = [
     {
@@ -86,8 +90,9 @@ const CHAPTERS: Chapter[] = [
         headAr: 'الاسم الذي هز المدينة', headEn: 'The name that shook the city',
         textAr: 'واجه بكر باكور. وتم خطفه من قبل بكر عدة مرات.',
         textEn: 'He faced Bakor Bakor — and was abducted by him several times.',
-        pos: 'center 22%',
-        zoom: 1.05,
+        img: '/album/im90879age.png',
+        pos: 'center 50%',
+        zoom: 1.06,
     },
     {
         photo: 2,
@@ -95,6 +100,9 @@ const CHAPTERS: Chapter[] = [
         headAr: 'محاولات الاغتيال', headEn: 'The assassination attempts',
         textAr: 'وقام بكر بمحاولات اغتيال لناصر العنزي. والمطر كان يهطل على المستري تاون كل ليلة.',
         textEn: 'And Bakor made attempts on Nasser Alanazi’s life. The rain kept falling over Mistri Town every night.',
+        img: '/album/photo-output.png',
+        pos: 'center 50%',
+        zoom: 1.06,
     },
     {
         photo: 12,
@@ -371,6 +379,13 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
                 backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:all .3s ease}
             .st-x:hover{color:#04120D;background:#A7F3D0;border-color:transparent;transform:rotate(90deg)}
+            .st-replay{width:auto;height:54;padding:0 1.4rem;border-radius:20px;flex:none;cursor:pointer;font-family:inherit;
+                display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+                font-size:14px;font-weight:900;white-space:nowrap;flex-direction:row;
+                color:rgba(255,255,255,.75);background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);
+                backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:background .3s ease,color .3s ease,transform .3s ease}
+            .st-replay:hover{color:#04120D;background:#A7F3D0;border-color:transparent;transform:none}
+            .st-replay:active{transform:scale(.97)}
             .st-count{margin-inline-start:auto;display:inline-flex;align-items:baseline;gap:.5rem;
                 font-size:11px;font-weight:900;letter-spacing:.2em;color:rgba(255,255,255,.75)}
             .st-count b{font-size:20px;color:#fff}
@@ -467,9 +482,13 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 key={started ? (ended ? 'end' : `ch-${ch}`) : 'intro'}
                 className="st-photo"
                 style={{
-                    backgroundImage: `url(/album/${ended ? '17' : started ? pad(CHAPTERS[ch].photo) : '01'}.jpg)`,
+                    backgroundImage: ended
+                        ? `url(${END_IMG})`
+                        : started
+                            ? `url(${CHAPTERS[ch].img || `/album/${pad(CHAPTERS[ch].photo)}.jpg`})`
+                            : `url(/album/01.jpg)`,
                     backgroundPosition: started && !ended ? (CHAPTERS[ch].pos || 'center') : 'center',
-                    ['--kb' as string]: started && !ended ? (CHAPTERS[ch].zoom || 1.14) : 1.1,
+                    ['--kb' as string]: started && !ended ? (CHAPTERS[ch].zoom || 1.14) : 1.06,
                     zIndex: 1,
                 }}
                 aria-hidden="true"
@@ -564,7 +583,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
 
                     <div className="st-ctl">
                         <button type="button" className="st-arrow" onClick={prev} aria-label={isAr ? 'السابق' : 'Previous'}>
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={isAr ? "M9 6l6 6-6 6" : "M15 6l-6 6 6 6"} /></svg>
                         </button>
                         <div className="st-segs" role="progressbar" aria-valuenow={ch + 1} aria-valuemin={1} aria-valuemax={total} aria-label={isAr ? 'تقدم السيرة' : 'Story progress'}>
                             {CHAPTERS.map((_, i) => (
@@ -574,7 +593,7 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                             ))}
                         </div>
                         <button type="button" className="st-arrow" onClick={next} aria-label={isAr ? 'التالي' : 'Next'}>
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={isAr ? "M15 6l-6 6 6 6" : "M9 6l6 6-6 6"} /></svg>
                         </button>
                         <span className="st-hint">{isAr ? 'اسحب أو استخدم الأسهم' : 'Swipe or use arrows'}</span>
                     </div>
@@ -603,9 +622,9 @@ export const StoryPage: React.FC<{ lang: Language }> = ({ lang }) => {
                                 <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#04120D] text-[#6EE7B7]" aria-hidden="true">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
                                 </span>
-                                {isAr ? 'ادخل ألبوم ناصر' : 'Enter Nasser’s album'}
+                                {isAr ? 'ادخل سيرة ناصر' : 'Enter Nasser’s sirah'}
                             </button>
-                            <button type="button" className="st-x" style={{ width: 'auto', padding: '0 1.4rem', height: 54, borderRadius: 20, fontSize: 14, fontWeight: 900, gap: '.6rem' }} onClick={() => { setCh(0); setEnded(false); }}>
+                            <button type="button" className="st-replay" onClick={() => { setCh(0); setEnded(false); }}>
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.3} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                                 {isAr ? 'إعادة' : 'Replay'}
                             </button>

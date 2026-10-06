@@ -65,7 +65,7 @@ const TRANSLATIONS = {
         headerTitle: 'XTROET STREAM HUB',
         eyebrow: 'Beyond Ordinary — XTROET',
         nameAr: 'Nasser Alanazi',
-        bio: 'Nasser Alanazi (XTROET) — member of the Layl One clan, streamer and YouTuber, owner of the Nasser Alanazi character in the MT realistic-life server, one of the strongest and most prominent characters in the city.',
+        bio: 'Nasser Alanazi (XTROET) — member of the Level One clan, streamer and YouTuber, owner of the Adolf Albert character in the MT realistic-life server, one of the strongest and most prominent characters in the city.',
         tags: ['Just Chatting', 'MT RP', 'Level One'],
         defaultStreamTitle: 'CHECK OUT THE VODS | FOLLOW NOW',
         defaultCategory: 'Offline',
@@ -80,7 +80,7 @@ const TRANSLATIONS = {
         communityTitle: 'Community HQ', supportTitle: 'Support the Channel', supportSub: 'Your support keeps the emerald empire legendary.',
         honorTitle: 'Hall of Fame', honorSub: 'Top supporters across every stream.',
         archiveTitle: 'Archive', archiveSub: 'Clips and past streams.',
-        albumTitle: " Nasser's Album", albumSub: 'Seventeen frames from the night shifts.',
+        albumTitle: "Nasser's Sirah", albumSub: 'Nasser’s sirah in frames — seventeen shots from the night shifts.',
         statsTitle: 'Stream Stats', statsSub: 'Live numbers from the emerald empire.',
         tiersTitle: 'Special alert tiers',
         theaterTitle: 'Live Theater', viewers: 'watching',
@@ -92,7 +92,7 @@ const TRANSLATIONS = {
         headerTitle: 'مركز XTROET للبث المباشر',
         eyebrow: 'خارج المألوف — XTROET',
         nameAr: 'ناصر العنزي',
-        bio: 'ناصر العنزي (XTROET) — عضو في كلان ليل ون، استريمر ويوتيوبر، وصاحب شخصية ناصر العنزي في سيرفر MT للحياة الواقعية، إحدى أقوى وأبرز الشخصيات في المدينة.',
+        bio: 'ناصر العنزي (XTROET) — عضو في كلان لفل ون، استريمر ويوتيوبر، وصاحب شخصية ادولف البيرت في سيرفر MT للحياة الواقعية، إحدى أقوى وأبرز الشخصيات في المدينة.',
         tags: ['Just Chatting', 'MT RP', 'Level One'],
         defaultStreamTitle: 'تابع البثوث السابقة | تابعني الآن',
         defaultCategory: 'غير متصل',
@@ -107,7 +107,7 @@ const TRANSLATIONS = {
         communityTitle: 'مقر المجتمع', supportTitle: 'دعم القناة', supportSub: 'دعمك يخلي إمبراطورية الزمرد أسطورية وتستمر.',
         honorTitle: 'لوحة الشرف', honorSub: 'كبار الداعمين عبر كل البثوث.',
         archiveTitle: 'الأرشيف', archiveSub: 'اللقطات والبثوث السابقة.',
-        albumTitle: 'ألبوم ناصر', albumSub: 'سبع عشرة صورة من ذاكرة السهرات.',
+        albumTitle: 'سيرة ناصر', albumSub: 'سيرة ناصر بالصور — سبع عشرة صورة من ذاكرة السهرات.',
         statsTitle: 'إحصائيات البث', statsSub: 'أرقام إمبراطورية الزمرد لحظة بلحظة.',
         tiersTitle: 'مستويات التنبيه الخاصة',
         theaterTitle: 'مسرح البث المباشر', viewers: 'مشاهد',
@@ -1059,22 +1059,22 @@ export default function App() {
                             <Reveal delay={80}><SupportArena lang={lang} supporters={[]} /></Reveal>
                         </section>
 
+                        {/* ===== SIRAH — Nasser's photo deck, above Honor ===== */}
+                        <section id="album" className="pt-12 md:pt-16 scroll-mt-28">
+                            <Reveal><SectionHeading no="05" title={t.albumTitle} sub={t.albumSub} en="SIRAH" /></Reveal>
+                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-72 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><AlbumSection lang={lang} /></Suspense></Reveal>
+                        </section>
+
                         {/* ===== HONOR (gifters + last session when offline + chat legends) ===== */}
                         <section id="honor" className="pt-12 md:pt-16 scroll-mt-28">
-                            <Reveal><SectionHeading no="05" title={t.honorTitle} sub={t.honorSub} en="HALL OF FAME" /></Reveal>
+                            <Reveal><SectionHeading no="06" title={t.honorTitle} sub={t.honorSub} en="HALL OF FAME" /></Reveal>
                             <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><HonorSection lang={lang} report={!streamInfo.isLive ? (<div id="live" className="scroll-mt-28"><LastSessionReport lang={lang} data={lastSession} clips={clips} past={pastSessions} /></div>) : null} /></Suspense></Reveal>
                         </section>
 
                         {/* ===== ARCHIVE ===== */}
                         <section id="archive" className="pt-12 md:pt-16 scroll-mt-28">
-                            <Reveal><SectionHeading no="06" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
+                            <Reveal><SectionHeading no="07" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
                             <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><ArchiveSection lang={lang} /></Suspense></Reveal>
-                        </section>
-
-                        {/* ===== ALBUM — final section: Nasser's photo deck ===== */}
-                        <section id="album" className="pt-12 md:pt-16 scroll-mt-28">
-                            <Reveal><SectionHeading no="07" title={t.albumTitle} sub={t.albumSub} en="ALBUM" /></Reveal>
-                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-72 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><AlbumSection lang={lang} /></Suspense></Reveal>
                         </section>
 
                         {/* ===== FOOTER ===== */}
