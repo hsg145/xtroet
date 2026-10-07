@@ -92,7 +92,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ lang, isDemo }) => {
       if (isNearBottom || messages.length <= 5) {
         chatContainerRef.current.scrollTo({
           top: scrollHeight,
-          behavior: 'smooth'
+          behavior: 'auto'
         });
       }
     }
@@ -148,7 +148,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ lang, isDemo }) => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#0b0e0f]/80 backdrop-blur-2xl rounded-3xl overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative ring-1 ring-white/5 isolate group">
+    <div className="flex flex-col h-full max-h-full min-h-0 w-full bg-[#0b0e0f]/80 backdrop-blur-2xl rounded-3xl overflow-hidden border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative ring-1 ring-white/5 isolate group">
 
       {/* Decorative Glow */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-kick/5 rounded-full blur-3xl -z-10 group-hover:bg-kick/10 transition-colors duration-500"></div>
@@ -190,7 +190,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ lang, isDemo }) => {
       {/* --- Chat List --- */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-1.5 scrollbar-hide bg-gradient-to-b from-[#0b0e0f]/50 to-transparent"
+        className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-1.5 scrollbar-hide bg-gradient-to-b from-[#0b0e0f]/50 to-transparent"
       >
         <div className="sticky top-0 h-8 bg-gradient-to-b from-[#0b0e0f] to-transparent z-10 -mt-4 pointer-events-none"></div>
 
@@ -205,7 +205,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ lang, isDemo }) => {
             )}
 
             {/* Message Content */}
-            <div className="flex flex-wrap items-baseline gap-x-2 text-[13px] md:text-sm leading-relaxed break-words w-full">
+            <div className="flex flex-wrap items-baseline gap-x-2 text-[13px] md:text-sm leading-relaxed break-words min-w-0 w-full">
 
               {/* Username */}
               <span

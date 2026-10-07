@@ -1010,7 +1010,7 @@ export default function App() {
                                         <span className="ms-auto text-[11px] font-black text-white/45" dir="ltr">{streamInfo.viewers.toLocaleString()} {t.viewers}</span>
                                     </div>
                                     <div className="flex flex-col xl:flex-row gap-0">
-                                        <div className="flex-1 min-w-0 p-3 md:p-4">
+                                        <div className="flex-1 min-w-0 min-h-0 p-3 md:p-4">
                                             <div className="aspect-video rounded-2xl overflow-hidden bg-black border border-[#C9A24B]/20">
                                                 <StreamPlayer lang={lang} isLive={streamInfo.isLive} viewers={streamInfo.viewers} channelSlug={CHANNEL_SLUG} poster={branding.bannerImage} />
                                             </div>
@@ -1033,8 +1033,8 @@ export default function App() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="w-full xl:w-[360px] shrink-0 p-3 md:p-4 xl:ps-0">
-                                            <div className="h-[480px] xl:h-full min-h-[480px] rounded-2xl overflow-hidden border border-white/10">
+                                        <div className="w-full xl:w-[360px] shrink-0 min-w-0 p-3 md:p-4 xl:ps-0">
+                                            <div className="h-[480px] xl:h-[620px] xl:max-h-[78vh] rounded-2xl overflow-hidden border border-white/10 min-h-0">
                                                 <ChatWidget lang={lang} isDemo={false} />
                                             </div>
                                         </div>
