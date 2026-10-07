@@ -77,9 +77,9 @@ const CardSkeleton: React.FC<{ glow: string }> = ({ glow }) => (
    Live guild data, refreshed every 60s:
      1) Server widget API (rich: online members, games, channels, invite)
      2) Invite API fallback (online + total members, always public) */
-const DISCORD_GUILD_ID = '794190117139906610';
-const DISCORD_INVITE_CODE = 'eX8DR9Aj9D';
-const DISCORD_JOIN_URL = 'https://discord.com/invite/eX8DR9Aj9D';
+const DISCORD_GUILD_ID = '1254910012392738817';
+const DISCORD_INVITE_CODE = 'bYPKxMp4h';
+const DISCORD_JOIN_URL = 'https://discord.gg/bYPKxMp4h';
 
 interface DiscordLive {
    name: string;

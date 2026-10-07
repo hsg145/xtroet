@@ -948,7 +948,7 @@ export default function App() {
                                         <span className="watch-label">{t.watchLive}</span>
                                         {streamInfo.isLive && streamInfo.viewers > 0 && <span className="rounded-lg bg-[#C9A24B]/15 border border-[#C9A24B]/30 px-2 py-0.5 text-xs font-black text-[#E8D5A8]" dir="ltr">{streamInfo.viewers.toLocaleString()}</span>}
                                     </a>
-                                    <a href="https://discord.com/invite/eX8DR9Aj9D" target="_blank" rel="noopener noreferrer"
+                                    <a href="https://discord.gg/bYPKxMp4h" target="_blank" rel="noopener noreferrer"
                                         className="btn-arena btn-discord inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-2xl font-black text-[15px] md:text-base active:scale-[0.98]">
                                         <DiscordIcon className="w-5 h-5 shrink-0" />
                                         {t.joinDiscord}
