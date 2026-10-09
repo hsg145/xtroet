@@ -119,41 +119,49 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             </div>
 
             {/* ── الهيدر بالبانر + اللوقو ── */}
-            <div className="relative -mt-6 sm:-mt-7">
+            <div className="relative">
                 <img
                     src="/rank-banner.png"
                     alt="Police Ranks Counter"
-                    className="w-full h-[124px] sm:h-[156px] md:h-[186px] object-cover object-top opacity-90 translate-y-3 sm:translate-y-4 md:translate-y-5"
-                    style={{ maskImage: 'linear-gradient(to bottom, black 48%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to bottom, black 48%, transparent 100%)' }}
+                    className="w-full h-[124px] sm:h-[156px] md:h-[186px] object-cover object-center opacity-100"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#040C1C]/45 via-transparent to-[#040C1C]" aria-hidden="true" />
+                {/* تعتيم خفيف فقط — البانر يبقى واضح، وتذوب حافته السفلية بالخلفية */}
+                <div
+                    className="absolute inset-0"
+                    style={{ background: 'linear-gradient(to bottom, rgba(4,12,28,0.12) 0%, rgba(4,12,28,0.05) 55%, #040C1C 100%)' }}
+                    aria-hidden="true"
+                />
 
-                {/* اللوقو — داخل إطاره، أحافه ما تبيّن */}
+                {/* اللوقو — يأخذ حجمه من الإطار، واللوقو داخله بالكامل */}
                 <div className="absolute inset-x-0 bottom-0 flex justify-center">
-                    <div
-                        className="relative flex items-center justify-center rounded-full"
-                        style={{
-                            padding: 6,
-                            background: 'linear-gradient(145deg,#5AA9FF 0%,#1E6FFF 45%,#0B4FBF 100%)',
-                            boxShadow: '0 0 0 1px rgba(207,228,255,0.35), 0 0 34px rgba(30,111,255,0.7), 0 14px 34px -12px rgba(0,0,0,0.8)',
-                        }}
-                    >
+                    <div className="relative -translate-y-1/2">
+                        {/* الهالة — منفصلة عن الإطار عشان ما تأثر على حدوده */}
+                        <span className="pointer-events-none absolute inset-0 rounded-full bg-[#1E6FFF]/45 blur-xl" aria-hidden="true" />
+
+                        {/* الإطار الخارجي */}
                         <span
-                            className="relative flex items-center justify-center rounded-full bg-[#071224]"
-                            style={{ padding: 5, boxShadow: 'inset 0 1px 0 rgba(207,228,255,0.25)' }}
+                            className="relative block rounded-full p-[5px] sm:p-[6px]"
+                            style={{
+                                background: 'conic-gradient(from 210deg,#5AA9FF 0deg,#1E6FFF 90deg,#0B4FBF 180deg,#5AA9FF 270deg,#1E6FFF 360deg)',
+                                boxShadow: '0 0 0 1px rgba(207,228,255,0.4), 0 0 26px rgba(30,111,255,0.65), 0 12px 30px -10px rgba(0,0,0,0.85)',
+                            }}
                         >
-                            <img
-                                src="/rank-logo.png"
-                                alt="Police Ranks"
-                                className="w-[68px] h-[68px] sm:w-[82px] sm:h-[82px] md:w-[94px] md:h-[94px] object-contain"
-                                style={{ filter: 'drop-shadow(0 0 14px rgba(30,111,255,0.6))' }}
-                            />
+                            {/* الإطار الداخلي الكحلي */}
+                            <span className="block rounded-full bg-[#071224] p-[5px] sm:p-[6px] shadow-[inset_0_1px_0_rgba(207,228,255,0.28)]">
+                                {/* اللوقو — أصغر من الإطارInner عشان ما يلامس الحافة */}
+                                <img
+                                    src="/rank-logo.png"
+                                    alt="Police Ranks"
+                                    className="block w-[58px] h-[58px] sm:w-[70px] sm:h-[70px] md:w-[82px] md:h-[82px] object-contain"
+                                    style={{ filter: 'drop-shadow(0 0 10px rgba(30,111,255,0.55))' }}
+                                />
+                            </span>
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div className="relative px-5 pb-6 md:px-8 md:pb-8 pt-[74px] sm:pt-[88px] md:pt-[100px]">
+            <div className="relative px-5 pb-6 md:px-8 md:pb-8 pt-[68px] sm:pt-[80px] md:pt-[92px]">
                 {/* العنوان */}
                 <div className="text-center">
                     <h3 className="text-2xl sm:text-3xl md:text-4xl font-black leading-none police-title">
