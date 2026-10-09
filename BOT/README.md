@@ -3,6 +3,20 @@
 A Kick chat bot that awards points per message, tracks 14 rank tiers, announces
 rank-ups, and answers commands — backed by Supabase.
 
+## Env vars: always suffixed `_BOT`
+
+Every variable in `.env` ends with `_BOT` (`KICK_CLIENT_ID_BOT`,
+`SUPABASE_URL_BOT`, `PORT_BOT`, …). The site at the repo root uses the *same*
+names (`KICK_CLIENT_ID`, `SUPABASE_URL`, …) with completely different values,
+so the suffix is what stops them mixing on Railway/Vercel/local.
+
+`src/config.ts` maps `X_BOT → X` once at load (`normalizeBotEnv`), so all the
+rest of the code reads the plain names (`e.SUPABASE_URL`). Rename nothing in
+source; just use the `_BOT` name in the env file and on your host's dashboard.
+
+The site's own OAuth (`/api/kick-login`) reads the **unsuffixed** names in the
+site's Vercel project — that is intentional, they are two separate deployments.
+
 ## Run it locally (normal way — no tunnel, no public URL)
 
 ```powershell
@@ -19,7 +33,7 @@ dashboard changes.
 If you do not know your chatroom id yet, `npm run doctor` and `npm start` will
 print instructions: open `https://kick.com/api/v2/channels/<slug>` in your
 browser, find `"chatroom":{"id":NUMBER`, and put that number in `.env` as
-`KICK_CHATROOM_ID`.
+`KICK_CHATROOM_ID_BOT`.
 
 ## Commands
 
@@ -65,12 +79,24 @@ banner says so instead of claiming success.
 ## Setup
 
 1. Create a Kick app at <https://kicks.com/developer>. Add
-   `http://localhost:3000/callback` as a redirect URI and enable the scopes
-   `user:read channel:read chat:write events:subscribe`.
+   `https://ixtroet.vercel.app/api/kick-callback` as a redirect URI (plus
+   `http://localhost:3000/callback` for local `npm run auth`) and enable the
+   scopes `user:read channel:read chat:write events:subscribe`. Leave
+   "webhook" off — pusher mode needs no public URL.
 2. Create a Supabase project and run `supabase/migrations/001_init.sql`, then
-   `supabase/migrations/002_fix_rpc.sql` in the SQL editor.
-3. Copy `.env.example` to `.env` and fill it in.
-4. `npm run doctor`, then `npm run auth` if the token check fails.
+   `002_fix_rpc.sql`, then `003_rank_emoji.sql` in the SQL editor.
+3. Link the channel from the website (`/api/kick-login` on the site). That writes
+   the `channels` and `kick_tokens` rows — without the `channels` row the
+   `apply_points` RPC fails its foreign key.
+4. Copy `.env.example` to `.env`, fill it in (keep every `_BOT` suffix), and put
+   the chatroom id from step "chatroom id" above into `KICK_CHATROOM_ID_BOT`.
+5. `npm run doctor`, then `npm run auth` if the token check fails.
+
+## Hosting the bot (Railway)
+
+Root directory `BOT` — Railway reads `railway.json` automatically. Add the same
+variables **with the `_BOT` suffix** in Railway's Variables tab, then set
+`PUBLIC_BASE_URL_BOT` to the generated Railway domain.
 
 ## Notes
 

@@ -7,6 +7,68 @@ import { z } from 'zod';
 // never be able to influence a test run.
 if (process.env.NODE_ENV !== 'test') dotenv.config({ override: true });
 
+/**
+ * كل متغيرات البوت تنتهي بـ _BOT داخل .env حتى لا تختلط بمتغيرات الموقع
+ * (الموقع يستعمل SUPABASE_URL و KICK_CLIENT_* بقيمة مختلفة تماماً).
+ * هنا نترجم الاسم المُلاحق إلى الاسم الداخلي مرة واحدة، فبقية الكود
+ * ما يتأثر ويقرأ e.SUPABASE_URL كالمعتاد.
+ */
+const BOT_SUFFIX = '_BOT';
+
+const BOT_ENV_KEYS = [
+  'KICK_CLIENT_ID',
+  'KICK_CLIENT_SECRET',
+  'KICK_REDIRECT_URI',
+  'KICK_TARGET_CHANNEL_SLUG',
+  'KICK_SENDER_TYPE',
+  'KICK_SCOPES',
+  'KICK_API_BASE',
+  'KICK_OAUTH_BASE',
+  'KICK_CHATROOM_ID',
+  'KICK_PUBLIC_KEY_PEM',
+  'PUSHER_WATCHDOG_SECONDS',
+  'PUSHER_BACKOFF_MAX_MS',
+  'INGEST_MODE',
+  'PUBLIC_BASE_URL',
+  'SUPABASE_URL',
+  'SUPABASE_SECRET_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
+  'PORT',
+  'NODE_ENV',
+  'LOG_LEVEL',
+  'TEST_MODE',
+  'COMMAND_PREFIX',
+  'POINTS_COOLDOWN_SECONDS',
+  'FLUSH_INTERVAL_MS',
+  'ANNOUNCE_RANKUPS',
+  'IGNORED_USERNAMES',
+  'ADMIN_USER_IDS',
+  'RANKS_REFRESH_MS',
+  'SUBSCRIPTION_REFRESH_MS',
+  'EVENT_IDLE_WARN_SECONDS',
+  'COMMAND_COOLDOWN_SECONDS',
+  'GLOBAL_COMMAND_COOLDOWN_MS',
+  'DUPLICATE_WINDOW_SECONDS',
+  'MIN_MESSAGE_LENGTH',
+  'CACHE_TTL_MS',
+  'MAX_QUEUE_SIZE',
+  'SEND_INTERVAL_MS',
+  'POINTS_MIN',
+  'CODE_VERIFIER',
+  'CHAT_SOURCE',
+] as const;
+
+/** { KICK_CLIENT_ID_BOT: 'x' } → { KICK_CLIENT_ID: 'x' } */
+function normalizeBotEnv(source: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  const out: NodeJS.ProcessEnv = { ...source };
+  for (const key of BOT_ENV_KEYS) {
+    const suffixed = `${key}${BOT_SUFFIX}`;
+    const value = source[suffixed];
+    if (value !== undefined && value !== '') out[key] = value;
+  }
+  return out;
+}
+
 const bool = (def: boolean) =>
   z
     .string()
@@ -120,7 +182,7 @@ export type Env = z.infer<typeof envSchema>;
 let cached: Env | undefined;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const parsed = envSchema.safeParse(source);
+  const parsed = envSchema.safeParse(normalizeBotEnv(source));
   if (!parsed.success) {
     const details = parsed.error.issues
       .map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
