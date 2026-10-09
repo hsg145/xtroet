@@ -144,7 +144,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
 
                 {/* اللوقو — نازل شوي تحت، ومقطّع داخل الإطار بالكامل */}
                 <div className="absolute inset-x-0 bottom-0 flex justify-center">
-                    <div className="relative -translate-y-[26%]">
+                    <div className="relative -translate-y-[14%]">
                         {/* الهالة الزرقاء */}
                         <span className="pointer-events-none absolute -inset-1.5 rounded-full bg-[#1E6FFF]/45 blur-2xl" aria-hidden="true" />
 
@@ -175,7 +175,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                 </div>
             </div>
 
-            <div className="relative z-10 px-5 pb-6 md:px-8 md:pb-8 pt-[76px] sm:pt-[88px] md:pt-[100px]">
+            <div className="relative z-10 px-5 pb-6 md:px-8 md:pb-8 pt-[62px] sm:pt-[72px] md:pt-[82px]">
                 {/* العنوان */}
                 <div className="text-center">
                     <h3 className="text-2xl sm:text-3xl md:text-4xl font-black leading-none police-title">
