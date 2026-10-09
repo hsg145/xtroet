@@ -121,8 +121,14 @@
 
   <link rel="preload" as="image" href="/bg-xtroet.png" fetchpriority="high">
   <link rel="preload" as="image" href="/xtroet-logo.webp" fetchpriority="high">
+  <!-- The police-ranks board is far below the fold. Fetching its banner and
+       logo eagerly blocked the first paint on phones, so they load when the
+       section scrolls into view instead. -->
+  <link rel="preload" as="fetch" href="/api/leaderboard" crossorigin>
+  <!-- Tailwind is compiled by the CDN at runtime. Preconnecting first means the
+       handshake starts before the parser reaches the tag, which is what turned
+       a blank black screen into a fast first paint. -->
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
-  <link rel="preconnect" href="https://esm.sh" crossorigin>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -487,18 +493,10 @@
     .wm-sheen { position: absolute; inset: 0; display: block; color: transparent; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.4) 46%, rgba(16,185,129,0.5) 50%, rgba(255,255,255,0.4) 54%, transparent 70%); background-size: 280% 100%; -webkit-background-clip: text; background-clip: text; animation: wm-sheen 7s ease-in-out infinite; pointer-events: none; }
     @keyframes wm-sheen { 0% { background-position: 130% 0; } 55%, 100% { background-position: -130% 0; } }
   </style>
-  <script type="importmap">
-    {
-      "imports": {
-        "react/": "https://esm.sh/react@^19.2.3/",
-        "react": "https://esm.sh/react@^19.2.3",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-        "pusher-js": "https://esm.sh/pusher-js@7.6.0",
-        "hls.js": "https://esm.sh/hls.js"
-      }
-    }
-  </script>
+  <!-- The bundler resolves React, Pusher and hls.js from node_modules, so no
+       import map is needed. Leaving one here pointed browsers at esm.sh for a
+       second copy of React, which doubled the download and broke on slow
+       mobile networks. -->
 </head>
 
 <body class="bg-black text-white overflow-x-hidden antialiased">

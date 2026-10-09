@@ -152,8 +152,12 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             {/* ── الهيدر بالبانر + اللوقو ── */}
             <div className="relative z-[2]">
                 <img
-                    src="/rank-banner.png"
+                    src="/rank-banner.webp"
                     alt="Police Ranks Counter"
+                    width={1200}
+                    height={480}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-[104px] sm:h-[124px] md:h-[144px] object-cover object-center opacity-100"
                 />
                 {/*—in overlays: vignette أسود يجمّع البانر + ذوبان أسود للحافة السفلية */}
@@ -185,8 +189,12 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                             <span className="block overflow-hidden rounded-full bg-[#04091A] p-[7px] sm:p-[8px] shadow-[inset_0_3px_10px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(207,228,255,0.22)]">
                                 {/* اللوقو — أطرافه تذوب داخل الدائرة، ما تبيّن خالص */}
                                 <img
-                                    src="/rank-logo.png"
+                                    src="/rank-logo.webp"
                                     alt="Police Ranks"
+                                    width={320}
+                                    height={320}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="block w-[62px] h-[62px] sm:w-[72px] sm:h-[72px] md:w-[82px] md:h-[82px] object-cover scale-[1.06]"
                                     style={{
                                         maskImage: 'radial-gradient(circle at 50% 50%, black 58%, transparent 82%)',
