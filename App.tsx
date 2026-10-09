@@ -5,7 +5,6 @@ import { StreamPlayer } from './components/StreamPlayer';
 import { SiteHeader } from './components/SiteHeader';
 import { ChatWidget } from './components/Chat';
 import { DiscordWidget, YoutubeWidget } from './components/CommunityWidgets';
-import { KickBotLink } from './components/KickBotLink';
 
 // Heavy below-fold / on-demand chunks — split out of the first paint
 const HonorSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.HonorSection })));
@@ -1076,11 +1075,6 @@ export default function App() {
                         <section id="archive" className="pt-12 md:pt-16 scroll-mt-28">
                             <Reveal><SectionHeading no="07" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
                             <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><ArchiveSection lang={lang} /></Suspense></Reveal>
-                        </section>
-
-                        {/* ===== BOT LINK ===== */}
-                        <section id="bot" className="pt-12 md:pt-16 scroll-mt-28">
-                            <Reveal><KickBotLink lang={lang} /></Reveal>
                         </section>
 
                         {/* ===== FOOTER ===== */}
