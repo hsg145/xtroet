@@ -394,12 +394,10 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                     {rest.map((e, idx) => {
                         const pct = Math.max(6, Math.round((e.points / maxPoints) * 100));
                         const rc = rankColor(e.rank_idx);
-                        const justIn = flash === 0 && idx === 0;
                         return (
                             <div
                                 key={`${e.name}-${e.rank}`}
                                 className="relative overflow-hidden rounded-2xl border border-[#1E6FFF]/15 bg-white/[0.02] p-3 transition-all duration-300 hover:border-[#1E6FFF]/45 hover:bg-white/[0.05]"
-                                style={justIn ? { animation: 'police-pop 0.6s cubic-bezier(0.16,1,0.3,1)' } : undefined}
                             >
                                 <div className="flex items-center gap-3 min-w-0">
                                     <span className="w-8 h-8 shrink-0 rounded-xl border border-[#1E6FFF]/25 bg-[#1E6FFF]/10 flex items-center justify-center text-[11px] font-black text-[#CFE4FF]" dir="ltr">
