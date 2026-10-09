@@ -1,33 +1,41 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+﻿import React, { useEffect, useState, useMemo, useRef } from 'react';
 
 interface BotrixEntry {
-  level: number;
   watchtime: number;
-  xp: number;
   points: number;
   name: string;
-}
-
-interface RichEntry extends BotrixEntry {
-  avatar: string;
-  followers: number | null;
-  bio: string;
-  verified: boolean;
-  role: 'mod' | 'vip' | 'og' | null;
 }
 
 interface BotrixLeaderboardProps {
   lang: 'en' | 'ar';
 }
 
-const API_URL = '/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=xtroet');
-const KICK_CH = (name: string) => '/api/kick?endpoint=' + encodeURIComponent(`https://kick.com/api/v2/channels/${name}`);
+const API_URL = '/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=oflag');
 
-const formatDuration = (seconds: number) => {
-  const days = Math.floor(seconds / 86400);
-  const hrs = Math.floor((seconds % 86400) / 3600);
-  if (days > 0) return `${days}d ${hrs}h`;
-  return `${hrs}h`;
+/**
+ * watchtime arrives as a raw seconds count, so it is formatted properly:
+ * 12365 â†’ "3h 26m 5s", and anything past a day keeps going ("8d 14h 5m").
+ */
+const formatDuration = (seconds: number): string => {
+  const total = Math.max(0, Math.floor(seconds || 0));
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (d > 0) return `${d}d ${h}h ${m}m`;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  return `${m}m ${s}s`;
+};
+
+/** Compact form for the podium, where space is tight. */
+const formatDurationShort = (seconds: number): string => {
+  const total = Math.max(0, Math.floor(seconds || 0));
+  const d = Math.floor(total / 86400);
+  const h = Math.floor((total % 86400) / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  if (d > 0) return `${d}d ${h}h`;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 };
 
 const formatNum = (n: number) => {
@@ -48,129 +56,66 @@ const SkeletonRow: React.FC<{ delay: number }> = ({ delay }) => (
   </div>
 );
 
-const PROFILE_CACHE = new Map<string, { avatar: string; followers: number | null; bio: string; verified: boolean }>();
-
-const ROLE_STYLE: Record<string, { pill: string; dot: string; label: string; ring: string }> = {
-  mod: { pill: 'bg-emerald-400/15 border-emerald-400/50 text-emerald-300', dot: 'bg-emerald-400', label: 'MOD', ring: 'border-emerald-400/60' },
-  vip: { pill: 'bg-pink-400/15 border-pink-400/50 text-pink-300', dot: 'bg-pink-400', label: 'VIP', ring: 'border-pink-400/60' },
-  og: { pill: 'bg-amber-400/15 border-amber-400/50 text-amber-300', dot: 'bg-amber-400', label: 'OG', ring: 'border-amber-400/60' },
-};
-
-const RoleBadge: React.FC<{ role: 'mod' | 'vip' | 'og' }> = ({ role }) => {
-  const s = ROLE_STYLE[role];
-  return (
-    <span className={`inline-flex items-center gap-1 text-[8px] md:text-[9px] font-black tracking-[0.14em] px-1.5 sm:px-2 py-[3px] rounded-lg border ${s.pill}`}>
-      <span className={`w-1 h-1 md:w-1.5 md:h-1.5 rounded-full ${s.dot} animate-pulse`} />
-      {s.label}
-    </span>
-  );
-};
-
-const ROLE_RING: Record<string, string> = {
-  mod: '#10b981',
-  vip: '#ec4899',
-  og: '#f59e0b',
-};
-
-const MiniIcon: React.FC<{ d: string; className?: string }> = ({ d, className }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d={d} />
-  </svg>
-);
-
 const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
   const [data, setData] = useState<BotrixEntry[] | null>(null);
-  const [profiles, setProfiles] = useState<Record<string, { avatar: string; followers: number | null; bio: string; verified: boolean }>>({});
-  const [roles, setRoles] = useState<Record<string, 'mod' | 'vip' | 'og'>>({});
-  const fetchedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
     fetch(API_URL)
-      .then(r => r.json())
+      .then((r) => r.json())
       .then((json: BotrixEntry[]) => {
-        if (!cancelled && Array.isArray(json)) setData(json);
-        else if (!cancelled) setData([]);
+        if (cancelled) return;
+        // Guard the shape: one bad row must not blank the whole board.
+        setData(Array.isArray(json) ? json.filter((e) => e && typeof e.name === 'string') : []);
       })
       .catch(() => { if (!cancelled) setData([]); });
     return () => { cancelled = true; };
   }, []);
 
+  // Most-watched first: the board is explicitly a watchtime ranking.
   const sorted = useMemo(() => {
     if (!data) return [];
-    return [...data].sort((a, b) => (b.watchtime || 0) - (a.watchtime || 0)).slice(0, 50);
+    return [...data]
+      .sort((a, b) => (b.watchtime || 0) - (a.watchtime || 0))
+      .slice(0, 50);
   }, [data]);
 
-  // Enrich top chatters with live Kick data (followers, bio, verified, avatar)
-  // Top 15 get full enrichment; the rest render instantly with Botrix data.
-  useEffect(() => {
-    if (!sorted.length) return;
-    const toFetch = sorted.slice(0, 15).map(e => e.name).filter(n => !fetchedRef.current.has(n.toLowerCase()));
-    if (!toFetch.length) return;
-    toFetch.forEach(n => fetchedRef.current.add(n.toLowerCase()));
-    let cancelled = false;
-    const fetchOne = async (name: string) => {
-      try {
-        const cached = PROFILE_CACHE.get(name.toLowerCase());
-        if (cached) return { name, ...cached };
-        const res = await fetch(KICK_CH(name));
-        if (!res.ok) return null;
-        const json = await res.json();
-        const d = json?.data || json;
-        const followers = d?.followers_count != null ? parseInt(String(d.followers_count).replace(/[^\d]/g, ''), 10) || null : null;
-        const out = {
-          name,
-          avatar: d?.user?.profile_pic || '',
-          followers,
-          bio: d?.user?.bio || '',
-          verified: d?.verified === true,
-        };
-        PROFILE_CACHE.set(name.toLowerCase(), { avatar: out.avatar, followers: out.followers, bio: out.bio, verified: out.verified });
-        return out;
-      } catch { return null; }
-    };
-    (async () => {
-      for (let i = 0; i < toFetch.length; i += 4) {
-        const batch = await Promise.all(toFetch.slice(i, i + 4).map(fetchOne));
-        if (cancelled) return;
-        const next: Record<string, { avatar: string; followers: number | null; bio: string; verified: boolean }> = {};
-        batch.forEach(b => { if (b) next[b.name] = { avatar: b.avatar, followers: b.followers, bio: b.bio, verified: b.verified }; });
-        setProfiles(prev => ({ ...prev, ...next }));
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [sorted]);
-
-  const rich: RichEntry[] = useMemo(() => sorted.map(e => ({
-    ...e,
-    avatar: profiles[e.name]?.avatar || '',
-    followers: profiles[e.name]?.followers ?? null,
-    bio: profiles[e.name]?.bio || '',
-    verified: profiles[e.name]?.verified || false,
-    role: roles[e.name.toLowerCase()] || null,
-  })), [sorted, profiles, roles]);
-
-  const maxWatch = Math.max(1, ...rich.map(e => e.watchtime || 0));
-  const totalWatch = rich.reduce((s, e) => s + (e.watchtime || 0), 0);
+  const maxWatch = Math.max(1, ...sorted.map((e) => e.watchtime || 0));
+  const totalWatch = sorted.reduce((s, e) => s + (e.watchtime || 0), 0);
+  const totalPoints = sorted.reduce((s, e) => s + (e.points || 0), 0);
 
   const t = {
-    title: lang === 'ar' ? 'أساطير الشات' : 'Chat Legends',
-    subtitle: lang === 'ar' ? 'الأكثر تفاعلاً في جميع البثوث' : 'Most active across all streams',
-    empty: lang === 'ar' ? 'لا توجد بيانات حالياً' : 'No data available',
-    level: lang === 'ar' ? 'المستوى' : 'Level',
-    watchtime: lang === 'ar' ? 'مشاهدة' : 'Watched',
-    xp: 'XP',
-    points: lang === 'ar' ? 'نقطة' : 'PTS',
-    followers: lang === 'ar' ? 'متابع' : 'Followers',
-    legends: lang === 'ar' ? 'أسطورة' : 'Legends',
+    title: lang === 'ar' ? 'Ø£Ø³Ø§Ø·ÙŠØ± Ø§Ù„Ø´Ø§Øª' : 'Chat Legends',
+    subtitle: lang === 'ar' ? 'Ø§Ù„Ø£ÙƒØ«Ø± Ù…Ø´Ø§Ù‡Ø¯Ø© ÙÙŠ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¨Ø«ÙˆØ«' : 'Most watched across all streams',
+    empty: lang === 'ar' ? 'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª Ø­Ø§Ù„ÙŠØ§Ù‹' : 'No data available',
+    watch: lang === 'ar' ? 'Ù…Ø´Ø§Ù‡Ø¯Ø©' : 'Watched',
+    points: lang === 'ar' ? 'Ù†Ù‚Ø·Ø©' : 'PTS',
+    legends: lang === 'ar' ? 'Ø£Ø³Ø·ÙˆØ±Ø©' : 'Legends',
+    live: lang === 'ar' ? 'Ù†Ø®Ø¨Ø© Ø§Ù„Ù…Ø´Ø§Ù‡Ø¯Ø©' : 'Watch elite',
+    rank: lang === 'ar' ? 'Ø§Ù„ØªØ±ØªÙŠØ¨' : 'Rank',
   };
 
-  const podium = rich.slice(0, 3);
+  const podium = sorted.slice(0, 3);
+  const rest = sorted.slice(3);
+
   const ringOf = (rank: number) =>
     rank === 1 ? 'conic-gradient(from 200deg,#a7f3d0,#047857,#ecfdf5,#047857,#a7f3d0)'
     : rank === 2 ? 'conic-gradient(from 200deg,#e8e8e8,#6f7b8a,#ffffff,#6f7b8a,#e8e8e8)'
     : rank === 3 ? 'conic-gradient(from 200deg,#f0a35e,#6e3c10,#ffd9ae,#6e3c10,#f0a35e)'
     : 'rgba(255,255,255,0.12)';
+
+  const WatchIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+    </svg>
+  );
+
+  const PointsIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg className={className} fill="currentColor" viewBox="0 0 20 20">
+      <path fillRule="evenodd" d="M10 3.5a1 1 0 011 1v.35a4.5 4.5 0 013.9 2.66l.68-.16a1 1 0 01.4 1.93l-.86.2a4.5 4.5 0 010 1.04l.86.2a1 1 0 01-.4 1.93l-.68-.16a4.5 4.5 0 01-3.9 2.66V16.5a1 1 0 11-2 0v-.35a4.5 4.5 0 01-3.9-2.66l-.68.16a1 1 0 01-.4-1.93l.86-.2a4.5 4.5 0 010-1.04l-.86-.2a1 1 0 01.4-1.93l.68.16A4.5 4.5 0 019 4.85V4.5a1 1 0 011-1zm0 2.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" clipRule="evenodd" />
+    </svg>
+  );
 
   return (
     <div className="w-full animate-fade-in-up">
@@ -179,7 +124,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
         <div className="absolute -top-24 start-1/4 w-96 h-96 bg-[#10B981]/[0.08] blur-[110px] pointer-events-none" aria-hidden="true" />
         <div className="absolute -bottom-32 end-0 w-96 h-96 bg-[#10B981]/[0.08] blur-[110px] pointer-events-none" aria-hidden="true" />
 
-        {/* header — modern */}
+        {/* header */}
         <div className="relative p-5 md:p-7 pb-4 flex items-center gap-4">
           <div className="relative shrink-0">
             <div className="absolute -inset-2 bg-[#10B981]/40 blur-2xl opacity-40 group-hover:opacity-80 transition-opacity duration-500 rounded-full" aria-hidden="true" />
@@ -193,8 +138,12 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
             <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.24em] bg-gradient-to-r from-[#A7F3D0] to-[#059669] bg-clip-text text-transparent mt-2">{t.subtitle}</p>
           </div>
           <div className="hidden sm:flex items-center gap-2 shrink-0">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3.5 py-2 rounded-2xl bg-white/[0.05] border border-white/10 text-white/60">{rich.length} {t.legends}</span>
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3.5 py-2 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/30 text-[#6EE7B7]" dir="ltr">{formatDuration(totalWatch)}</span>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3.5 py-2 rounded-2xl bg-white/[0.05] border border-white/10 text-white/60">
+              {sorted.length} {t.legends}
+            </span>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-black px-3.5 py-2 rounded-2xl bg-[#10B981]/10 border border-[#10B981]/30 text-[#6EE7B7]" dir="ltr">
+              <WatchIcon className="w-3 h-3" /> {formatDurationShort(totalWatch)}
+            </span>
           </div>
         </div>
 
@@ -214,72 +163,70 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
             </div>
           )}
 
-          {rich.length > 0 && (
+          {sorted.length > 0 && (
             <>
-              {/* podium top-3 — floating modern */}
+              {/* podium â€” the three most watched */}
               <div className="relative mx-4 md:mx-6 mt-1 rounded-3xl border border-white/[0.07] bg-black/30 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" aria-hidden="true" />
                 <div className="relative flex items-end justify-center gap-2 sm:gap-5 px-4 pt-6 pb-4" dir="ltr">
-                {([podium[1], podium[0], podium[2]].filter(Boolean)).map((e: any, i: number) => {
-                  const rank = i === 1 ? 1 : i === 0 ? 2 : 3;
-                  return (
-                    <div key={e.name} className="flex flex-col items-center w-[30%] max-w-[200px] animate-fade-in-up transition-transform duration-500 hover:-translate-y-1.5" style={{ animationDelay: `${i * 100}ms` }}>
-                      <span className={`relative rounded-full p-[2.5px] block transition-transform duration-500 hover:scale-110 ${rank === 1 ? 'w-16 h-16 sm:w-20 sm:h-20' : 'w-12 h-12 sm:w-16 sm:h-16'}`} style={{ background: ringOf(rank), boxShadow: rank === 1 ? '0 0 36px rgba(255,215,106,0.55)' : '0 8px 24px rgba(0,0,0,0.5)' }}>
-                        {e.avatar
-                          ? <img src={e.avatar} alt={e.name} loading="lazy" className="w-full h-full rounded-full object-cover bg-black" />
-                          : <span className="w-full h-full rounded-full bg-white/[0.06] backdrop-blur flex items-center justify-center font-black text-lg text-white/80">{e.name.charAt(0).toUpperCase()}</span>}
-                        <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-[10px] font-black px-2 py-0.5 rounded-lg border ${rank === 1 ? 'bg-[#10B981] text-[#04120D] border-white/50' : 'bg-black/80 text-white/80 border-white/20'}`} dir="ltr">#{rank}</span>
-                        {rank === 1 && (
-                          <svg className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] animate-float-soft" viewBox="0 0 24 24" fill="none">
-                            <path fill="#6EE7B7" d="M2.5 8.5 6.5 12l5.5-7 5.5 7 4-3.5L20 18H4L2.5 8.5z" />
-                            <rect x="4" y="18.6" width="16" height="2.2" rx="1.1" fill="#047857" />
-                          </svg>
-                        )}
-                      </span>
-                      <p className="mt-3 text-xs sm:text-sm font-black text-white truncate max-w-full flex items-center gap-1" dir="auto">
-                        <span className="truncate">{e.name}</span>
-                        {e.verified && <svg className="w-3.5 h-3.5 text-[#6EE7B7] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>}
-                      </p>
-                      <span className="mt-1.5 flex items-center gap-1.5">
-                        {e.role && <RoleBadge role={e.role} />}
-                        <span className="text-[10px] font-black px-2 py-0.5 rounded-lg bg-white/[0.06] border border-white/10 text-white/60" dir="ltr">Lv.{e.level}</span>
-                      </span>
-                      <span className="mt-1.5 text-[10px] font-bold text-white/40" dir="ltr">{formatDuration(e.watchtime)}</span>
-                    </div>
-                  );
-                })}
+                  {[podium[1], podium[0], podium[2]].filter(Boolean).map((e, i) => {
+                    const rank = i === 1 ? 1 : i === 0 ? 2 : 3;
+                    const pct = Math.max(8, Math.round(((e.watchtime || 0) / maxWatch) * 100));
+                    return (
+                      <div key={e.name} className="flex flex-col items-center w-[30%] max-w-[200px] animate-fade-in-up transition-transform duration-500 hover:-translate-y-1.5" style={{ animationDelay: `${i * 100}ms` }}>
+                        <span
+                          className={`relative rounded-full p-[2.5px] block transition-transform duration-500 hover:scale-110 ${rank === 1 ? 'w-16 h-16 sm:w-20 sm:h-20' : 'w-12 h-12 sm:w-16 sm:h-16'}`}
+                          style={{ background: ringOf(rank), boxShadow: rank === 1 ? '0 0 36px rgba(255,215,106,0.55)' : '0 8px 24px rgba(0,0,0,0.5)' }}
+                        >
+                          <span className="w-full h-full rounded-full bg-white/[0.06] backdrop-blur flex items-center justify-center font-black text-lg md:text-xl text-white/85">
+                            {e.name.charAt(0).toUpperCase()}
+                          </span>
+                          <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-[10px] font-black px-2 py-0.5 rounded-lg border ${rank === 1 ? 'bg-[#10B981] text-[#04120D] border-white/50' : 'bg-black/80 text-white/80 border-white/20'}`} dir="ltr">#{rank}</span>
+                          {rank === 1 && (
+                            <svg className="absolute -top-4 left-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 drop-shadow-[0_0_10px_rgba(16,185,129,0.9)] animate-float-soft" viewBox="0 0 24 24" fill="none">
+                              <path fill="#6EE7B7" d="M2.5 8.5 6.5 12l5.5-7 5.5 7 4-3.5L20 18H4L2.5 8.5z" />
+                              <rect x="4" y="18.6" width="16" height="2.2" rx="1.1" fill="#047857" />
+                            </svg>
+                          )}
+                        </span>
+                        <p className="mt-3 text-xs sm:text-sm font-black text-white truncate max-w-full" dir="auto">{e.name}</p>
+                        {/* watchtime is the headline number */}
+                        <span className="mt-1.5 inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-black text-[#6EE7B7] bg-[#10B981]/10 border border-[#10B981]/30 rounded-lg px-2 py-0.5" dir="ltr">
+                          <WatchIcon className="w-3 h-3" /> {formatDurationShort(e.watchtime)}
+                        </span>
+                        <span className="mt-1 text-[10px] font-bold text-white/45" dir="ltr">{formatNum(e.points)} {t.points}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* rows — glass list */}
+              {/* rows */}
               <div className="space-y-1.5 mt-3 max-h-[420px] md:max-h-[520px] overflow-y-auto scrollbar-hide">
-                {rich.slice(3).map((e, idx) => {
+                {rest.map((e, idx) => {
                   const rank = idx + 4;
                   const pct = Math.max(4, Math.round(((e.watchtime || 0) / maxWatch) * 100));
                   return (
                     <div key={e.name} className="relative rounded-2xl p-2.5 sm:p-3 border border-transparent hover:border-[#10B981]/20 hover:bg-white/[0.04] hover:-translate-y-0.5 hover:shadow-[0_16px_38px_-14px_rgba(16,185,129,0.35)] transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${Math.min(idx * 60, 480)}ms` }}>
                       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                        <span className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[11px] font-black text-white/40 shrink-0" dir="ltr">{rank < 10 ? `0${rank}` : rank}</span>
-                        <span className="relative w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[2px] shrink-0 block" style={{ background: e.role ? ROLE_RING[e.role] : 'rgba(255,255,255,0.14)' }}>
-                          {e.avatar
-                            ? <img src={e.avatar} alt={e.name} loading="lazy" className="w-full h-full rounded-full object-cover bg-black" />
-                            : <span className="w-full h-full rounded-full bg-white/[0.06] flex items-center justify-center text-xs font-black text-white/60">{e.name.charAt(0).toUpperCase()}</span>}
+                        <span className="w-8 h-8 shrink-0 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[11px] font-black text-white/40" dir="ltr">{rank < 10 ? `0${rank}` : rank}</span>
+                        <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[2px] shrink-0 block bg-white/[0.14]">
+                          <span className="w-full h-full rounded-full bg-white/[0.06] flex items-center justify-center text-sm font-black text-white/60">{e.name.charAt(0).toUpperCase()}</span>
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] sm:text-sm font-black text-white/90 truncate flex items-center gap-1.5" dir="auto">
-                            <span className="truncate">{e.name}</span>
-                            {e.verified && <svg className="w-3.5 h-3.5 text-[#6EE7B7] shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>}
-                            {e.role && <RoleBadge role={e.role} />}
+                          <p className="text-[13px] sm:text-sm font-black text-white/90 truncate" dir="auto">{e.name}</p>
+                          {/* watchtime â€” the ranking metric */}
+                          <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-black text-[#6EE7B7] bg-[#10B981]/10 border border-[#10B981]/25 rounded-lg px-2 py-0.5" dir="ltr">
+                            <WatchIcon className="w-3 h-3" /> {formatDuration(e.watchtime)}
                           </p>
-                          <p className="mt-1 flex items-center gap-2 text-[10px] text-white/40 font-bold">
-                            <span className="inline-flex items-center gap-1 rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr"><MiniIcon d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" className="w-3 h-3 text-[#6EE7B7]/80" />{formatDuration(e.watchtime)}</span>
-                            <span className="rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr">Lv.{e.level}</span>
-                            <span className="hidden md:inline rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr">{formatNum(e.xp)} XP</span>
-                            {e.followers != null && <span className="hidden sm:inline-flex items-center gap-1 rounded-md bg-white/[0.05] border border-white/10 px-1.5 py-0.5" dir="ltr"><MiniIcon d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" className="w-3 h-3 text-white/30" />{formatNum(e.followers)}</span>}
-                          </p>
-                          {e.bio && <p className="hidden md:block text-[10px] text-white/25 truncate mt-1" dir="auto">{e.bio}</p>}
                         </div>
-                        <span className="text-[11px] font-black px-2.5 py-1.5 rounded-xl bg-white/[0.05] border border-white/10 text-white/60 shrink-0" dir="ltr">{formatDuration(e.watchtime)}</span>
+                        {/* points â€” the second number */}
+                        <span className="shrink-0 text-right">
+                          <span className="flex items-center justify-end gap-1 text-[12px] sm:text-sm font-black text-white/85" dir="ltr">
+                            <PointsIcon className="w-3.5 h-3.5 text-[#C9A24B]/80" /> {formatNum(e.points)}
+                          </span>
+                          <span className="mt-0.5 block text-[9px] font-black uppercase tracking-wider text-white/30">{t.points}</span>
+                        </span>
                       </div>
                       <div className="mt-2 ms-[76px] h-1 rounded-full bg-white/[0.06] overflow-hidden" dir="ltr">
                         <div className="bar-grow h-full rounded-full bg-gradient-to-r from-[#A7F3D0] via-[#10B981] to-[#047857]" style={{ width: `${pct}%`, animationDelay: `${Math.min(idx * 60, 480)}ms` }} />
@@ -293,13 +240,16 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
           )}
         </div>
 
+        {/* footer totals */}
         <div className="relative px-5 md:px-7 pb-5 flex items-center justify-center gap-3 z-10">
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           <span className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-white/40 bg-white/[0.04] border border-white/10 rounded-full px-3.5 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#53FC18] animate-pulse shadow-[0_0_8px_#53FC18]" />
-            {lang === 'ar' ? 'نخبة الشات المباشر' : 'Live chat elite'}
+            {t.live}
+            <span className="mx-1 text-white/20">Â·</span>
+            <span dir="ltr">{formatNum(totalPoints)} {t.points}</span>
           </span>
-          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent"></div>
+          <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
         </div>
       </div>
     </div>
