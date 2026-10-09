@@ -129,7 +129,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                 <img
                     src="/rank-banner.png"
                     alt="Police Ranks Counter"
-                    className="w-full h-[124px] sm:h-[156px] md:h-[186px] object-cover object-center opacity-100"
+                    className="w-full h-[104px] sm:h-[124px] md:h-[144px] object-cover object-center opacity-100"
                 />
                 {/*—in overlays: vignette أسود يجمّع البانر + ذوبان أسود للحافة السفلية */}
                 <div
@@ -144,7 +144,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
 
                 {/* اللوقو — نازل شوي تحت، ومقطّع داخل الإطار بالكامل */}
                 <div className="absolute inset-x-0 bottom-0 flex justify-center">
-                    <div className="relative -translate-y-[14%]">
+                    <div className="relative translate-y-[26%]">
                         {/* الهالة الزرقاء */}
                         <span className="pointer-events-none absolute -inset-1.5 rounded-full bg-[#1E6FFF]/45 blur-2xl" aria-hidden="true" />
 
@@ -162,7 +162,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                                 <img
                                     src="/rank-logo.png"
                                     alt="Police Ranks"
-                                    className="block w-[78px] h-[78px] sm:w-[92px] sm:h-[92px] md:w-[106px] md:h-[106px] object-cover scale-[1.08]"
+                                    className="block w-[62px] h-[62px] sm:w-[72px] sm:h-[72px] md:w-[82px] md:h-[82px] object-cover scale-[1.06]"
                                     style={{
                                         maskImage: 'radial-gradient(circle at 50% 50%, black 58%, transparent 82%)',
                                         WebkitMaskImage: 'radial-gradient(circle at 50% 50%, black 58%, transparent 82%)',
@@ -175,7 +175,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                 </div>
             </div>
 
-            <div className="relative z-10 px-5 pb-6 md:px-8 md:pb-8 pt-[62px] sm:pt-[72px] md:pt-[82px]">
+            <div className="relative z-10 px-5 pb-6 md:px-8 md:pb-8 pt-[50px] sm:pt-[56px] md:pt-[64px]">
                 {/* العنوان */}
                 <div className="text-center">
                     <h3 className="text-2xl sm:text-3xl md:text-4xl font-black leading-none police-title">
