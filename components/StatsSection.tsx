@@ -3,6 +3,7 @@ import Hls from 'hls.js';
 import { Language, LeaderboardData, Clip, Video, ChannelInfo, LeaderboardEntry } from '../types';
 import { KickIcon } from './Icons';
 import BotrixLeaderboard from './BotrixLeaderboard';
+import PoliceRanksBoard from './PoliceRanksBoard';
 import { kickFetch } from '../utils/kickApi';
 
 interface StatsSectionProps {
@@ -506,6 +507,11 @@ export const HonorSection: React.FC<StatsSectionProps> = ({ lang, report }) => {
         {/* --- BOTRIX LEADERBOARD (Most Active Across Streams) --- */}
         <div className="pt-8 border-t border-white/5">
           <BotrixLeaderboard lang={lang} />
+        </div>
+
+        {/* --- POLICE RANKS COUNTER (self-serve rank board) --- */}
+        <div className="pt-8 border-t border-white/5">
+          <PoliceRanksBoard lang={lang} />
         </div>
       </div>
     </>
