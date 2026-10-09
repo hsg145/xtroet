@@ -111,6 +111,12 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             {/* توهج أزرق خلفي */}
             <div className="pointer-events-none absolute -top-28 start-1/4 h-80 w-80 rounded-full bg-[#1E6FFF]/20 blur-[110px]" aria-hidden="true" />
             <div className="pointer-events-none absolute -bottom-28 end-0 h-80 w-80 rounded-full bg-[#0B4FBF]/20 blur-[110px]" aria-hidden="true" />
+            {/* طبقة سوداء خفيفة تعمّق الكارت كله وتخلي الأزرق يبرز */}
+            <div
+                className="pointer-events-none absolute inset-0 z-[1]"
+                style={{ background: 'linear-gradient(to bottom, rgba(1,4,12,0.45) 0%, rgba(2,6,16,0.30) 45%, rgba(1,4,12,0.55) 100%)' }}
+                aria-hidden="true"
+            />
 
             {/* خط علوي متحرك */}
             <div className="relative h-[2px] overflow-hidden" aria-hidden="true">
@@ -119,24 +125,28 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             </div>
 
             {/* ── الهيدر بالبانر + اللوقو ── */}
-            <div className="relative">
+            <div className="relative z-[2]">
                 <img
                     src="/rank-banner.png"
                     alt="Police Ranks Counter"
                     className="w-full h-[124px] sm:h-[156px] md:h-[186px] object-cover object-center opacity-100"
                 />
-                {/* تعتيم خفيف فقط — البانر يبقى واضح، وتذوب حافته السفلية بالخلفية */}
+                {/*—in overlays: vignette أسود يجمّع البانر + ذوبان أسود للحافة السفلية */}
                 <div
                     className="absolute inset-0"
-                    style={{ background: 'linear-gradient(to bottom, rgba(4,12,28,0.12) 0%, rgba(4,12,28,0.05) 55%, #040C1C 100%)' }}
+                    style={{
+                        background:
+                            'radial-gradient(ellipse 80% 70% at 50% 40%, transparent 30%, rgba(2,6,16,0.55) 100%),' +
+                            'linear-gradient(to bottom, rgba(2,6,16,0.30) 0%, rgba(2,6,16,0.10) 42%, rgba(4,12,28,0.85) 82%, #040C1C 100%)',
+                    }}
                     aria-hidden="true"
                 />
 
-                {/* اللوقو — يأخذ حجمه من الإطار، واللوقو داخله بالكامل */}
+                {/* اللوقو — نازل شوي تحت، ومقطّع داخل الإطار بالكامل */}
                 <div className="absolute inset-x-0 bottom-0 flex justify-center">
-                    <div className="relative -translate-y-1/2">
-                        {/* الهالة — منفصلة عن الإطار عشان ما تأثر على حدوده */}
-                        <span className="pointer-events-none absolute inset-0 rounded-full bg-[#1E6FFF]/45 blur-xl" aria-hidden="true" />
+                    <div className="relative -translate-y-[38%]">
+                        {/* الهالة الزرقاء */}
+                        <span className="pointer-events-none absolute -inset-1 rounded-full bg-[#1E6FFF]/40 blur-2xl" aria-hidden="true" />
 
                         {/* الإطار الخارجي */}
                         <span
@@ -147,13 +157,17 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                             }}
                         >
                             {/* الإطار الداخلي الكحلي */}
-                            <span className="block rounded-full bg-[#071224] p-[5px] sm:p-[6px] shadow-[inset_0_1px_0_rgba(207,228,255,0.28)]">
-                                {/* اللوقو — أصغر من الإطارInner عشان ما يلامس الحافة */}
+                            <span className="block overflow-hidden rounded-full bg-[#04091A] p-[7px] sm:p-[8px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(207,228,255,0.22)]">
+                                {/* اللوقو — أطرافه تذوب داخل الدائرة، ما تبيّن خالص */}
                                 <img
                                     src="/rank-logo.png"
                                     alt="Police Ranks"
-                                    className="block w-[58px] h-[58px] sm:w-[70px] sm:h-[70px] md:w-[82px] md:h-[82px] object-contain"
-                                    style={{ filter: 'drop-shadow(0 0 10px rgba(30,111,255,0.55))' }}
+                                    className="block w-[62px] h-[62px] sm:w-[74px] sm:h-[74px] md:w-[86px] md:h-[86px] object-cover scale-[1.06]"
+                                    style={{
+                                        maskImage: 'radial-gradient(circle at 50% 50%, black 58%, transparent 82%)',
+                                        WebkitMaskImage: 'radial-gradient(circle at 50% 50%, black 58%, transparent 82%)',
+                                        filter: 'drop-shadow(0 0 8px rgba(30,111,255,0.5)) brightness(1.06) contrast(1.04)',
+                                    }}
                                 />
                             </span>
                         </span>
@@ -161,7 +175,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                 </div>
             </div>
 
-            <div className="relative px-5 pb-6 md:px-8 md:pb-8 pt-[68px] sm:pt-[80px] md:pt-[92px]">
+            <div className="relative z-10 px-5 pb-6 md:px-8 md:pb-8 pt-[76px] sm:pt-[88px] md:pt-[100px]">
                 {/* العنوان */}
                 <div className="text-center">
                     <h3 className="text-2xl sm:text-3xl md:text-4xl font-black leading-none police-title">
