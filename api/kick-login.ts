@@ -40,7 +40,7 @@ function redirectUriFor(reqUrl: URL): string {
 
 export default async function handler(request: Request) {
   const reqUrl = new URL(request.url);
-  const clientId = (process.env.KICK_CLIENT_ID || '').trim();
+  const clientId = (process.env.KICK_CLIENT_ID_BOT || process.env.KICK_CLIENT_ID || '').trim();
 
   if (!clientId) {
     return new Response(

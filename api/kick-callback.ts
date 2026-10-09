@@ -48,8 +48,23 @@ function errorPage(title: string, detail: string): Response {
 }
 
 function supabaseEnv(): { url: string; key: string } {
-  const url = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').trim();
-  const key = (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_KEY || '').trim();
+  // *_BOT أولاً: مشروع البوت (channels + kick_tokens). هذا مقصود —
+  // المشروع بلا لاحقة يخص ألبوم الموقع، لا يجوز أن تُكتب التوكنز فيه.
+  const url = (
+    process.env.SUPABASE_URL_BOT ||
+    process.env.KICK_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
+    ''
+  ).trim();
+  const key = (
+    process.env.SUPABASE_SECRET_KEY_BOT ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY_BOT ||
+    process.env.KICK_SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    ''
+  ).trim();
   return { url, key };
 }
 
@@ -68,8 +83,8 @@ export default async function handler(request: Request) {
   if (!verifier) return errorPage('انتهت الجلسة', 'انتهت صلاحية جلسة الربط (الكوكيز). ارجع للموقع واضغط زر الربط من جديد.');
   if (savedState && state && savedState !== state) return errorPage('تحقق الأمان فشل', 'state غير مطابق — قد تكون ضغطت رابط قديم. ابدأ الربط من جديد.');
 
-  const clientId = (process.env.KICK_CLIENT_ID || '').trim();
-  const clientSecret = (process.env.KICK_CLIENT_SECRET || '').trim();
+  const clientId = (process.env.KICK_CLIENT_ID_BOT || process.env.KICK_CLIENT_ID || '').trim();
+  const clientSecret = (process.env.KICK_CLIENT_SECRET_BOT || process.env.KICK_CLIENT_SECRET || '').trim();
   if (!clientId || !clientSecret) {
     return errorPage('إعداد ناقص', 'KICK_CLIENT_ID / KICK_CLIENT_SECRET غير مضبوطة في Vercel. أضفها ثم أعد المحاولة.');
   }
@@ -111,7 +126,11 @@ export default async function handler(request: Request) {
     const data = JSON.parse(text);
     const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
     // فضّل القناة المطلوبة إن وُجدت، وإلا خذ أول قناة يملكها الحساب
-    const wanted = (process.env.KICK_TARGET_CHANNEL_SLUG || 'xtroet').trim().toLowerCase();
+    const wanted = (
+      process.env.KICK_TARGET_CHANNEL_SLUG_BOT ||
+      process.env.KICK_TARGET_CHANNEL_SLUG ||
+      'xtroet'
+    ).trim().toLowerCase();
     const pick =
       list.find((c: any) => String(c?.slug || c?.broadcaster_slug || '').toLowerCase() === wanted) || list[0];
     if (!pick) return errorPage('لا توجد قناة', 'التوكن صحيح لكن Kick لم يرجع أي قناة — سجّل الدخول بحساب يملك قناة (حساب البث نفسه).');

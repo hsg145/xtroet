@@ -9,8 +9,22 @@
 export const config = { runtime: 'edge' };
 
 export default async function handler() {
-  const sbUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').trim();
-  const sbKey = (process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_KEY || '').trim();
+  // *_BOT أولاً — مشروع البوت هو owner لجداول channels/kick_tokens
+  const sbUrl = (
+    process.env.SUPABASE_URL_BOT ||
+    process.env.KICK_SUPABASE_URL ||
+    process.env.SUPABASE_URL ||
+    process.env.VITE_SUPABASE_URL ||
+    ''
+  ).trim();
+  const sbKey = (
+    process.env.SUPABASE_SECRET_KEY_BOT ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY_BOT ||
+    process.env.KICK_SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_KEY ||
+    ''
+  ).trim();
 
   if (!sbUrl || !sbKey) {
     return Response.json({ connected: false, error: 'Supabase env missing' }, { status: 200 });
