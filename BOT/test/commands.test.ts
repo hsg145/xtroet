@@ -43,10 +43,12 @@ describe('command aliases', () => {
     expect(parse('!رتب')?.name).toBe('ranks');
   });
 
-  it('matches all Arabic spellings of !رتبة', () => {
-    for (const input of ['!رتبة', '!رتبه', '!رتبتي', '!رتبة  ', ' !رتبه']) {
+it('matches !رتبتي and rejects the removed !رتبة form', () => {
+    for (const input of ['!رتبتي', '!رتبتيك', '!رتبتي  ', ' !رتبتي']) {
       expect(parse(input)?.name, input).toBe('rank');
     }
+    // The short form was removed on purpose.
+    expect(parse('!رتبة')?.name).toBe('unknown');
   });
 
   it('matches !توب and its aliases', () => {
@@ -72,7 +74,7 @@ describe('command aliases', () => {
   });
 
   it('keeps arguments separate', () => {
-    const m = parse('!رتبة @someone');
+    const m = parse('!رتبتي @someone');
     expect(m?.name).toBe('rank');
     expect(m?.args).toEqual(['@someone']);
   });
@@ -97,8 +99,8 @@ describe('command aliases', () => {
   });
 
   it('respects a custom prefix', () => {
-    expect(parseCommand('.رتبة', '.', COMMAND_ALIASES)?.name).toBe('rank');
-    expect(parseCommand('!رتبة', '.', COMMAND_ALIASES)).toBeNull();
+    expect(parseCommand('.رتبتي', '.', COMMAND_ALIASES)?.name).toBe('rank');
+    expect(parseCommand('!رتبتي', '.', COMMAND_ALIASES)).toBeNull();
   });
 });
 

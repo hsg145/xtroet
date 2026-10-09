@@ -66,10 +66,9 @@ export function parseCommand(content: string, prefix: string, aliases: Record<st
  * their data may not be imported.
  */
 export const COMMAND_ALIASES: Record<string, string> = {
-  // own rank
+  // own rank — !رتبتي only (no short form, so a typo never silently works)
   'رتبتي': 'rank',
-  'رتبة': 'rank',
-  'رتبه': 'rank',
+  'رتبتيك': 'rank',
   'rank': 'rank',
   // ranks list
   'رتب': 'ranks',
