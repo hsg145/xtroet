@@ -134,7 +134,13 @@ export class ChatSender {
           replyToMessageId: item.replyToMessageId,
         });
         this.rememberOwn(res.message_id);
-        getLogger().debug({ chars: item.text.length }, 'chat message sent');
+        // Logged at info, not debug: whether messages go out as the bot or as
+        // the broadcaster is the first thing anyone asks, and debug is off in
+        // production so the answer would be invisible.
+        getLogger().info(
+          { chars: item.text.length, via: res.via ?? 'user' },
+          'chat message sent',
+        );
         return true;
       } catch (err) {
         const status = err instanceof KickApiError ? err.status : 0;

@@ -82,11 +82,6 @@ export async function getOwnChannel(token: string): Promise<KickChannel | null> 
   return { broadcasterUserId: channel.broadcaster_user_id, slug: channel.slug };
 }
 
-export interface ChatSendResult {
-  is_sent: boolean;
-  message_id: string;
-}
-
 export interface ChatSendOptions {
   replyToMessageId?: string;
   /** User access token -> broadcaster_user_id required. Bot token ignores it. */
@@ -97,27 +92,65 @@ export interface ChatSendOptions {
 /**
  * POST /public/v1/chat with chat:write.
  * `content` max 500 user-perceived chars and max 2048 UTF-8 bytes.
+ *
+ * `type: "bot"` posts under the app's own bot identity — that is what makes the
+ * messages look like they come from a bot rather than from the broadcaster's
+ * personal account. Kick only accepts it when the app actually has a bot
+ * attached to the channel; otherwise the endpoint answers 404 Not Found.
+ *
+ * So the configured type is attempted first, and a bot that is not installed
+ * falls back to the broadcaster rather than silently posting nothing. Which one
+ * actually worked is reported back so callers can log it once instead of
+ * guessing.
  */
+export interface ChatSendResult {
+  is_sent: boolean;
+  message_id: string;
+  /** How the message actually went out: "bot", or "user" after a fallback. */
+  via?: 'bot' | 'user';
+}
+
 export async function sendChatMessage(
   content: string,
   token: string,
   options: ChatSendOptions = {},
 ): Promise<ChatSendResult> {
   const e = env();
-  const type = e.KICK_SENDER_TYPE;
-  const payload: Record<string, unknown> = { content, type };
-  if (type === 'user' && options.broadcasterUserId) {
-    payload.broadcaster_user_id = options.broadcasterUserId;
-  }
-  if (options.replyToMessageId) payload.reply_to_message_id = options.replyToMessageId;
 
-  const res = await request<{ data?: ChatSendResult }>('/public/v1/chat', {
-    method: 'POST',
-    token,
-    body: JSON.stringify(payload),
-    signal: options.signal,
-  });
-  return res.data ?? { is_sent: false, message_id: '' };
+  const post = async (type: 'user' | 'bot'): Promise<ChatSendResult> => {
+    const payload: Record<string, unknown> = { content, type };
+    // Only a user post needs a target channel; for a bot Kick ignores it.
+    if (type === 'user' && options.broadcasterUserId) {
+      payload.broadcaster_user_id = options.broadcasterUserId;
+    }
+    if (options.replyToMessageId) payload.reply_to_message_id = options.replyToMessageId;
+
+    const res = await request<{ data?: ChatSendResult }>('/public/v1/chat', {
+      method: 'POST',
+      token,
+      body: JSON.stringify(payload),
+      signal: options.signal,
+    });
+    return res.data ?? { is_sent: false, message_id: '' };
+  };
+
+  if (e.KICK_SENDER_TYPE === 'user') {
+    return { ...(await post('user')), via: 'user' };
+  }
+
+  try {
+    return { ...(await post('bot')), via: 'bot' };
+  } catch (err) {
+    // 404 is Kick saying "this app has no bot on this channel". Anything else
+    // (rate limit, outage) should surface instead of double-posting.
+    const status = err instanceof KickApiError ? err.status : 0;
+    if (status !== 404) throw err;
+    getLogger().warn(
+      { status },
+      'bot posting unavailable on this channel — falling back to the broadcaster account',
+    );
+    return { ...(await post('user')), via: 'user' };
+  }
 }
 
 export interface EventSubscription {
