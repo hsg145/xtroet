@@ -144,9 +144,9 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
 
                 {/* اللوقو — نازل شوي تحت، ومقطّع داخل الإطار بالكامل */}
                 <div className="absolute inset-x-0 bottom-0 flex justify-center">
-                    <div className="relative -translate-y-[38%]">
+                    <div className="relative -translate-y-[26%]">
                         {/* الهالة الزرقاء */}
-                        <span className="pointer-events-none absolute -inset-1 rounded-full bg-[#1E6FFF]/40 blur-2xl" aria-hidden="true" />
+                        <span className="pointer-events-none absolute -inset-1.5 rounded-full bg-[#1E6FFF]/45 blur-2xl" aria-hidden="true" />
 
                         {/* الإطار الخارجي */}
                         <span
@@ -157,12 +157,12 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                             }}
                         >
                             {/* الإطار الداخلي الكحلي */}
-                            <span className="block overflow-hidden rounded-full bg-[#04091A] p-[7px] sm:p-[8px] shadow-[inset_0_2px_6px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(207,228,255,0.22)]">
+                            <span className="block overflow-hidden rounded-full bg-[#04091A] p-[7px] sm:p-[8px] shadow-[inset_0_3px_10px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(207,228,255,0.22)]">
                                 {/* اللوقو — أطرافه تذوب داخل الدائرة، ما تبيّن خالص */}
                                 <img
                                     src="/rank-logo.png"
                                     alt="Police Ranks"
-                                    className="block w-[62px] h-[62px] sm:w-[74px] sm:h-[74px] md:w-[86px] md:h-[86px] object-cover scale-[1.06]"
+                                    className="block w-[78px] h-[78px] sm:w-[92px] sm:h-[92px] md:w-[106px] md:h-[106px] object-cover scale-[1.08]"
                                     style={{
                                         maskImage: 'radial-gradient(circle at 50% 50%, black 58%, transparent 82%)',
                                         WebkitMaskImage: 'radial-gradient(circle at 50% 50%, black 58%, transparent 82%)',
