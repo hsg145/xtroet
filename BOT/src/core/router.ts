@@ -36,8 +36,11 @@ export class MessageRouter {
     try {
       if (msg.broadcasterUserId !== this.deps.channelId) return;
 
-      // Never react to our own messages.
-      if (this.deps.selfUserIds.has(msg.userId)) return;
+      // Our own replies echo back on the feed carrying the broadcaster's user
+      // id, so the only reliable way to spot them is the message id the send
+      // API handed us. The broadcaster themselves is a normal member and does
+      // earn points.
+      if (this.deps.sender.isOwnMessage(msg.messageId)) return;
 
       const isCommand = msg.content.trim().startsWith(this.e.COMMAND_PREFIX);
       if (isCommand) {
@@ -65,8 +68,10 @@ export class MessageRouter {
     const decision = this.deps.engine.award(state, {
       username: msg.username,
       content: msg.content,
-      ignored: new Set(this.e.IGNORED_USERNAMES.map((u) => u.toLowerCase())),
-      selfUserIds: this.deps.selfUserIds,
+      ignored: new Set([...this.e.IGNORED_USERNAMES.map((u) => u.toLowerCase()), 'kickbot']),
+      // Empty on purpose: the broadcaster's id is here, and the owner is a
+      // real member. Our own output is already filtered by message id above.
+      selfUserIds: new Set<number>(),
       commandPrefix: this.e.COMMAND_PREFIX,
       cooldownMs: this.e.POINTS_COOLDOWN_SECONDS * 1000,
       duplicateWindowMs: this.e.DUPLICATE_WINDOW_SECONDS * 1000,

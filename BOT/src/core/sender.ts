@@ -42,6 +42,29 @@ export class ChatSender {
   private sent = 0;
   private failed = 0;
 
+  /**
+   * Message ids of what we just posted, newest last.
+   *
+   * Kick delivers our own messages back on the same chat feed, and with
+   * `sender_type: bot` they arrive carrying the BROADCASTER's user id — so an
+   * id check cannot tell them apart, and excluding that id also excluded the
+   * channel owner's real messages. Matching the exact ids we were handed back
+   * by the send API identifies our own output precisely, with no false
+   * positives and no need to guess a bot user id.
+   */
+  private ownIds: string[] = [];
+
+  isOwnMessage(messageId: string): boolean {
+    return messageId !== '' && this.ownIds.includes(messageId);
+  }
+
+  private rememberOwn(messageId: string): void {
+    if (!messageId) return;
+    this.ownIds.push(messageId);
+    // Only recent ids matter: the echo arrives within seconds.
+    if (this.ownIds.length > 200) this.ownIds.splice(0, this.ownIds.length - 200);
+  }
+
   constructor(opts: { broadcasterUserId: number; intervalMs?: number; maxSize?: number }) {
     this.broadcasterUserId = opts.broadcasterUserId;
     this.intervalMs = opts.intervalMs ?? 1200;
@@ -106,10 +129,11 @@ export class ChatSender {
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
         const token = await tokenManager.accessToken();
-        await sendChatMessage(item.text, token, {
+        const res = await sendChatMessage(item.text, token, {
           broadcasterUserId: this.broadcasterUserId,
           replyToMessageId: item.replyToMessageId,
         });
+        this.rememberOwn(res.message_id);
         getLogger().debug({ chars: item.text.length }, 'chat message sent');
         return true;
       } catch (err) {
