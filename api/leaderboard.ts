@@ -1,20 +1,27 @@
 // ============================================================
-//  Police Ranks Counter — leaderboard API (Vercel Edge Function)
-//  GET  /api/leaderboard            → top entries (points desc)
-//  POST /api/leaderboard { name }   → join / update your entry
+//  Police Ranks Counter — leaderboard + name search (Vercel Edge Function)
 //
-//  المبدأ: الزائر يكتب اسمه في الموقع فينزل على اللوحة مباشرة.
-//  الكتابة تتم عبر مفتاح الخدمة (server-only) — ما في أي صلاحية
-//  كتابة للـ anon، والـ RLS مفعّل ويقرأ فقط للجميع.
+//  GET  /api/leaderboard                → top chatterboard (points desc)
+//  GET  /api/leaderboard?name=abc       → ابحث عن شخص بالاسم
+//        {
+//          found, name, display, avatar, verified, followers,
+//          points, rank_idx, rank_ar, rank_en, emoji, position, next_at
+//        }
+//
+//  مصدر البيانات: نفس جداول البوت (members + leaderboard view + ranks).
+//  الصورة والاسم والـ verified والتابعين: من Kick API (/api/kick proxy).
+//  الاسم لازم يكون إنجليزي فقط (نفس قواعد Kick usernames).
 //
 //  Env: SUPABASE_URL_BOT / SUPABASE_SECRET_KEY_BOT (مشروع البوت)
+//       + KICK_TARGET_CHANNEL_SLUG_BOT اختياري
 // ============================================================
 
 export const config = { runtime: 'edge' };
 
-const MAX_NAME = 24;
+/** Kick usernames: حروف إنجليزية + أرقام + _ و . فقط، 3–24 حرف. */
+const NAME_RE = /^[A-Za-z0-9_.]{3,24}$/;
 
-function envs(): { url: string; key: string } {
+function envs(): { url: string; key: string; slug: string } {
   const url = (
     process.env.SUPABASE_URL_BOT || process.env.KICK_SUPABASE_URL || process.env.SUPABASE_URL || ''
   ).trim().replace(/\/$/, '');
@@ -25,7 +32,10 @@ function envs(): { url: string; key: string } {
     process.env.SUPABASE_SECRET_KEY ||
     ''
   ).trim();
-  return { url, key };
+  const slug = (
+    process.env.KICK_TARGET_CHANNEL_SLUG_BOT || process.env.KICK_TARGET_CHANNEL_SLUG || 'xtroet'
+  ).trim();
+  return { url, key, slug };
 }
 
 function json(data: unknown, status = 200, cache = false): Response {
@@ -34,27 +44,32 @@ function json(data: unknown, status = 200, cache = false): Response {
     headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
-      ...(cache ? { 'Cache-Control': 's-maxage=30, stale-while-revalidate=120' } : {}),
+      ...(cache ? { 'Cache-Control': 's-maxage=45, stale-while-revalidate=180' } : {}),
     },
   });
 }
 
-const jsonHeaders = { apikey: '', Authorization: '', 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates' };
-
-/** يطبّع الاسم: يقصّ الطول، يمنع المحارف الخطرة، ويحوّل الفراغات لشرطة. */
-function cleanName(raw: unknown): string {
-  const s = String(raw ?? '')
-    .replace(/[<>]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, MAX_NAME);
-  if (s.length < 2) throw new Error('الاسم قصير جداً');
-  return s;
+/** يقرأ جدول الرتب (14 رتبة) ويحسب الرتبة من النقاط. */
+async function loadRanks(h: Record<string, string>) {
+  const res = await fetch(
+    `${h.__url}/rest/v1/ranks?select=idx,name_ar,name_en,emoji,min_points&order=min_points.asc`,
+    { headers: h },
+  );
+  if (!res.ok) return [] as Array<{ idx: number; name_ar: string; name_en: string; emoji: string; min_points: number }>;
+  return (await res.json()) as Array<{ idx: number; name_ar: string; name_en: string; emoji: string; min_points: number }>;
 }
 
-/** يمنع الرموز المنبثقة (🧨 ونحوها) حتى لا تتعطّل الصفحة. */
-function hasBidi(s: string): boolean {
-  return /[‪-‮⁦-⁩]/.test(s);
+function rankFor(ranks: Awaited<ReturnType<typeof loadRanks>>, points: number) {
+  let hit = ranks[0];
+  for (const r of ranks) if (points >= r.min_points) hit = r;
+  const next = ranks.find((x) => x.min_points > points);
+  return {
+    rank_idx: hit?.idx ?? 1,
+    rank_ar: hit?.name_ar ?? '',
+    rank_en: hit?.name_en ?? '',
+    emoji: hit?.emoji ?? '',
+    next_at: next ? { points: next.min_points } : null,
+  };
 }
 
 export default async function handler(request: Request) {
@@ -63,123 +78,139 @@ export default async function handler(request: Request) {
       status: 204,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   }
+  if (request.method !== 'GET') return json({ error: 'Method not allowed' }, 405);
 
-  const { url, key } = envs();
+  const { url, key, slug } = envs();
   if (!url || !key) return json({ error: 'Supabase env missing' }, 500);
-  const headers = { ...jsonHeaders, apikey: key, Authorization: `Bearer ${key}` };
 
-  // ── GET: اللوحة ──
-  if (request.method === 'GET') {
-    try {
-      // جدول الرتب هو مصدر الحقيقة للرتبة — نفس جدول البوت.
-      const [rowsRes, ranksRes] = await Promise.all([
-        fetch(
-          `${url}/rest/v1/leaderboard_signups` +
-            `?select=name,display,points,rank_idx,avatar_url,created_at` +
-            `&order=points.desc,created_at.asc&limit=100`,
-          { headers },
-        ),
-        fetch(`${url}/rest/v1/ranks?select=idx,name_ar,name_en,emoji,min_points&order=min_points.asc`, {
-          headers,
-        }),
-      ]);
+  const headers = { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' };
+  const h = { ...headers, __url: url } as Record<string, string> & { __url: string };
 
-      if (!rowsRes.ok) return json({ entries: [], ranks: [], error: `read failed ${rowsRes.status}` }, 200, true);
-      const rows = (await rowsRes.json()) as any[];
-      const ranks = ranksRes.ok
-        ? ((await ranksRes.json()) as Array<{ idx: number; name_ar: string; name_en: string; emoji: string; min_points: number }>)
-        : [];
+  const q = new URL(request.url).searchParams;
+  const wanted = String(q.get('name') ?? '').trim().replace(/^@/, '');
 
-      const rankFor = (points: number) => {
-        let hit = ranks[0];
-        for (const r of ranks) if (points >= r.min_points) hit = r;
-        return hit;
-      };
+  try {
+    const ranks = await loadRanks(h);
 
-      const entries = rows.map((r, i) => {
-        const points = Number(r.points) || 0;
-        const hit = rankFor(points);
-        return {
-          rank: i + 1,
-          name: r.display || r.name,
-          points,
-          rank_idx: hit?.idx ?? Number(r.rank_idx) ?? 1,
-          rank_ar: hit?.name_ar ?? '',
-          rank_en: hit?.name_en ?? '',
-          emoji: hit?.emoji ?? '',
-          next_at: (() => {
-            const nxt = ranks.find((x) => x.min_points > points);
-            return nxt ? { points: nxt.min_points, label: nxt.name_ar } : null;
-          })(),
-          avatar: r.avatar_url || '',
-        };
-      });
+    // ══ بحث بالاسم ══════════════════════════════════════════
+    if (wanted) {
+      if (!NAME_RE.test(wanted)) {
+        return json(
+          {
+            found: false,
+            error: 'الاسم لازم يكون إنجليزي فقط (حروف إنجليزية وأرقام و _ و .) — من 3 لـ 24 حرف',
+            errorCode: 'bad_name',
+          },
+          400,
+        );
+      }
 
-      return json({ entries }, 200, true);
-    } catch (e: any) {
-      return json({ entries: [], error: String(e?.message || e).slice(0, 140) }, 200, true);
-    }
-  }
+      // 1) ملف المستخدم من Kick (صورة، اسم، verified، متابعين)
+      let profile: any = null;
+      try {
+        const r = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(wanted)}`, {
+          headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' },
+        });
+        if (r.ok) {
+          const j = await r.json();
+          const d = j?.data ?? j;
+          profile = {
+            display: d?.user?.username ?? d?.username ?? wanted,
+            avatar: d?.user?.profile_pic ?? '',
+            verified: d?.verified === true,
+            followers: d?.followers_count != null ? Number(d.followers_count) || null : null,
+          };
+        }
+      } catch {
+        /* ملف غير موجود أو Kick ما رد — بنكمل على النقاط */
+      }
 
-  // ── POST: انضمام ──
-  if (request.method === 'POST') {
-    let body: any;
-    try {
-      body = await request.json();
-    } catch {
-      return json({ error: 'Invalid JSON' }, 400);
-    }
-    let name: string;
-    try {
-      name = cleanName(body?.name);
-    } catch (e: any) {
-      return json({ error: e?.message || 'اسم غير صالح' }, 400);
-    }
-    if (hasBidi(name)) return json({ error: 'الاسم يحتوي محارف غير مسموحة' }, 400);
-
-    const avatar = String(body?.avatar ?? '').slice(0, 500);
-
-    try {
-      // نبحث أولاً بدل on_conflict على فهرس دالة — أبسط ومضمون مع PostgREST.
+      // 2) النقاط والرتبة من قاعدة البوت
       const lookup = await fetch(
-        `${url}/rest/v1/leaderboard_signups?select=id&name=ilike.${encodeURIComponent(name)}&limit=1`,
+        `${url}/rest/v1/members` +
+          `?select=channel_id,username,points,message_count,rank_idx` +
+          `&username=ilike.${encodeURIComponent(wanted)}&limit=1`,
         { headers },
       );
-      const found = lookup.ok ? ((await lookup.json()) as Array<{ id: number }>) : [];
+      const rows = lookup.ok ? ((await lookup.json()) as any[]) : [];
+      const row = rows[0] ?? null;
 
-      let write: string;
-      let method: string;
-      let payload: Record<string, unknown>;
-
-      if (found.length) {
-        method = 'PATCH';
-        payload = { display: name, avatar_url: avatar || null, updated_at: new Date().toISOString() };
-        write = `${url}/rest/v1/leaderboard_signups?id=eq.${found[0].id}`;
-      } else {
-        method = 'POST';
-        payload = { name, display: name, avatar_url: avatar || null };
-        write = `${url}/rest/v1/leaderboard_signups`;
+      // 3) ترتيب الشخص على اللوحة (نفس منطق الشات: النقاط)
+      let position: number | null = null;
+      let totalMembers = 0;
+      if (row) {
+        const board = await fetch(
+          `${url}/rest/v1/members?select=kick_user_id&channel_id=eq.${row.channel_id}`,
+          { headers },
+        );
+        if (board.ok) {
+          const all = (await board.json()) as any[];
+          totalMembers = all.length;
+          const better = all.filter((m) => Number(m.points ?? 0) > Number(row.points ?? 0)).length;
+          position = better + 1;
+        }
       }
 
-      const res = await fetch(write, {
-        method,
-        headers: { ...headers, Prefer: 'return=minimal' },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        return json({ error: `تعذر الحفظ: ${t.slice(0, 160)}` }, 500);
-      }
-      return json({ ok: true, name, updated: found.length > 0 }, 200);
-    } catch (e: any) {
-      return json({ error: String(e?.message || e).slice(0, 160) }, 500);
+      const points = Number(row?.points ?? 0);
+      const rk = rankFor(ranks, points);
+      const display = profile?.display ?? row?.username ?? wanted;
+
+      return json(
+        {
+          found: true,
+          name: wanted,
+          display,
+          avatar: profile?.avatar ?? '',
+          verified: profile?.verified ?? false,
+          followers: profile?.followers ?? null,
+          messages: Number(row?.message_count ?? 0),
+          points,
+          position,
+          totalMembers,
+          ...rk,
+        },
+        200,
+        true,
+      );
     }
-  }
 
-  return json({ error: 'Method not allowed' }, 405);
+    // ══ اللوحة ══════════════════════════════════════════════
+    const [boardRes, chRes] = await Promise.all([
+      fetch(
+        `${url}/rest/v1/leaderboard` +
+          `?select=kick_user_id,username,points,message_count,rank_idx,position` +
+          `&order=position.asc&limit=100`,
+        { headers },
+      ),
+      fetch(`${url}/rest/v1/channels?select=id,slug&order=id&limit=1`, { headers }),
+    ]);
+
+    if (!boardRes.ok) return json({ entries: [], error: `read failed ${boardRes.status}` }, 200, true);
+    const rows = (await boardRes.json()) as any[];
+    const channels = chRes.ok ? ((await chRes.json()) as Array<{ id: number; slug: string }>) : [];
+
+    // نعرض قناة الهدف فقط (xtroet)، ونخلي الباقي برة
+    const target = channels.find((c) => c.slug.toLowerCase() === slug.toLowerCase()) ?? channels[0];
+    const scoped = target ? rows.filter((r) => Number(r.channel_id ?? target.id) === Number(target.id)) : rows;
+
+    const entries = scoped.slice(0, 100).map((r, i) => {
+      const points = Number(r.points) || 0;
+      return {
+        rank: Number(r.position ?? i + 1),
+        name: r.username,
+        points,
+        messages: Number(r.message_count) || 0,
+        ...rankFor(ranks, points),
+      };
+    });
+
+    return json({ entries }, 200, true);
+  } catch (e: any) {
+    return json({ entries: [], error: String(e?.message || e).slice(0, 140) }, 200, true);
+  }
 }

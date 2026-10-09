@@ -10,12 +10,32 @@ type Entry = {
     rank: number;
     name: string;
     points: number;
+    messages?: number;
     rank_idx: number;
     rank_ar?: string;
     rank_en?: string;
     emoji?: string;
-    next_at?: { points: number; label: string } | null;
+    next_at?: { points: number } | null;
     avatar?: string;
+};
+
+/** نتيجة البحث عن شخص واحد */
+type Profile = {
+    found: boolean;
+    display: string;
+    avatar: string;
+    verified: boolean;
+    followers: number | null;
+    messages: number;
+    points: number;
+    position: number | null;
+    totalMembers: number;
+    rank_idx: number;
+    rank_ar: string;
+    rank_en: string;
+    emoji: string;
+    next_at: { points: number } | null;
+    error?: string;
 };
 
 const BLUE = '#1E6FFF';
@@ -36,9 +56,9 @@ function rankColor(idx: number) {
 export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
     const [entries, setEntries] = useState<Entry[] | null>(null);
     const [name, setName] = useState('');
-    const [saving, setSaving] = useState(false);
-    const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
-    const [flash, setFlash] = useState<number | null>(null);
+    const [searching, setSearching] = useState(false);
+    const [profile, setProfile] = useState<Profile | null>(null);
+    const [err, setErr] = useState<string | null>(null);
 
     const ar = lang === 'ar';
 
@@ -56,34 +76,33 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
         void load();
     }, [load]);
 
-    const join = async (e: React.FormEvent) => {
+    const search = async (e: React.FormEvent) => {
         e.preventDefault();
-        const trimmed = name.trim();
-        if (trimmed.length < 2) {
-            setMsg({ ok: false, text: ar ? 'اكتب اسمك (حرفين على الأقل)' : 'Enter your name (2+ chars)' });
+        const handle = name.trim().replace(/^@/, '');
+        setErr(null);
+        setProfile(null);
+
+        // اسم Kick إنجليزي فقط — نتحقق قبل الطلب
+        if (!/^[A-Za-z0-9_.]{3,24}$/.test(handle)) {
+            setErr(ar
+                ? 'الاسم لازم يكون إنجليزي فقط (حروف إنجليزية + أرقام + _ و .) — من 3 لـ 24 حرف'
+                : 'Kick usernames are English only (letters, numbers, _ and .) — 3 to 24 chars');
             return;
         }
-        setSaving(true);
-        setMsg(null);
+
+        setSearching(true);
         try {
-            const r = await fetch('/api/leaderboard', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: trimmed }),
-            });
+            const r = await fetch(`/api/leaderboard?name=${encodeURIComponent(handle)}`);
             const j = await r.json();
-            if (!r.ok || j.error) {
-                setMsg({ ok: false, text: j.error || (ar ? 'ما قدرنا نسجّل الاسم' : 'Could not save your name') });
-            } else {
-                setName('');
-                setMsg({ ok: true, text: ar ? `أهلاً ${trimmed}! ظهرت على اللوحة 🚨` : `Welcome ${trimmed}! You're on the board 🚨` });
-                setFlash(0);
-                await load();
+            if (!r.ok) {
+                setErr(j.error || (ar ? 'ما قدرنا نلاقي الاسم' : 'Could not search that name'));
+                return;
             }
+            setProfile(j);
         } catch {
-            setMsg({ ok: false, text: ar ? 'خطأ شبكة' : 'Network error' });
+            setErr(ar ? 'خطأ شبكة' : 'Network error');
         } finally {
-            setSaving(false);
+            setSearching(false);
         }
     };
 
@@ -94,16 +113,22 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
     const t = {
         title: ar ? 'عدّاد الرتب' : 'Ranks Counter',
         sub: ar ? 'POLICE RANKS COUNTER' : 'POLICE RANKS COUNTER',
-        tagline: ar ? 'تتبّع الرتب — سجّل اسمك' : 'Track the ranks — join the board',
-        join: ar ? 'سجّل اسمك' : 'Enter your name',
-        joinBtn: ar ? 'انضم' : 'Join',
-        joining: ar ? 'جارٍ…' : 'Joining…',
+        tagline: ar ? 'اكتب اسمك على كيك وشوف رتبتك' : 'Type your Kick name and see your rank',
+        join: ar ? 'اكتب اسمك بالإنجليزي' : 'Enter your Kick username',
+        joinBtn: ar ? 'ابحث' : 'Search',
+        joining: ar ? 'جارٍ البحث…' : 'Searching…',
         members: ar ? 'عضو' : 'members',
         pts: ar ? 'نقطة' : 'PTS',
-        noData: ar ? 'اللوحة فاضية — كن أول واحد!' : 'Board is empty — be the first!',
+        noData: ar ? 'اللوحة فاضية — البوت لسّه ما سجّل أحد' : 'Board is empty — no points recorded yet',
         top: ar ? 'المتصدر' : 'TOP',
         toNext: ar ? 'للرتبة الجاية' : 'to next rank',
         emptyName: ar ? 'مافي اسم' : 'No name',
+        msgs: ar ? 'رسالة' : 'msgs',
+        followers: ar ? 'متابع' : 'followers',
+        yourRank: ar ? 'ترتيبك' : 'Your rank',
+        nextRank: ar ? 'نقاطك للرتبة الجاية' : 'points to next rank',
+        noMember: ar ? 'ما لقيت رتبة باسمك — بس ملفك موجود' : 'No rank under that name yet — profile found',
+        searchAnother: ar ? 'ابحث عن اسم ثاني' : 'Search another name',
     };
 
     return (
@@ -187,35 +212,129 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                     <p className="mt-1.5 text-[12px] text-white/45 font-medium">{t.tagline}</p>
                 </div>
 
-                {/* ── نموذج الانضمام ── */}
-                <form onSubmit={join} className="mt-6 flex flex-col sm:flex-row gap-2.5 max-w-lg mx-auto">
+                {/* ── البحث بالاسم ── */}
+                <form onSubmit={search} className="mt-6 flex flex-col sm:flex-row gap-2.5 max-w-lg mx-auto">
                     <div className="relative flex-1">
+                        <span className="pointer-events-none absolute inset-y-0 start-3.5 flex items-center text-[#5AA9FF]/70" aria-hidden="true">
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.4}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 10.5a6.5 6.5 0 11-13 0 6.5 6.5 0 0113 0z" />
+                            </svg>
+                        </span>
                         <input
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setName(e.target.value.replace(/[^A-Za-z0-9_.@]/g, ''))}
                             maxLength={24}
                             placeholder={t.join}
                             aria-label={t.join}
-                            className="w-full rounded-2xl bg-white/[0.04] border border-[#1E6FFF]/30 px-4 py-3.5 text-sm font-bold text-white placeholder:text-white/30 outline-none focus:border-[#5AA9FF] focus:ring-2 focus:ring-[#1E6FFF]/30 transition-all"
+                            autoComplete="off"
+                            spellCheck={false}
+                            dir="ltr"
+                            className="w-full rounded-2xl bg-white/[0.04] border border-[#1E6FFF]/30 ps-11 pe-4 py-3.5 text-sm font-bold text-white placeholder:text-white/30 outline-none focus:border-[#5AA9FF] focus:ring-2 focus:ring-[#1E6FFF]/30 transition-all"
                         />
                     </div>
                     <button
                         type="submit"
-                        disabled={saving}
+                        disabled={searching}
                         className="shrink-0 rounded-2xl px-6 py-3.5 text-sm font-black text-white disabled:opacity-60 transition-transform active:scale-[0.97]"
                         style={{
                             background: 'linear-gradient(180deg,#3D8BFF,#1E6FFF 55%,#0B4FBF)',
                             boxShadow: '0 14px 40px -12px rgba(30,111,255,0.75), inset 0 1px 0 rgba(255,255,255,0.35)',
                         }}
                     >
-                        {saving ? t.joining : t.joinBtn}
+                        {searching ? t.joining : t.joinBtn}
                     </button>
                 </form>
 
-                {msg && (
-                    <p className={`mt-2.5 text-center text-xs font-bold ${msg.ok ? 'text-[#5AA9FF]' : 'text-red-400/90'}`}>
-                        {msg.text}
-                    </p>
+                {err && (
+                    <p className="mt-2.5 text-center text-xs font-bold text-red-400/90">{err}</p>
+                )}
+
+                {/* ── بطاقة نتيجة البحث ── */}
+                {profile && (
+                    <div className="mt-5 relative overflow-hidden rounded-3xl border border-[#1E6FFF]/45 bg-gradient-to-b from-[#0A1A38]/95 to-[#040C1C]/60 animate-fade-in-up">
+                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5AA9FF] to-transparent" aria-hidden="true" />
+                        <div className="relative p-5 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-start">
+                            {/* الصورة من Kick */}
+                            <div className="relative shrink-0">
+                                <span className="absolute -inset-1.5 rounded-full bg-[#1E6FFF]/40 blur-xl animate-pulse" aria-hidden="true" />
+                                <span className="relative block w-20 h-20 rounded-full p-[3px]" style={{ background: `conic-gradient(from 200deg,#5AA9FF,#1E6FFF,#CFE4FF,#1E6FFF,#5AA9FF)`, boxShadow: '0 0 30px rgba(30,111,255,0.6)' }}>
+                                    {profile.avatar
+                                        ? <img src={profile.avatar} alt={profile.display} className="w-full h-full rounded-full object-cover bg-black" />
+                                        : <span className="w-full h-full rounded-full bg-[#040C1C] flex items-center justify-center text-2xl font-black text-[#5AA9FF]">{(profile.display || '?').charAt(0).toUpperCase()}</span>}
+                                </span>
+                            </div>
+
+                            <div className="min-w-0 flex-1 w-full">
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
+                                    <p className="text-xl sm:text-2xl font-black text-white truncate" dir="ltr">
+                                        {profile.display}
+                                    </p>
+                                    {profile.verified && (
+                                        <svg className="w-4 h-4 shrink-0 text-[#5AA9FF]" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                        </svg>
+                                    )}
+                                </div>
+
+                                {/* شارة الرتبة */}
+                                <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                    <span
+                                        className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-black"
+                                        style={{
+                                            borderColor: `${rankColor(profile.rank_idx)}66`,
+                                            background: `${rankColor(profile.rank_idx)}1F`,
+                                            color: rankColor(profile.rank_idx),
+                                        }}
+                                    >
+                                        <span aria-hidden="true">{profile.emoji}</span>
+                                        <span dir="auto">{ar ? profile.rank_ar : profile.rank_en}</span>
+                                    </span>
+                                    {profile.position != null && (
+                                        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1E6FFF]/30 bg-[#1E6FFF]/10 px-3 py-1.5 text-[11px] font-black text-[#CFE4FF]" dir="ltr">
+                                            {t.yourRank} #{profile.position}
+                                            {profile.totalMembers > 0 && <span className="text-white/40">/ {profile.totalMembers}</span>}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* الأرقام */}
+                                <div className="mt-3 grid grid-cols-3 gap-2">
+                                    <div className="rounded-2xl border border-[#1E6FFF]/20 bg-white/[0.03] px-3 py-2.5">
+                                        <p className="text-lg sm:text-xl font-black text-white" dir="ltr">{nf(profile.points)}</p>
+                                        <p className="mt-0.5 text-[9px] font-black uppercase text-white/35">{t.pts}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-[#1E6FFF]/20 bg-white/[0.03] px-3 py-2.5">
+                                        <p className="text-lg sm:text-xl font-black text-white" dir="ltr">{nf(profile.messages)}</p>
+                                        <p className="mt-0.5 text-[9px] font-black uppercase text-white/35">{t.msgs}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-[#1E6FFF]/20 bg-white/[0.03] px-3 py-2.5">
+                                        <p className="text-lg sm:text-xl font-black text-white" dir="ltr">{profile.followers != null ? nf(profile.followers) : '—'}</p>
+                                        <p className="mt-0.5 text-[9px] font-black uppercase text-white/35">{t.followers}</p>
+                                    </div>
+                                </div>
+
+                                {profile.position == null && (
+                                    <p className="mt-2.5 text-[11px] text-white/40">{t.noMember}</p>
+                                )}
+
+                                {profile.next_at && (
+                                    <p className="mt-2.5 text-[11px] font-bold text-[#5AA9FF]" dir="ltr">
+                                        +{nf(Math.max(0, profile.next_at.points - profile.points))} {t.nextRank}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="relative border-t border-white/[0.06] px-5 py-2.5 flex justify-center">
+                            <button
+                                type="button"
+                                onClick={() => { setProfile(null); setName(''); }}
+                                className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 hover:text-[#5AA9FF] transition-colors"
+                            >
+                                {t.searchAnother}
+                            </button>
+                        </div>
+                    </div>
                 )}
 
                 {/* ── المتصدر ── */}
