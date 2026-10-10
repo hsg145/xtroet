@@ -40,11 +40,13 @@ describe('rankForPoints', () => {
       [9999, 'staff_sergeant'],
       [10000, 'lieutenant'],
       [13999, 'lieutenant'],
-      [14000, 'captain'],
-      [19999, 'captain'],
-      [20000, 'chief_of_police'],
-      [29999, 'chief_of_police'],
-      [30000, 'minister'],
+      [14000, 'first_lieutenant'],
+      [19999, 'first_lieutenant'],
+      [20000, 'captain'],
+      [49999, 'captain'],
+      [50000, 'chief_of_police'],
+      [69999, 'chief_of_police'],
+      [70000, 'minister'],
     ];
     for (const [points, key] of cases) {
       expect(rankForPoints(ranks, points).key, `points=${points}`).toBe(key);
@@ -52,7 +54,7 @@ describe('rankForPoints', () => {
   });
 
   it('caps at the top rank', () => {
-    expect(rankForPoints(ranks, 30000).key).toBe('minister');
+    expect(rankForPoints(ranks, 70000).key).toBe('minister');
     expect(rankForPoints(ranks, 999999).key).toBe('minister');
   });
 
@@ -64,14 +66,14 @@ describe('rankForPoints', () => {
 describe('RankStore', () => {
   const store = new RankStore();
 
-  it('has 14 ranks with the documented thresholds', () => {
-    expect(store.all()).toHaveLength(14);
+  it('has 15 ranks with the documented thresholds', () => {
+    expect(store.all()).toHaveLength(15);
     expect(store.rankForPoints(100).key).toBe('solo_cadet');
-    expect(store.rankForPoints(30000).key).toBe('minister');
+    expect(store.rankForPoints(70000).key).toBe('minister');
   });
 
   it('reports no next rank for the top rank', () => {
-    const top = store.rankForPoints(30000);
+    const top = store.rankForPoints(70000);
     expect(store.nextAfter(top)).toBeNull();
   });
 
@@ -112,6 +114,6 @@ describe('crossedRanks', () => {
   });
 
   it('returns nothing at the very top', () => {
-    expect(crossedRanks(ranks, 30000, 30001)).toHaveLength(0);
+    expect(crossedRanks(ranks, 70000, 70001)).toHaveLength(0);
   });
 });

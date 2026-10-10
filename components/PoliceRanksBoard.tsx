@@ -45,10 +45,10 @@ const NAVY = '#040C1C';
 
 const nf = (n: number) => n.toLocaleString('en-US');
 
-/** لون الرتبة حسب المستوى — أزرق كله بدرجات، كل ما علّى زاد الوهج. */
+/** لون الرتبة حسب المستوى — أزرق كله بدرجات، كل ما علّى زاد الوهج. القمة (13+) ذهبية. */
 function rankColor(idx: number) {
-    if (idx >= 12) return '#FFD166';
-    if (idx >= 9) return '#E6F0FF';
+    if (idx >= 13) return '#FFD166';
+    if (idx >= 11) return '#E6F0FF';
     if (idx >= 6) return BLUE_HI;
     return BLUE;
 }

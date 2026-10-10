@@ -17,8 +17,9 @@ export interface Rank {
  * Markers are grouped by tier family, not unique per rank: an officer block is
  * entirely blue, a senior block entirely brown, and so on, so the colour alone
  * tells you roughly where someone stands before you read the name. Inside a
- * family the glyph grows slightly with the tier. The final four are medals,
- * because a medal reads as an achievement at a glance.
+ * family the glyph grows slightly with the tier. The final stretch is a
+ * royal ladder: sparkle -> fleur -> silver -> gold -> medal of honour,
+ * because each of the last five must read as a bigger achievement at a glance.
  */
 const FALLBACK: Rank[] = [
   { idx: 1, key: 'cadet', name_ar: 'كاديت', name_en: 'Cadet', emoji: '▪️', min_points: 0 },
@@ -31,10 +32,11 @@ const FALLBACK: Rank[] = [
   { idx: 8, key: 'sergeant', name_ar: 'سارجنت', name_en: 'Sergeant', emoji: '💠', min_points: 3400 },
   { idx: 9, key: 'first_sergeant', name_ar: 'فيرست سارجنت', name_en: 'First Sergeant', emoji: '🔺', min_points: 5000 },
   { idx: 10, key: 'staff_sergeant', name_ar: 'ستاف سارجنت', name_en: 'Staff Sergeant', emoji: '🔺', min_points: 7000 },
-  { idx: 11, key: 'lieutenant', name_ar: 'لوتينت', name_en: 'Lieutenant', emoji: '🥉', min_points: 10000 },
-  { idx: 12, key: 'captain', name_ar: 'كابتن', name_en: 'Captain', emoji: '🥈', min_points: 14000 },
-  { idx: 13, key: 'chief_of_police', name_ar: 'رئيس الشرطة', name_en: 'Chief of Police', emoji: '🥇', min_points: 20000 },
-  { idx: 14, key: 'minister', name_ar: 'الوزير', name_en: 'Minister', emoji: '🎖️', min_points: 30000 },
+  { idx: 11, key: 'lieutenant', name_ar: 'لوتينت', name_en: 'Lieutenant', emoji: '✨', min_points: 10000 },
+  { idx: 12, key: 'first_lieutenant', name_ar: 'فيرست لوتينت', name_en: 'First Lieutenant', emoji: '⚜️', min_points: 14000 },
+  { idx: 13, key: 'captain', name_ar: 'كابتن', name_en: 'Captain', emoji: '🥈', min_points: 20000 },
+  { idx: 14, key: 'chief_of_police', name_ar: 'رئيس الشرطة', name_en: 'Chief of Police', emoji: '🥇', min_points: 50000 },
+  { idx: 15, key: 'minister', name_ar: 'الوزير', name_en: 'Minister', emoji: '🎖️', min_points: 70000 },
 ];
 
 /** In-memory copy of the `ranks` table, refreshed periodically. */

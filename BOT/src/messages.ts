@@ -175,7 +175,7 @@ export const messages = {
       `${rankLabel(p.rank)}┃${pointsMarked(p.points)} ┃ ${progressBar(p.ratio)} ➜ [🎯${formatNumber(p.remaining)}]`,
     );
 
-    const goal = p.nextRank ? rankGoalLabel(p.nextRank) : '🎖 أعلى رتبة';
+    const goal = p.nextRank ? rankGoalLabel(p.nextRank) : '🎖️ أعلى رتبة';
     return toSingleLine(`${body} ${goal} ${mention}`);
   },
 

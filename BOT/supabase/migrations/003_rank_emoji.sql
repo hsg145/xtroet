@@ -6,7 +6,12 @@
 --   seniors (6-7)       🔸 blue, one shade lighter
 --   sergeant (8)        💠 one diamond shape
 --   first + staff (9-10) 🔺 red triangles
---   the top four        medals
+--   the top five        royal ladder: ✨ -> ⚜️ -> 🥈 -> 🥇 -> 🎖️
+--     11 lieutenant        ✨  sparkle
+--     12 first_lieutenant  ⚜️  fleur-de-lis (see 004_first_lieutenant.sql)
+--     13 captain           🥈  silver medal
+--     14 chief_of_police   🥇  gold medal
+--     15 minister          🎖️  medal of honour
 --
 -- Idempotent: safe to run more than once.
 
@@ -20,7 +25,8 @@ update public.ranks set emoji = '🔸' where key = 'senior_lead_officer';
 update public.ranks set emoji = '💠' where key = 'sergeant';
 update public.ranks set emoji = '🔺' where key = 'first_sergeant';
 update public.ranks set emoji = '🔺' where key = 'staff_sergeant';
-update public.ranks set emoji = '🥉' where key = 'lieutenant';
+update public.ranks set emoji = '✨' where key = 'lieutenant';
+update public.ranks set emoji = '⚜️' where key = 'first_lieutenant';
 update public.ranks set emoji = '🥈' where key = 'captain';
 update public.ranks set emoji = '🥇' where key = 'chief_of_police';
 update public.ranks set emoji = '🎖️' where key = 'minister';

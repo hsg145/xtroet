@@ -86,8 +86,8 @@ async function main(): Promise<void> {
     const db = getSupabase();
     const { data: ranks, error: rankErr } = await db.from('ranks').select('*').limit(20);
     if (rankErr) throw new Error(rankErr.message);
-    if ((ranks ?? []).length < 14) {
-      bad('ranks table', `${(ranks ?? []).length} rows (expected >= 14)`, 're-run supabase/migrations/001_init.sql');
+    if ((ranks ?? []).length < 15) {
+      bad('ranks table', `${(ranks ?? []).length} rows (expected >= 15)`, 'run supabase/migrations/004_first_lieutenant.sql');
     } else {
       ok('ranks table', `${(ranks ?? []).length} rows`);
     }

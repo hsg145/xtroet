@@ -49,7 +49,7 @@ function json(data: unknown, status = 200, cache = false): Response {
   });
 }
 
-/** يقرأ جدول الرتب (14 رتبة) ويحسب الرتبة من النقاط. */
+/** يقرأ جدول الرتب (15 رتبة) ويحسب الرتبة من النقاط. */
 async function loadRanks(h: Record<string, string>) {
   const res = await fetch(
     `${h.__url}/rest/v1/ranks?select=idx,name_ar,name_en,emoji,min_points&order=min_points.asc`,

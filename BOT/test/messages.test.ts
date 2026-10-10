@@ -49,7 +49,7 @@ describe('progressBar', () => {
 
 describe('computeProgress', () => {
   it('reports no next rank at the top', () => {
-    const p = computeProgress(ranks, 30000);
+    const p = computeProgress(ranks, 70000);
     expect(p.current.key).toBe('minister');
     expect(p.next).toBeNull();
     expect(p.percent).toBe(100);
@@ -253,19 +253,21 @@ describe('messages', () => {
     expect(at(7)).toBe('💠');
     expect(at(8)).toBe('🔺');
     expect(at(9)).toBe('🔺');
-    // The top four are medals, one each.
-    expect(at(10)).toBe('🥉');
-    expect(at(11)).toBe('🥈');
-    expect(at(12)).toBe('🥇');
-    expect(at(13)).toBe('🎖️');
+    // The top five are royal, one glyph each.
+    expect(at(10)).toBe('✨');
+    expect(at(11)).toBe('⚜️');
+    expect(at(12)).toBe('🥈');
+    expect(at(13)).toBe('🥇');
+    expect(at(14)).toBe('🎖️');
   });
 
-  it('uses medals for the top four ranks', () => {
+  it('uses a royal ladder for the top five ranks', () => {
     const ordered = [...ranks].sort((a, b) => a.idx - b.idx);
-    expect(ordered[10]!.emoji).toBe('🥉');
-    expect(ordered[11]!.emoji).toBe('🥈');
-    expect(ordered[12]!.emoji).toBe('🥇');
-    expect(ordered[13]!.emoji).toBe('🎖️');
+    expect(ordered[10]!.emoji).toBe('✨');
+    expect(ordered[11]!.emoji).toBe('⚜️');
+    expect(ordered[12]!.emoji).toBe('🥈');
+    expect(ordered[13]!.emoji).toBe('🥇');
+    expect(ordered[14]!.emoji).toBe('🎖️');
   });
 
   it('never cuts a rank name mid-word', () => {
@@ -309,18 +311,18 @@ const text = lines;
   });
 
   it('shows the top-rank message instead of progress', () => {
-    const top = computeProgress(ranks, 50000);
+    const top = computeProgress(ranks, 80000);
     const text = messages.rankOf({
       username: 'ahmed',
       rank: top.current,
-      points: 50000,
+      points: 80000,
       position: 1,
       ratio: 1,
       remaining: 0,
       nextRank: null,
       percent: 100,
     });
-expect(text).toContain('🎖');
+expect(text).toContain('🎖️');
     expect(text).toContain('أعلى رتبة');
     expect([...text].length).toBeLessThanOrEqual(PHONE_LINE);
   });

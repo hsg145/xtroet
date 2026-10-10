@@ -1,6 +1,6 @@
 # RanksBot
 
-A Kick chat bot that awards points per message, tracks 14 rank tiers, announces
+A Kick chat bot that awards points per message, tracks 15 rank tiers, announces
 rank-ups, and answers commands — backed by Supabase.
 
 ## Env vars: always suffixed `_BOT`
@@ -84,7 +84,7 @@ banner says so instead of claiming success.
    scopes `user:read channel:read chat:write events:subscribe`. Leave
    "webhook" off — pusher mode needs no public URL.
 2. Create a Supabase project and run `supabase/migrations/001_init.sql`, then
-   `002_fix_rpc.sql`, then `003_rank_emoji.sql` in the SQL editor.
+   `002_fix_rpc.sql`, then `003_rank_emoji.sql`, then `004_first_lieutenant.sql` in the SQL editor.
 3. Link the channel from the website (`/api/kick-login` on the site). That writes
    the `channels` and `kick_tokens` rows — without the `channels` row the
    `apply_points` RPC fails its foreign key.
