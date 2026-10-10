@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { kickFetch } from '../utils/kickApi';
 
 interface BotrixEntry {
   watchtime: number;
@@ -44,6 +45,9 @@ const formatNum = (n: number) => {
   return (n || 0).toLocaleString();
 };
 
+/** كاش صور Kick على مستوى الموديول — الاسم (بحروف صغيرة) ← رابط الصورة. */
+const avatarCache = new Map<string, string>();
+
 const SkeletonRow: React.FC<{ delay: number }> = ({ delay }) => (
   <div className="flex items-center gap-3 p-3 md:p-4 rounded-2xl bg-white/[0.02] animate-pulse" style={{ animationDelay: `${delay}ms` }}>
     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/[0.04]"></div>
@@ -57,7 +61,9 @@ const SkeletonRow: React.FC<{ delay: number }> = ({ delay }) => (
 );
 
 const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
+  const ar = lang === 'ar';
   const [data, setData] = useState<BotrixEntry[] | null>(null);
+  const [avatars, setAvatars] = useState<Record<string, string>>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -84,6 +90,49 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
   const totalWatch = sorted.reduce((s, e) => s + (e.watchtime || 0), 0);
   const totalPoints = sorted.reduce((s, e) => s + (e.points || 0), 0);
 
+  // صور Kick: تُجلب بدفعات متوازية محدودة وتظهر تدريجياً، والفشل يبقي الحرف الأول.
+  useEffect(() => {
+    if (sorted.length === 0) return;
+    let cancelled = false;
+    const keyOf = (n: string) => n.toLowerCase();
+    const missing = sorted.map((e) => e.name).filter((n) => n && !avatarCache.has(keyOf(n)));
+    if (missing.length === 0) {
+      const fromCache: Record<string, string> = {};
+      sorted.forEach((e) => {
+        const a = avatarCache.get(keyOf(e.name));
+        if (a) fromCache[keyOf(e.name)] = a;
+      });
+      setAvatars(fromCache);
+      return;
+    }
+    (async () => {
+      const CONC = 5;
+      for (let i = 0; i < missing.length && !cancelled; i += CONC) {
+        const chunk = missing.slice(i, i + CONC);
+        const res = await Promise.all(
+          chunk.map(async (n) => {
+            const j: any = await kickFetch(`https://kick.com/api/v2/channels/${encodeURIComponent(n)}`);
+            const d = j?.data ?? j;
+            const pic = (d?.user?.profile_pic as string) || '';
+            avatarCache.set(keyOf(n), pic);
+            return [keyOf(n), pic] as const;
+          }),
+        );
+        if (cancelled) return;
+        setAvatars((prev) => {
+          const next = { ...prev };
+          res.forEach(([k, v]) => {
+            if (v) next[k] = v;
+          });
+          return next;
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [sorted]);
+
   const t = {
     title: lang === 'ar' ? 'أساطير الشات' : 'Chat Legends',
     subtitle: lang === 'ar' ? 'الأكثر مشاهدة في جميع البثوث' : 'Most watched across all streams',
@@ -97,6 +146,9 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
 
   const podium = sorted.slice(0, 3);
   const rest = sorted.slice(3);
+
+  /** صورة Kick للاسم، أو '' إذا لم تصل بعد. */
+  const picOf = (name: string): string => avatars[name.toLowerCase()] || '';
 
   const ringOf = (rank: number) =>
     rank === 1 ? 'conic-gradient(from 200deg,#a7f3d0,#047857,#ecfdf5,#047857,#a7f3d0)'
@@ -133,7 +185,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
             </div>
             <span className="absolute -bottom-1.5 -end-1.5 w-6 h-6 rounded-full bg-[#53FC18] border-4 border-[#0B0906] animate-pulse shadow-[0_0_14px_#53FC18]" aria-hidden="true" />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className={`min-w-0 flex-1 ${ar ? 'text-right' : 'text-left'}`}>
             <h3 className="text-xl md:text-2xl font-black text-white tracking-tight leading-none">{t.title}</h3>
             <p className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.24em] bg-gradient-to-r from-[#A7F3D0] to-[#059669] bg-clip-text text-transparent mt-2">{t.subtitle}</p>
           </div>
@@ -178,8 +230,12 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
                           className={`relative rounded-full p-[2.5px] block transition-transform duration-500 hover:scale-110 ${rank === 1 ? 'w-16 h-16 sm:w-20 sm:h-20' : 'w-12 h-12 sm:w-16 sm:h-16'}`}
                           style={{ background: ringOf(rank), boxShadow: rank === 1 ? '0 0 36px rgba(255,215,106,0.55)' : '0 8px 24px rgba(0,0,0,0.5)' }}
                         >
-                          <span className="w-full h-full rounded-full bg-white/[0.06] backdrop-blur flex items-center justify-center font-black text-lg md:text-xl text-white/85">
-                            {e.name.charAt(0).toUpperCase()}
+                          <span className="w-full h-full rounded-full bg-white/[0.06] backdrop-blur flex items-center justify-center font-black text-lg md:text-xl text-white/85 overflow-hidden">
+                            {picOf(e.name) ? (
+                              <img src={picOf(e.name)} alt={e.name} loading="lazy" className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              e.name.charAt(0).toUpperCase()
+                            )}
                           </span>
                           <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 text-[10px] font-black px-2 py-0.5 rounded-lg border ${rank === 1 ? 'bg-[#10B981] text-[#04120D] border-white/50' : 'bg-black/80 text-white/80 border-white/20'}`} dir="ltr">#{rank}</span>
                           {rank === 1 && (
@@ -208,13 +264,17 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
                   const pct = Math.max(4, Math.round(((e.watchtime || 0) / maxWatch) * 100));
                   return (
                     <div key={e.name} className="relative rounded-2xl p-2.5 sm:p-3 border border-transparent hover:border-[#10B981]/20 hover:bg-white/[0.04] hover:-translate-y-0.5 hover:shadow-[0_16px_38px_-14px_rgba(16,185,129,0.35)] transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${Math.min(idx * 60, 480)}ms` }}>
-                      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0" dir={ar ? 'rtl' : 'ltr'}>
                         <span className="w-8 h-8 shrink-0 rounded-xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-[11px] font-black text-white/40" dir="ltr">{rank < 10 ? `0${rank}` : rank}</span>
-                        <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[2px] shrink-0 block bg-white/[0.14]">
-                          <span className="w-full h-full rounded-full bg-white/[0.06] flex items-center justify-center text-sm font-black text-white/60">{e.name.charAt(0).toUpperCase()}</span>
+                        <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-[2px] shrink-0 block bg-white/[0.14] overflow-hidden">
+                          {picOf(e.name) ? (
+                            <img src={picOf(e.name)} alt={e.name} loading="lazy" className="w-full h-full rounded-full object-cover bg-black" />
+                          ) : (
+                            <span className="w-full h-full rounded-full bg-white/[0.06] flex items-center justify-center text-sm font-black text-white/60">{e.name.charAt(0).toUpperCase()}</span>
+                          )}
                         </span>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] sm:text-sm font-black text-white/90 truncate" dir="auto">{e.name}</p>
+                          <p className={`text-[13px] sm:text-sm font-black text-white/90 truncate ${ar ? 'text-right' : 'text-left'}`} dir="auto" title={e.name}>{e.name}</p>
                           {/* watchtime — the ranking metric */}
                           <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-black text-[#6EE7B7] bg-[#10B981]/10 border border-[#10B981]/25 rounded-lg px-2 py-0.5" dir="ltr">
                             <WatchIcon className="w-3 h-3" /> {formatDuration(e.watchtime)}
