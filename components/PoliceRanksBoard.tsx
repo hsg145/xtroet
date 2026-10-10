@@ -56,8 +56,8 @@ const NAVY = '#040C1C';
 const nf = (n: number) => n.toLocaleString('en-US');
 
 /* ── صور البادجات الحقيقية (من فولدر BADG، محسّنة WebP) ─────────
- * رئيس الشرطة (14) والوزير (15) ما لهما صور بعد — يظهران بالإيموجي
- * كبديل. إذا أضفت صورتيهما بنفس التسمية اشتغلا تلقائياً. */
+ * الوزير (15) ما له صورة بعد — يظهر بالإيموجي كبديل. إذا أضفت
+ * صورته بنفس التسمية اشتغلت تلقائياً. */
 const RANK_BADGE_IMG: Record<number, string> = {
     1: '/badges/cadet.webp',
     2: '/badges/solo_cadet.webp',
@@ -72,6 +72,7 @@ const RANK_BADGE_IMG: Record<number, string> = {
     11: '/badges/lieutenant.webp',
     12: '/badges/first_lieutenant.webp',
     13: '/badges/captain.webp',
+    14: '/badges/chief_of_police.webp',
 };
 
 const badgeImg = (idx: number): string | null => RANK_BADGE_IMG[idx] ?? null;
