@@ -309,9 +309,11 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
         }
     };
 
-    const [first, second, third] = [entries?.[0], entries?.[1], entries?.[2]];
-    const rest = entries?.slice(3) ?? [];
-    const maxPoints = Math.max(1, ...(entries ?? []).map((e) => e.points));
+    // اللوحة تعرض أول 20 فقط — المنصة (3) + 17 في إطار التمرير
+    const capped = entries ? entries.slice(0, 20) : null;
+    const [first, second, third] = [capped?.[0], capped?.[1], capped?.[2]];
+    const rest = capped?.slice(3) ?? [];
+    const maxPoints = Math.max(1, ...(capped ?? []).map((e) => e.points));
 
     const t = {
         title: ar ? 'عدّاد الرتب' : 'Ranks Counter',
@@ -553,8 +555,9 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                     </div>
                 )}
 
-                {/* ── الباقي (من الرابع) ── */}
-                <div className="mt-4 space-y-2">
+                {/* ── الباقي (من الرابع): إطار تمرير يظهر ~10 ويكمل بالنزول ── */}
+                <div className="mt-4 relative overflow-hidden rounded-3xl border border-[#1E6FFF]/25 bg-black/25 p-2">
+                    <div className="space-y-2 max-h-[660px] overflow-y-auto px-1 py-1" style={{ scrollbarWidth: 'thin', scrollbarColor: '#1E6FFF transparent' }}>
                     {entries === null && Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/[0.02] p-3 animate-pulse" style={{ animationDelay: `${i * 70}ms` }}>
                             <div className="h-9 w-9 rounded-full bg-white/[0.04]" />
@@ -565,7 +568,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                         </div>
                     ))}
 
-                    {entries !== null && entries.length === 0 && (
+                    {capped !== null && capped.length === 0 && (
                         <p className="py-10 text-center text-sm text-white/35 font-medium">{t.noData}</p>
                     )}
 
@@ -599,6 +602,9 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                             </div>
                         );
                     })}
+                    </div>
+                    {/* ذوبان سفلي يوحي أن فيه تكملة بالنزول */}
+                    <div className="pointer-events-none absolute inset-x-2 bottom-2 h-14 bg-gradient-to-t from-[#040C1C] to-transparent" aria-hidden="true" />
                 </div>
 
                 {/* الفوتر */}
@@ -606,7 +612,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#1E6FFF]/40 to-transparent" />
                     <span className="inline-flex items-center gap-2 rounded-full border border-[#1E6FFF]/25 bg-[#1E6FFF]/[0.07] px-3.5 py-1.5 text-[9px] font-black uppercase tracking-[0.28em] text-white/50">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#5AA9FF] animate-pulse shadow-[0_0_8px_#5AA9FF]" />
-                        {entries?.length ?? 0} {t.members}
+                        {capped?.length ?? 0} {t.members}
                     </span>
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#1E6FFF]/40 to-transparent" />
                 </div>
