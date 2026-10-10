@@ -55,6 +55,30 @@ const NAVY = '#040C1C';
 
 const nf = (n: number) => n.toLocaleString('en-US');
 
+/* ── صور البادجات الحقيقية (من فولدر BADG، محسّنة WebP) ─────────
+ * رئيس الشرطة (14) والوزير (15) ما لهما صور بعد — يظهران بالإيموجي
+ * كبديل. إذا أضفت صورتيهما بنفس التسمية اشتغلا تلقائياً. */
+const RANK_BADGE_IMG: Record<number, string> = {
+    1: '/badges/cadet.webp',
+    2: '/badges/solo_cadet.webp',
+    3: '/badges/officer_1.webp',
+    4: '/badges/officer_2.webp',
+    5: '/badges/officer_3.webp',
+    6: '/badges/senior_officer.webp',
+    7: '/badges/senior_lead_officer.webp',
+    8: '/badges/sergeant.webp',
+    9: '/badges/first_sergeant.webp',
+    10: '/badges/staff_sergeant.webp',
+    11: '/badges/lieutenant.webp',
+    12: '/badges/first_lieutenant.webp',
+    13: '/badges/captain.webp',
+};
+
+const badgeImg = (idx: number): string | null => RANK_BADGE_IMG[idx] ?? null;
+
+/* الخلفية السوداء للصور تذوب في خلفية الموقع الداكنة */
+const BADGE_BLEND: React.CSSProperties = { mixBlendMode: 'screen' };
+
 /* ── هوية كل طبقة: لون + حلقة + توهج ─────────────────────────── */
 type Tier = { color: string; ring: string; glow: string; bar: string };
 
@@ -121,15 +145,18 @@ function rankColor(idx: number) {
     return tier(idx).color;
 }
 
-/* ── بادج الرتبة: إيموجي + اسم بألوان الطبقة ─────────────────── */
+/* ── بادج الرتبة: صورة الشارة الحقيقية + اسم بألوان الطبقة ─── */
 const RankBadge: React.FC<{ emoji?: string; name: string; idx: number; big?: boolean }> = ({ emoji, name, idx, big }) => {
     const t = tier(idx);
+    const img = badgeImg(idx);
     return (
         <span
             className={`inline-flex items-center gap-1.5 rounded-full border font-black ${big ? 'px-3.5 py-1.5 text-xs' : 'px-2.5 py-1 text-[11px]'}`}
             style={{ borderColor: `${t.color}66`, background: `${t.color}1F`, color: t.color, boxShadow: `0 0 14px -4px ${t.glow}` }}
         >
-            <span aria-hidden="true">{emoji}</span>
+            {img
+                ? <img src={img} alt="" aria-hidden="true" loading="lazy" className={big ? 'h-6 w-auto object-contain' : 'h-5 w-auto object-contain'} style={BADGE_BLEND} />
+                : <span aria-hidden="true">{emoji}</span>}
             <span dir="auto">{name}</span>
         </span>
     );
@@ -167,14 +194,19 @@ const RankLadder: React.FC<{ ranks: RankDef[]; ar: boolean; title: string; sub: 
             <div className="mt-3 flex gap-2.5 overflow-x-auto pb-3 pt-1 px-1 snap-x" dir="ltr" style={{ scrollbarWidth: 'thin' }}>
                 {ordered.map((r) => {
                     const t = tier(r.idx);
+                    const img = badgeImg(r.idx);
                     return (
                         <div
                             key={r.idx}
-                            className="snap-start shrink-0 w-[118px] rounded-2xl border bg-white/[0.03] p-3 text-center transition-transform duration-300 hover:-translate-y-1"
+                            className="snap-start shrink-0 w-[128px] rounded-2xl border bg-white/[0.03] p-3 text-center transition-transform duration-300 hover:-translate-y-1"
                             style={{ borderColor: `${t.color}44`, boxShadow: `0 8px 24px -12px ${t.glow}` }}
                         >
                             <div className="h-1 w-10 mx-auto rounded-full" style={{ background: t.bar }} />
-                            <p className="mt-2 text-3xl leading-none" aria-hidden="true">{r.emoji}</p>
+                            <div className="mt-2 h-20 flex items-center justify-center">
+                                {img
+                                    ? <img src={img} alt={ar ? r.name_ar : r.name_en} loading="lazy" className="h-20 w-auto object-contain" style={{ ...BADGE_BLEND, filter: `drop-shadow(0 0 10px ${t.glow})` }} />
+                                    : <p className="text-4xl leading-none" aria-hidden="true">{r.emoji}</p>}
+                            </div>
                             <p className="mt-2 truncate text-[12px] font-black text-white" dir="auto" title={ar ? r.name_ar : r.name_en}>
                                 {ar ? r.name_ar : r.name_en}
                             </p>
