@@ -50,6 +50,10 @@ const NAV_DEFS = [
         href: '#story', id: 'story', ar: 'السيرة', en: 'Story',
         icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3.2c-2.6 3.4-4.2 6-4.2 8.4a4.2 4.2 0 008.4 0c0-2.4-1.6-5-4.2-8.4z" /><path d="M5 20h14" /></svg>,
     },
+    {
+        href: '#admin', id: 'admin', ar: 'الإدارة', en: 'Admin',
+        icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2.5" /><path d="M8 10V7a4 4 0 018 0v3" /></svg>,
+    },
 ] as const;
 
 /**

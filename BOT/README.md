@@ -84,13 +84,27 @@ banner says so instead of claiming success.
    scopes `user:read channel:read chat:write events:subscribe`. Leave
    "webhook" off — pusher mode needs no public URL.
 2. Create a Supabase project and run `supabase/migrations/001_init.sql`, then
-   `002_fix_rpc.sql`, then `003_rank_emoji.sql`, then `004_first_lieutenant.sql` in the SQL editor.
+   `002_fix_rpc.sql`, then `003_rank_emoji.sql`, then `004_first_lieutenant.sql`,
+   then `005_double_points.sql`, then `006_admin.sql` in the SQL editor.
 3. Link the channel from the website (`/api/kick-login` on the site). That writes
    the `channels` and `kick_tokens` rows — without the `channels` row the
    `apply_points` RPC fails its foreign key.
 4. Copy `.env.example` to `.env`, fill it in (keep every `_BOT` suffix), and put
    the chatroom id from step "chatroom id" above into `KICK_CHATROOM_ID_BOT`.
 5. `npm run doctor`, then `npm run auth` if the token check fails.
+
+## Admin dashboard (site section `#admin`, owner only)
+
+A password-locked control room on the website (needs `ADMIN_PASSWORD` in the
+site's Vercel env): user points/rank/reset, timeouts (work on moderators too),
+per-user boosts and punishments (2x/3x/half/freeze), global events
+(double/triple/sabotage with durations), hidden drop codes, rank-price editing
+(live everywhere), manual chat announcements, and a full audit log. Login is
+HMAC-token based (12h), 10 wrong passwords per device/IP = 24h lockout.
+
+The bot polls the `006_admin.sql` tables every 15s and enforces everything in
+the points engine (integer-safe: fractional multipliers bank credit until whole
+points), and drains `bot_outbox` into chat every 5s. No bot restart needed.
 
 ## Hosting the bot (Railway)
 

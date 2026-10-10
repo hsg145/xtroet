@@ -1,5 +1,6 @@
 import { env } from './config.js';
 import { getLogger } from './logger.js';
+import { AdminState } from './core/admin-state.js';
 import { Commands, COMMAND_ALIASES } from './core/commands.js';
 import { Flusher } from './core/flusher.js';
 import { PointsEngine } from './core/points.js';
@@ -108,6 +109,17 @@ async function main(): Promise<void> {
 
   // ── 3. wire everything ─────────────────────────────────────
   const engine = new PointsEngine(ranks, e.CACHE_TTL_MS);
+  const adminState = new AdminState();
+  try {
+    await adminState.refresh();
+    checks.push({ label: 'Admin state', ok: true, detail: 'dashboard promos armed' });
+  } catch (err) {
+    checks.push({
+      label: 'Admin state',
+      ok: false,
+      detail: 'cannot read admin tables — run supabase/migrations/006_admin.sql (bot still awards normal points)',
+    });
+  }
   const sender = new ChatSender({
     broadcasterUserId: channelId,
     intervalMs: e.SEND_INTERVAL_MS,
@@ -150,6 +162,7 @@ async function main(): Promise<void> {
     commands,
     flushNow: () => flusher.flushNow(),
     selfUserIds,
+    promo: (ch, uid, content) => adminState.promo(ch, uid, content),
   });
 
   // A wrong PC clock makes every webhook signature fail, which gets the app
@@ -276,6 +289,17 @@ async function main(): Promise<void> {
   idleWatcher.start();
   ranks.startRefresh(e.RANKS_REFRESH_MS);
   tokenManager.startAutoRefresh();
+  // Dashboard promos: refresh events/mutes/drops + send queued announcements.
+  if (channelId) {
+    await adminState.refreshModifiers(channelId).catch(() => undefined);
+    await adminState.refreshClaims(channelId).catch(() => undefined);
+    adminState.startRefresh(channelId, 15_000);
+  }
+  const outboxTimer = setInterval(() => {
+    if (!channelId) return;
+    void adminState.drainOutbox(channelId, (text) => sender.send(text, 'high'));
+  }, 5_000);
+  outboxTimer.unref();
 
   if (useWebhook && channelId) {
     const result = await reconciler.check();
@@ -343,6 +367,8 @@ async function main(): Promise<void> {
     reconciler.stop();
     idleWatcher.stop();
     ranks.stopRefresh();
+    clearInterval(outboxTimer);
+    adminState.stopRefresh();
     tokenManager.stopAutoRefresh();
     flusher.stop();
 

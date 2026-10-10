@@ -11,6 +11,7 @@ const HonorSection = lazy(() => import('./components/StatsSection').then(m => ({
 const ArchiveSection = lazy(() => import('./components/StatsSection').then(m => ({ default: m.ArchiveSection })));
 const AlbumSection = lazy(() => import('./components/AlbumSection').then(m => ({ default: m.AlbumSection })));
 const StoryPage = lazy(() => import('./components/StoryPage').then(m => ({ default: m.StoryPage })));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 
 // --- Constants (XTROET) ---
 const DEFAULT_PROFILE_IMAGE = "/xtroet-logo.webp";
@@ -80,6 +81,7 @@ const TRANSLATIONS = {
         communityTitle: 'Community HQ', supportTitle: 'Support the Channel', supportSub: 'Your support keeps the emerald empire legendary.',
         honorTitle: 'Hall of Fame', honorSub: 'Top supporters across every stream.',
         archiveTitle: 'Archive', archiveSub: 'Clips and past streams.',
+        adminTitle: 'Bot Command', adminSub: 'Owner-only control room. Password locked.',
         albumTitle: "Nasser's Sirah", albumSub: 'Nasser’s sirah in frames — seventeen shots from the night shifts.',
         statsTitle: 'Stream Stats', statsSub: 'Live numbers from the emerald empire.',
         tiersTitle: 'Special alert tiers',
@@ -107,6 +109,7 @@ const TRANSLATIONS = {
         communityTitle: 'مقر المجتمع', supportTitle: 'دعم القناة', supportSub: 'دعمك يخلي إمبراطورية الزمرد أسطورية وتستمر.',
         honorTitle: 'لوحة الشرف', honorSub: 'كبار الداعمين عبر كل البثوث.',
         archiveTitle: 'الأرشيف', archiveSub: 'اللقطات والبثوث السابقة.',
+        adminTitle: 'غرفة القيادة', adminSub: 'تحكم البوت الكامل — للرئيس فقط، بكلمة سر.',
         albumTitle: 'سيرة ناصر', albumSub: 'سيرة ناصر بالصور — سبع عشرة صورة من ذاكرة السهرات.',
         statsTitle: 'إحصائيات البث', statsSub: 'أرقام إمبراطورية الزمرد لحظة بلحظة.',
         tiersTitle: 'مستويات التنبيه الخاصة',
@@ -1075,6 +1078,12 @@ export default function App() {
                         <section id="archive" className="pt-12 md:pt-16 scroll-mt-28">
                             <Reveal><SectionHeading no="07" title={t.archiveTitle} sub={t.archiveSub} en="ARCHIVE" /></Reveal>
                             <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><ArchiveSection lang={lang} /></Suspense></Reveal>
+                        </section>
+
+                        {/* ===== ADMIN (bot command room, password locked) ===== */}
+                        <section id="admin" className="pt-12 md:pt-16 scroll-mt-28">
+                            <Reveal><SectionHeading no="08" title={t.adminTitle} sub={t.adminSub} en="COMMAND" /></Reveal>
+                            <Reveal delay={80}><Suspense fallback={<div className="w-full h-40 rounded-[26px] border border-white/10 bg-white/[0.02] animate-pulse" />}><AdminDashboard lang={lang} /></Suspense></Reveal>
                         </section>
 
                         {/* ===== FOOTER ===== */}

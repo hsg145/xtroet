@@ -1,4 +1,5 @@
 import { fetchMember } from '../db/repo.js';
+import type { PromoDecision } from './admin-state.js';
 import { crossedRanks, type Rank, type RankStore } from './ranks.js';
 
 export interface UserState {
@@ -23,8 +24,11 @@ export interface UserState {
 }
 
 export type AwardDecision =
-  | { awarded: true; state: UserState; rankUps: Rank[] }
+  | { awarded: true; state: UserState; rankUps: Rank[]; note?: string }
   | { awarded: false; reason: string };
+
+/** Dashboard promos for one message (events, punishments, drop codes). */
+export type PromoProvider = (channelId: number, userId: number, content: string) => PromoDecision;
 
 export interface AwardContext {
   username: string;
@@ -38,6 +42,10 @@ export interface AwardContext {
   cooldownMs: number;
   duplicateWindowMs: number;
   minLength: number;
+  /** Channel for dashboard promos (mute/multiplier/drop). Optional: plain +1 when absent. */
+  channelId?: number;
+  /** Dashboard promo hook. Absent = normal rules only. */
+  promo?: PromoProvider;
 }
 
 export type PointsBatchItem = {
@@ -206,43 +214,57 @@ export class PointsEngine {
     return promise;
   }
 
-  /** Apply every award rule and, if it passes, add exactly one point. */
+  /** Apply every award rule and, if it passes, add the promo-adjusted points. */
   award(state: UserState, ctx: AwardContext): AwardDecision {
     const now = ctx.now ?? Date.now();
     const content = ctx.content.trim();
 
     if (ctx.selfUserIds.has(state.userId)) return { awarded: false, reason: 'self' };
     if (ctx.ignored.has(ctx.username.toLowerCase())) return { awarded: false, reason: 'ignored' };
+
+    // Dashboard timeout / freeze: no points at all, for anyone (mods included).
+    const promo =
+      ctx.promo && ctx.channelId != null ? ctx.promo(ctx.channelId, state.userId, content) : null;
+    if (promo?.muted) return { awarded: false, reason: 'muted' };
+    if (promo?.frozen) return { awarded: false, reason: 'frozen' };
+
+    // Drop-code claims bypass cooldown/duplicate: typing the magic word twice
+    // in a row must still count (the per-user claim limit is the real guard).
+    const dropBonus = promo?.bonus ?? 0;
+    const skippingRules = dropBonus > 0;
     if (ctx.commandPrefix && content.startsWith(ctx.commandPrefix)) {
       return { awarded: false, reason: 'command' };
     }
     if ([...content].length < ctx.minLength) return { awarded: false, reason: 'too_short' };
-    if (state.lastAwardAt >= 0 && now - state.lastAwardAt < ctx.cooldownMs) {
-      return { awarded: false, reason: 'cooldown' };
-    }
-    const hash = hashMessage(content);
-    if (
-      hash === state.lastMessageHash &&
-      state.lastMessageAt >= 0 &&
-      now - state.lastMessageAt < ctx.duplicateWindowMs
-    ) {
-      return { awarded: false, reason: 'duplicate' };
+    if (!skippingRules) {
+      if (state.lastAwardAt >= 0 && now - state.lastAwardAt < ctx.cooldownMs) {
+        return { awarded: false, reason: 'cooldown' };
+      }
+      const hash = hashMessage(content);
+      if (
+        hash === state.lastMessageHash &&
+        state.lastMessageAt >= 0 &&
+        now - state.lastMessageAt < ctx.duplicateWindowMs
+      ) {
+        return { awarded: false, reason: 'duplicate' };
+      }
     }
 
     const fromPoints = state.points;
-    state.points += 1;
-    state.pendingDelta += 1;
+    const gain = (promo?.delta ?? 1) + dropBonus;
+    state.points += gain;
+    state.pendingDelta += gain;
     state.pendingMessages += 1;
     state.messageCount += 1;
     state.lastAwardAt = now;
-    state.lastMessageHash = hash;
+    state.lastMessageHash = hashMessage(content);
     state.lastMessageAt = now;
 
     const rank = this.ranks.rankForPoints(state.points);
     state.rankIndex = rank.idx;
     const rankUps = crossedRanks(this.ranks.all(), fromPoints, state.points);
 
-    return { awarded: true, state, rankUps };
+    return { awarded: true, state, rankUps, note: promo?.dropWord ? `drop:${promo.dropWord}` : undefined };
   }
 
   /** Direct, mutable access to a cached state (used by the flusher). */

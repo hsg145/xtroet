@@ -3,7 +3,7 @@ import { getLogger } from '../logger.js';
 import { messages } from '../messages.js';
 import type { NormalizedMessage } from '../kick/types.js';
 import type { Commands } from './commands.js';
-import type { PointsEngine } from './points.js';
+import type { PointsEngine, PromoProvider } from './points.js';
 import type { RankStore } from './ranks.js';
 import type { ChatSender } from './sender.js';
 
@@ -17,6 +17,8 @@ export interface RouterDeps {
   /** Flush pending points synchronously before admin writes (avoid drift). */
   flushNow: () => Promise<void>;
   selfUserIds: Set<number>;
+  /** Dashboard promos (events, mutes, multipliers, drop codes). Optional. */
+  promo?: PromoProvider;
 }
 
 /**
@@ -76,6 +78,8 @@ export class MessageRouter {
       cooldownMs: this.e.POINTS_COOLDOWN_SECONDS * 1000,
       duplicateWindowMs: this.e.DUPLICATE_WINDOW_SECONDS * 1000,
       minLength: this.e.MIN_MESSAGE_LENGTH,
+      channelId: this.deps.channelId,
+      promo: this.deps.promo,
     });
 
     if (!decision.awarded) {
