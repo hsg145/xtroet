@@ -154,9 +154,7 @@ const RankBadge: React.FC<{ emoji?: string; name: string; idx: number; big?: boo
             style={{ borderColor: `${t.color}66`, background: `${t.color}1F`, color: t.color, boxShadow: `0 0 14px -4px ${t.glow}` }}
         >
             {img
-                ? <span className={`flex items-center justify-center rounded-full bg-white/[0.14] border border-white/20 overflow-hidden ${big ? 'w-7 h-7' : 'w-6 h-6'}`}>
-                    <img src={img} alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-contain" />
-                  </span>
+                ? <img src={img} alt="" aria-hidden="true" loading="lazy" className={big ? 'h-7 w-auto object-contain' : 'h-6 w-auto object-contain'} />
                 : <span aria-hidden="true">{emoji}</span>}
             <span dir="auto">{name}</span>
         </span>
