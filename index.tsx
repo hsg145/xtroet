@@ -2,6 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
+/** /admin is a standalone command room — never rendered inside the main page. */
+const AdminPage = React.lazy(() => import('./components/AdminDashboard'));
+
 /**
  * Catches a render crash and shows something instead of a black page.
  *
@@ -61,14 +64,17 @@ class RootBoundary extends React.Component<{ children: React.ReactNode }, { erro
 }
 
 /** Shown until React mounts. The body is black, so a plain dark loader. */
-function Boot() {
+function Boot({ admin = false }: { admin?: boolean }) {
     return (
         <div style={{
-            minHeight: '100vh', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', background: '#04120D', color: 'rgba(255,255,255,0.5)',
+            minHeight: '100vh', display: 'flex', flexDirection: 'column', gap: '0.9rem',
+            alignItems: 'center', justifyContent: 'center',
+            background: admin ? '#050403' : '#04120D',
+            color: admin ? 'rgba(201,162,75,0.7)' : 'rgba(255,255,255,0.5)',
             fontFamily: 'system-ui, sans-serif', fontSize: '0.85rem', letterSpacing: '0.2em',
         }}>
-            XTROET…
+            {admin && <div style={{ fontSize: '2rem' }}>👑</div>}
+            <div>{admin ? 'COMMAND ROOM' : 'XTROET…'}</div>
         </div>
     );
 }
@@ -83,11 +89,19 @@ const boot = document.createElement('div');
 boot.id = 'xtroet-boot';
 rootElement.appendChild(boot);
 
+const isAdmin = /^\/admin(\/|$)/.test(window.location.pathname);
+
 const root = ReactDOM.createRoot(rootElement);
 root.render(
     <React.StrictMode>
         <RootBoundary>
-            <App />
+            {isAdmin ? (
+                <React.Suspense fallback={<Boot admin />}>
+                    <AdminPage />
+                </React.Suspense>
+            ) : (
+                <App />
+            )}
         </RootBoundary>
     </React.StrictMode>,
 );
