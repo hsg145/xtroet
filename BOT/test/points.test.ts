@@ -105,8 +105,8 @@ describe('PointsEngine.award', () => {
 
   it('detects a rank-up the instant the point is added', async () => {
     const s = await stateFor(1);
-    // Start 99 points from a loaded DB row.
-    s.points = 99;
+    // Start 199 points from a loaded DB row.
+    s.points = 199;
     s.pendingDelta = 0;
 
     const d = engine.award(s, ctx({ now: 0 }));
@@ -117,8 +117,8 @@ describe('PointsEngine.award', () => {
 
   it('reports every rank crossed when points jump (announce the final one)', async () => {
     const s = await stateFor(1);
-    // 4999 -> 5000 is the first_sergeant boundary.
-    s.points = 4999;
+    // 9999 -> 10000 is the first_sergeant boundary.
+    s.points = 9999;
     s.pendingDelta = 0;
 
     const d = engine.award(s, ctx({ now: 0 }));
@@ -126,7 +126,7 @@ describe('PointsEngine.award', () => {
     const ups = d.awarded ? d.rankUps : [];
     expect(ups.map((r) => r.key)).toEqual(['first_sergeant']);
     expect(ups[ups.length - 1]!.key).toBe('first_sergeant');
-    expect(s.points).toBe(5000);
+    expect(s.points).toBe(10000);
     expect(s.rankIndex).toBe(9);
   });
 

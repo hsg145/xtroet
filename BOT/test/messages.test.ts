@@ -49,7 +49,7 @@ describe('progressBar', () => {
 
 describe('computeProgress', () => {
   it('reports no next rank at the top', () => {
-    const p = computeProgress(ranks, 70000);
+    const p = computeProgress(ranks, 100000);
     expect(p.current.key).toBe('minister');
     expect(p.next).toBeNull();
     expect(p.percent).toBe(100);
@@ -57,24 +57,24 @@ describe('computeProgress', () => {
   });
 
   it('computes remaining points and percentage', () => {
-    const p = computeProgress(ranks, 50); // 50 of the 0..100 span
+    const p = computeProgress(ranks, 100); // 100 of the 0..200 span
     expect(p.current.key).toBe('cadet');
     expect(p.next?.key).toBe('solo_cadet');
-    expect(p.remaining).toBe(50);
+    expect(p.remaining).toBe(100);
     expect(p.percent).toBe(50);
   });
 
   it('reaches 100% exactly at the next threshold', () => {
-    const p = computeProgress(ranks, 100);
+    const p = computeProgress(ranks, 200);
     expect(p.current.key).toBe('solo_cadet');
-    expect(p.remaining).toBe(150);
+    expect(p.remaining).toBe(300);
     expect(p.percent).toBe(0);
   });
 
   it('handles zero points', () => {
     const p = computeProgress(ranks, 0);
     expect(p.current.key).toBe('cadet');
-    expect(p.remaining).toBe(100);
+    expect(p.remaining).toBe(200);
     expect(p.percent).toBe(0);
   });
 });
@@ -111,7 +111,7 @@ describe('toSingleLine / safeUsername / splitMessage', () => {
 });
 
 describe('messages', () => {
-  const p = computeProgress(ranks, 700); // midway between officer_2 (500) and officer_3 (900)
+  const p = computeProgress(ranks, 1400); // midway between officer_2 (1000) and officer_3 (1800)
 
 /**
    * A phone shows ~45-50 characters per line in Kick chat, so ~90 wraps onto a
@@ -127,14 +127,14 @@ describe('messages', () => {
       messages.rankOf({
         username: 'ahmed_2000',
         rank: p.current, // 🔹 officer 2
-        points: 700,
+        points: 1400,
         position: 3,
         ratio: p.ratio,
         remaining: p.remaining,
         nextRank: p.next!, // 🔹 officer 3
         percent: p.percent,
       }),
-    ).toBe('⭐ أوفيسر 2┃🔹700 ┃ 50% ➜ [🎯200] ⭐ أوفيسر 3 @ahmed_2000');
+    ).toBe('⭐ أوفيسر 2┃🔹1,400 ┃ 50% ➜ [🎯400] ⭐ أوفيسر 3 @ahmed_2000');
   });
 
   it('puts the mention at the END, frames both names, and drops tier markers', () => {
@@ -181,9 +181,9 @@ describe('messages', () => {
   });
 
   it('keeps a fixed 🔹 on the points while the star frame stays constant', () => {
-    const at900 = computeProgress(ranks, 900).current; // officer 3
-    const at1500 = computeProgress(ranks, 1500).current; // senior officer
-    const next = computeProgress(ranks, 900).next!;
+    const at1800 = computeProgress(ranks, 1800).current; // officer 3
+    const at3000 = computeProgress(ranks, 3000).current; // senior officer
+    const next = computeProgress(ranks, 1800).next!;
     const card = (r: Rank, points: number, r2: Rank): string =>
       messages.rankOf({
         username: 'u',
@@ -196,12 +196,12 @@ describe('messages', () => {
         percent: 50,
       });
     // The NAME changes with the rank, the star frame around it does not.
-     expect(card(at900, 900, next)).toContain('⭐ ' + at900.name_ar + '┃');
-     expect(card(at1500, 1500, next)).toContain('⭐ ' + at1500.name_ar + '┃');
-    expect(at900.name_ar).not.toBe(at1500.name_ar);
+     expect(card(at1800, 1800, next)).toContain('⭐ ' + at1800.name_ar + '┃');
+     expect(card(at3000, 3000, next)).toContain('⭐ ' + at3000.name_ar + '┃');
+    expect(at1800.name_ar).not.toBe(at3000.name_ar);
     // The points marker is always 🔹, at every rank.
-    expect(card(at900, 900, next)).toContain('┃🔹900');
-    expect(card(at1500, 1500, next)).toContain('┃🔹1,500');
+    expect(card(at1800, 1800, next)).toContain('┃🔹1,800');
+    expect(card(at3000, 3000, next)).toContain('┃🔹3,000');
   });
 
   it('never leaks a raw rank glyph into the card', () => {
@@ -311,11 +311,11 @@ const text = lines;
   });
 
   it('shows the top-rank message instead of progress', () => {
-    const top = computeProgress(ranks, 80000);
+    const top = computeProgress(ranks, 120000);
     const text = messages.rankOf({
       username: 'ahmed',
       rank: top.current,
-      points: 80000,
+      points: 120000,
       position: 1,
       ratio: 1,
       remaining: 0,
@@ -328,7 +328,7 @@ expect(text).toContain('🎖️');
   });
 
   it('announces a rank-up', () => {
-    const text = messages.rankUp('ahmed', store.rankForPoints(100));
+    const text = messages.rankUp('ahmed', store.rankForPoints(200));
     expect(text).toContain('🎉');
     expect(text).toContain('@ahmed');
     expect(text).toContain('سولو كاديت');
