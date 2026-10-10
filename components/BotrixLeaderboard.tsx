@@ -10,11 +10,11 @@ interface BotrixLeaderboardProps {
   lang: 'en' | 'ar';
 }
 
-const API_URL = '/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=oflag');
+const API_URL = '/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=xtroet');
 
 /**
  * watchtime arrives as a raw seconds count, so it is formatted properly:
- * 12365 â†’ "3h 26m 5s", and anything past a day keeps going ("8d 14h 5m").
+ * 12365 → "3h 26m 5s", and anything past a day keeps going ("8d 14h 5m").
  */
 const formatDuration = (seconds: number): string => {
   const total = Math.max(0, Math.floor(seconds || 0));
@@ -85,14 +85,14 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
   const totalPoints = sorted.reduce((s, e) => s + (e.points || 0), 0);
 
   const t = {
-    title: lang === 'ar' ? 'Ø£Ø³Ø§Ø·ÙŠØ± Ø§Ù„Ø´Ø§Øª' : 'Chat Legends',
-    subtitle: lang === 'ar' ? 'Ø§Ù„Ø£ÙƒØ«Ø± Ù…Ø´Ø§Ù‡Ø¯Ø© ÙÙŠ Ø¬Ù…ÙŠØ¹ Ø§Ù„Ø¨Ø«ÙˆØ«' : 'Most watched across all streams',
-    empty: lang === 'ar' ? 'Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª Ø­Ø§Ù„ÙŠØ§Ù‹' : 'No data available',
-    watch: lang === 'ar' ? 'Ù…Ø´Ø§Ù‡Ø¯Ø©' : 'Watched',
-    points: lang === 'ar' ? 'Ù†Ù‚Ø·Ø©' : 'PTS',
-    legends: lang === 'ar' ? 'Ø£Ø³Ø·ÙˆØ±Ø©' : 'Legends',
-    live: lang === 'ar' ? 'Ù†Ø®Ø¨Ø© Ø§Ù„Ù…Ø´Ø§Ù‡Ø¯Ø©' : 'Watch elite',
-    rank: lang === 'ar' ? 'Ø§Ù„ØªØ±ØªÙŠØ¨' : 'Rank',
+    title: lang === 'ar' ? 'أساطير الشات' : 'Chat Legends',
+    subtitle: lang === 'ar' ? 'الأكثر مشاهدة في جميع البثوث' : 'Most watched across all streams',
+    empty: lang === 'ar' ? 'لا توجد بيانات حالياً' : 'No data available',
+    watch: lang === 'ar' ? 'مشاهدة' : 'Watched',
+    points: lang === 'ar' ? 'نقطة' : 'PTS',
+    legends: lang === 'ar' ? 'أسطورة' : 'Legends',
+    live: lang === 'ar' ? 'نخبة المشاهدة' : 'Watch elite',
+    rank: lang === 'ar' ? 'الترتيب' : 'Rank',
   };
 
   const podium = sorted.slice(0, 3);
@@ -165,7 +165,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
 
           {sorted.length > 0 && (
             <>
-              {/* podium â€” the three most watched */}
+              {/* podium — the three most watched */}
               <div className="relative mx-4 md:mx-6 mt-1 rounded-3xl border border-white/[0.07] bg-black/30 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" aria-hidden="true" />
                 <div className="relative flex items-end justify-center gap-2 sm:gap-5 px-4 pt-6 pb-4" dir="ltr">
@@ -215,12 +215,12 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-[13px] sm:text-sm font-black text-white/90 truncate" dir="auto">{e.name}</p>
-                          {/* watchtime â€” the ranking metric */}
+                          {/* watchtime — the ranking metric */}
                           <p className="mt-1 inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-black text-[#6EE7B7] bg-[#10B981]/10 border border-[#10B981]/25 rounded-lg px-2 py-0.5" dir="ltr">
                             <WatchIcon className="w-3 h-3" /> {formatDuration(e.watchtime)}
                           </p>
                         </div>
-                        {/* points â€” the second number */}
+                        {/* points — the second number */}
                         <span className="shrink-0 text-right">
                           <span className="flex items-center justify-end gap-1 text-[12px] sm:text-sm font-black text-white/85" dir="ltr">
                             <PointsIcon className="w-3.5 h-3.5 text-[#C9A24B]/80" /> {formatNum(e.points)}
@@ -246,7 +246,7 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
           <span className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.3em] text-white/40 bg-white/[0.04] border border-white/10 rounded-full px-3.5 py-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#53FC18] animate-pulse shadow-[0_0_8px_#53FC18]" />
             {t.live}
-            <span className="mx-1 text-white/20">Â·</span>
+            <span className="mx-1 text-white/20">·</span>
             <span dir="ltr">{formatNum(totalPoints)} {t.points}</span>
           </span>
           <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
