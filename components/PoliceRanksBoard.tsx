@@ -143,16 +143,21 @@ function rankColor(idx: number) {
     return tier(idx).color;
 }
 
-/* ── بادج الرتبة: إيموجي + اسم بألوان الطبقة ───────────────────
- * (الإيموجي أنظف في الشارات الصغيرة — صور الشارات الكاملة للسلم فقط) */
+/* ── بادج الرتبة: صورة الشارة الحقيقية + اسم بألوان الطبقة ───
+ * الصورة على خلفية فاتحة صغيرة حتى لو كانت غامقة تبقى واضحة */
 const RankBadge: React.FC<{ emoji?: string; name: string; idx: number; big?: boolean }> = ({ emoji, name, idx, big }) => {
     const t = tier(idx);
+    const img = badgeImg(idx);
     return (
         <span
             className={`inline-flex items-center gap-1.5 rounded-full border font-black ${big ? 'px-3.5 py-1.5 text-xs' : 'px-2.5 py-1 text-[11px]'}`}
             style={{ borderColor: `${t.color}66`, background: `${t.color}1F`, color: t.color, boxShadow: `0 0 14px -4px ${t.glow}` }}
         >
-            <span aria-hidden="true">{emoji}</span>
+            {img
+                ? <span className={`flex items-center justify-center rounded-full bg-white/[0.14] border border-white/20 overflow-hidden ${big ? 'w-7 h-7' : 'w-6 h-6'}`}>
+                    <img src={img} alt="" aria-hidden="true" loading="lazy" className="w-full h-full object-contain" />
+                  </span>
+                : <span aria-hidden="true">{emoji}</span>}
             <span dir="auto">{name}</span>
         </span>
     );
