@@ -76,9 +76,6 @@ const RANK_BADGE_IMG: Record<number, string> = {
 
 const badgeImg = (idx: number): string | null => RANK_BADGE_IMG[idx] ?? null;
 
-/* الخلفية السوداء للصور تذوب في خلفية الموقع الداكنة */
-const BADGE_BLEND: React.CSSProperties = { mixBlendMode: 'screen' };
-
 /* ── هوية كل طبقة: لون + حلقة + توهج ─────────────────────────── */
 type Tier = { color: string; ring: string; glow: string; bar: string };
 
@@ -155,7 +152,7 @@ const RankBadge: React.FC<{ emoji?: string; name: string; idx: number; big?: boo
             style={{ borderColor: `${t.color}66`, background: `${t.color}1F`, color: t.color, boxShadow: `0 0 14px -4px ${t.glow}` }}
         >
             {img
-                ? <img src={img} alt="" aria-hidden="true" loading="lazy" className={big ? 'h-6 w-auto object-contain' : 'h-5 w-auto object-contain'} style={BADGE_BLEND} />
+                ? <img src={img} alt="" aria-hidden="true" loading="lazy" className={big ? 'h-6 w-auto object-contain' : 'h-5 w-auto object-contain'} />
                 : <span aria-hidden="true">{emoji}</span>}
             <span dir="auto">{name}</span>
         </span>
@@ -204,7 +201,7 @@ const RankLadder: React.FC<{ ranks: RankDef[]; ar: boolean; title: string; sub: 
                             <div className="h-1 w-10 mx-auto rounded-full" style={{ background: t.bar }} />
                             <div className="mt-2 h-20 flex items-center justify-center">
                                 {img
-                                    ? <img src={img} alt={ar ? r.name_ar : r.name_en} loading="lazy" className="h-20 w-auto object-contain" style={{ ...BADGE_BLEND, filter: `drop-shadow(0 0 10px ${t.glow})` }} />
+                                    ? <img src={img} alt={ar ? r.name_ar : r.name_en} loading="lazy" className="h-20 w-auto object-contain" style={{ filter: `drop-shadow(0 0 10px ${t.glow})` }} />
                                     : <p className="text-4xl leading-none" aria-hidden="true">{r.emoji}</p>}
                             </div>
                             <p className="mt-2 truncate text-[12px] font-black text-white" dir="auto" title={ar ? r.name_ar : r.name_en}>
