@@ -14,8 +14,11 @@ interface BotrixLeaderboardProps {
 const API_URL = '/api/kick?endpoint=' + encodeURIComponent('https://botrix.live/api/public/leaderboard?platform=kick&user=xtroet');
 
 /**
- * watchtime arrives as a raw seconds count, so it is formatted properly:
- * 12365 → "3h 26m 5s", and anything past a day keeps going ("8d 14h 5m").
+ * Botrix sends `watchtime` in MINUTES (1 point is earned per minute watched,
+ * so watchtime == points for pure watchers). Everything below works in
+ * seconds, so the values are converted once, right here at the boundary.
+ * (Bug history: treating minutes as seconds shrank every duration 60x —
+ * the #1 legend showed "15h 25m" instead of the true "38d 13h 40m".)
  */
 const formatDuration = (seconds: number): string => {
   const total = Math.max(0, Math.floor(seconds || 0));
@@ -34,7 +37,7 @@ const formatDurationShort = (seconds: number): string => {
   const d = Math.floor(total / 86400);
   const h = Math.floor((total % 86400) / 3600);
   const m = Math.floor((total % 3600) / 60);
-  if (d > 0) return `${d}d ${h}h`;
+  if (d > 0) return `${d}d ${h}h ${m}m`;
   if (h > 0) return `${h}h ${m}m`;
   return `${m}m`;
 };
@@ -72,7 +75,9 @@ const BotrixLeaderboard: React.FC<BotrixLeaderboardProps> = ({ lang }) => {
       .then((json: BotrixEntry[]) => {
         if (cancelled) return;
         // Guard the shape: one bad row must not blank the whole board.
-        setData(Array.isArray(json) ? json.filter((e) => e && typeof e.name === 'string') : []);
+        // NOTE: Botrix watchtime is minutes → convert to seconds once here.
+        const rows = Array.isArray(json) ? json.filter((e) => e && typeof e.name === 'string') : [];
+        setData(rows.map((e) => ({ ...e, watchtime: (e.watchtime || 0) * 60 })));
       })
       .catch(() => { if (!cancelled) setData([]); });
     return () => { cancelled = true; };
