@@ -1,4 +1,4 @@
-import { env, adminUserIds } from '../config.js';
+import { env } from '../config.js';
 import { fetchLeaderboard, fetchPosition, findMemberByUsername, setPoints } from '../db/repo.js';
 import { getLogger } from '../logger.js';
 import { computeProgress, messages } from '../messages.js';
@@ -24,6 +24,9 @@ export {
   type CommandMatch,
 } from './command-parser.js';
 
+/** The single owner allowed to run admin commands. */
+const OWNER_USERNAME = 'xtroet';
+
 export interface CommandDeps {
   channelId: number;
   broadcasterUserId: number;
@@ -43,7 +46,6 @@ export interface CommandDeps {
 export class Commands {
   private userCooldown: CooldownMap;
   private globalCooldown: CooldownMap;
-  private admins: Set<number>;
   private deps: CommandDeps;
   private e = env();
 
@@ -52,16 +54,17 @@ export class Commands {
     this.userCooldown = new CooldownMap(this.e.COMMAND_COOLDOWN_SECONDS * 1000);
     // One global slot: rate limit for the whole channel.
     this.globalCooldown = new CooldownMap(this.e.GLOBAL_COMMAND_COOLDOWN_MS);
-    this.admins = adminUserIds(this.e);
   }
 
-  /** Broadcaster, an id in ADMIN_USER_IDS, or a badge from the event payload. */
+  /**
+   * ONLY xtroet (the owner) may run admin commands.
+   *
+   * No moderators, no ADMIN_USER_IDS list, no broadcaster badge: the name
+   * check is case-insensitive (normalizeArabic lowercases), so `XTROET`,
+   * `xtroet` and `@xtroet` all match — and nobody else ever does.
+   */
   isAdmin(msg: NormalizedMessage): boolean {
-    return (
-      msg.userId === this.deps.broadcasterUserId ||
-      this.admins.has(msg.userId) ||
-      msg.isBroadcaster
-    );
+    return normalizeArabic(msg.username) === OWNER_USERNAME;
   }
 
   /** Returns true when the message was a known command (answered or ignored). */

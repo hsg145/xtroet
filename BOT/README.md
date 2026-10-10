@@ -43,9 +43,9 @@ browser, find `"chatroom":{"id":NUMBER`, and put that number in `.env` as
 | `!توب` | top 5 on the leaderboard |
 | `!رتب` | the full rank ladder |
 | `!حالة` | bot status |
-| `!addpts <name> <n>` | add points (owner/admin only) |
-| `!setpts <name> <n>` | set points, may be negative (owner/admin only) |
-| `!تصفير <name>` | reset a user to zero (owner/admin only) |
+| `!addpts <name> <n>` | add points (xtroet only) |
+| `!setpts <name> <n>` | set points, may be negative (xtroet only) |
+| `!تصفير <name>` | reset a user to zero (xtroet only) |
 
 Each normal chat message is worth +1 point, subject to
 `POINTS_COOLDOWN_SECONDS` (default 10s).
