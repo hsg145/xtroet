@@ -4,7 +4,17 @@ import React, { useEffect, useState, useCallback } from 'react';
  * Police Ranks Counter — لوحة الرتب على الموقع.
  * أي زائر يكتب اسمه فينزل على اللوحة مباشرة (يتسجل بـ /api/leaderboard).
  * الهوية البصرية: أزرق Tavern/الشرطة — بانر + لوقو + تدرّجات سماوية.
+ *
+ * الأقسام: البحث ← سلم الرتب (بادج + اسم + نقاط لكل رتبة) ← منصة التوب 3 ← باقي اللوحة.
  */
+
+type RankDef = {
+    idx: number;
+    name_ar: string;
+    name_en: string;
+    emoji: string;
+    min_points: number;
+};
 
 type Entry = {
     rank: number;
@@ -17,6 +27,7 @@ type Entry = {
     emoji?: string;
     next_at?: { points: number } | null;
     avatar?: string;
+    verified?: boolean;
 };
 
 /** نتيجة البحث عن شخص واحد */
@@ -40,21 +51,182 @@ type Profile = {
 
 const BLUE = '#1E6FFF';
 const BLUE_HI = '#5AA9FF';
-const ICE = '#CFE4FF';
 const NAVY = '#040C1C';
 
 const nf = (n: number) => n.toLocaleString('en-US');
 
-/** لون الرتبة حسب المستوى — أزرق كله بدرجات، كل ما علّى زاد الوهج. القمة (13+) ذهبية. */
-function rankColor(idx: number) {
-    if (idx >= 13) return '#FFD166';
-    if (idx >= 11) return '#E6F0FF';
-    if (idx >= 6) return BLUE_HI;
-    return BLUE;
+/* ── هوية كل طبقة: لون + حلقة + توهج ─────────────────────────── */
+type Tier = { color: string; ring: string; glow: string; bar: string };
+
+function tier(idx: number): Tier {
+    if (idx >= 14)
+        return {
+            color: '#FFD166',
+            ring: 'conic-gradient(from 200deg,#FFE9A8,#FFD166,#B97A0B,#FFE9A8,#FFD166)',
+            glow: 'rgba(255,209,102,0.55)',
+            bar: 'linear-gradient(to right,#FFE9A8,#FFD166,#B97A0B)',
+        };
+    if (idx === 13)
+        return {
+            color: '#E8EEF7',
+            ring: 'conic-gradient(from 200deg,#FFFFFF,#C9D4E8,#7E8CA3,#FFFFFF,#C9D4E8)',
+            glow: 'rgba(232,238,247,0.45)',
+            bar: 'linear-gradient(to right,#FFFFFF,#C9D4E8,#7E8CA3)',
+        };
+    if (idx >= 11)
+        return {
+            color: '#9BE7FF',
+            ring: 'conic-gradient(from 200deg,#D9F6FF,#9BE7FF,#1E6FFF,#D9F6FF,#9BE7FF)',
+            glow: 'rgba(155,231,255,0.5)',
+            bar: 'linear-gradient(to right,#9BE7FF,#1E6FFF,#0B4FBF)',
+        };
+    if (idx >= 9)
+        return {
+            color: '#FF9AA0',
+            ring: 'conic-gradient(from 200deg,#FFC9CD,#FF8A8A,#B33A3A,#FFC9CD,#FF8A8A)',
+            glow: 'rgba(255,138,138,0.45)',
+            bar: 'linear-gradient(to right,#FF8A8A,#B33A3A)',
+        };
+    if (idx === 8)
+        return {
+            color: '#7AD9FF',
+            ring: 'conic-gradient(from 200deg,#D9F6FF,#7AD9FF,#0B7FBF,#D9F6FF,#7AD9FF)',
+            glow: 'rgba(122,217,255,0.45)',
+            bar: 'linear-gradient(to right,#7AD9FF,#0B7FBF)',
+        };
+    if (idx >= 6)
+        return {
+            color: '#FFB86B',
+            ring: 'conic-gradient(from 200deg,#FFE0B3,#FFB86B,#B35A0B,#FFE0B3,#FFB86B)',
+            glow: 'rgba(255,184,107,0.45)',
+            bar: 'linear-gradient(to right,#FFB86B,#B35A0B)',
+        };
+    if (idx >= 3)
+        return {
+            color: BLUE_HI,
+            ring: `conic-gradient(from 200deg,#CFE4FF,${BLUE_HI},#0B4FBF,#CFE4FF,${BLUE_HI})`,
+            glow: 'rgba(90,169,255,0.5)',
+            bar: `linear-gradient(to right,${BLUE_HI},${BLUE},#0B4FBF)`,
+        };
+    return {
+        color: '#9AA7BD',
+        ring: 'conic-gradient(from 200deg,#E2E8F0,#9AA7BD,#4A5568,#E2E8F0,#9AA7BD)',
+        glow: 'rgba(154,167,189,0.4)',
+        bar: 'linear-gradient(to right,#9AA7BD,#4A5568)',
+    };
 }
+
+/** لون الرتبة حسب المستوى — للشارات الصغيرة. */
+function rankColor(idx: number) {
+    return tier(idx).color;
+}
+
+/* ── بادج الرتبة: إيموجي + اسم بألوان الطبقة ─────────────────── */
+const RankBadge: React.FC<{ emoji?: string; name: string; idx: number; big?: boolean }> = ({ emoji, name, idx, big }) => {
+    const t = tier(idx);
+    return (
+        <span
+            className={`inline-flex items-center gap-1.5 rounded-full border font-black ${big ? 'px-3.5 py-1.5 text-xs' : 'px-2.5 py-1 text-[11px]'}`}
+            style={{ borderColor: `${t.color}66`, background: `${t.color}1F`, color: t.color, boxShadow: `0 0 14px -4px ${t.glow}` }}
+        >
+            <span aria-hidden="true">{emoji}</span>
+            <span dir="auto">{name}</span>
+        </span>
+    );
+};
+
+/* ── الصورة الشخصية بحلقة متدرجة حسب الطبقة ──────────────────── */
+const Avatar: React.FC<{ src?: string; name: string; idx: number; size: string; glow?: boolean }> = ({ src, name, idx, size, glow }) => {
+    const t = tier(idx);
+    return (
+        <span className="relative block shrink-0">
+            {glow && <span className="absolute -inset-2 rounded-full blur-xl animate-pulse" style={{ background: t.glow }} aria-hidden="true" />}
+            <span className={`relative block rounded-full p-[3px] ${size}`} style={{ background: t.ring, boxShadow: `0 0 26px -4px ${t.glow}` }}>
+                {src
+                    ? <img src={src} alt={name} loading="lazy" className="w-full h-full rounded-full object-cover bg-black" />
+                    : <span className="w-full h-full rounded-full bg-[#0A1A38] flex items-center justify-center font-black text-[#5AA9FF]">{(name || '?').charAt(0).toUpperCase()}</span>}
+            </span>
+        </span>
+    );
+};
+
+/* ── سلم الرتب: بطاقة لكل رتبة بالترتيب ──────────────────────── */
+const RankLadder: React.FC<{ ranks: RankDef[]; ar: boolean; title: string; sub: string; pts: string }> = ({ ranks, ar, title, sub, pts }) => {
+    if (ranks.length === 0) return null;
+    const ordered = [...ranks].sort((a, b) => a.min_points - b.min_points);
+    return (
+        <div className="mt-7">
+            <div className="flex items-center justify-center gap-2">
+                <span aria-hidden="true">🎖️</span>
+                <h4 className="text-base sm:text-lg font-black text-white">{title}</h4>
+                <span className="rounded-full border border-[#1E6FFF]/30 bg-[#1E6FFF]/10 px-2 py-0.5 text-[10px] font-black text-[#CFE4FF]" dir="ltr">
+                    {ordered.length}
+                </span>
+            </div>
+            <p className="mt-1 text-center text-[11px] text-white/40 font-medium">{sub}</p>
+            <div className="mt-3 flex gap-2.5 overflow-x-auto pb-3 pt-1 px-1 snap-x" dir="ltr" style={{ scrollbarWidth: 'thin' }}>
+                {ordered.map((r) => {
+                    const t = tier(r.idx);
+                    return (
+                        <div
+                            key={r.idx}
+                            className="snap-start shrink-0 w-[118px] rounded-2xl border bg-white/[0.03] p-3 text-center transition-transform duration-300 hover:-translate-y-1"
+                            style={{ borderColor: `${t.color}44`, boxShadow: `0 8px 24px -12px ${t.glow}` }}
+                        >
+                            <div className="h-1 w-10 mx-auto rounded-full" style={{ background: t.bar }} />
+                            <p className="mt-2 text-3xl leading-none" aria-hidden="true">{r.emoji}</p>
+                            <p className="mt-2 truncate text-[12px] font-black text-white" dir="auto" title={ar ? r.name_ar : r.name_en}>
+                                {ar ? r.name_ar : r.name_en}
+                            </p>
+                            <p className="mt-1.5 inline-block rounded-lg px-2 py-0.5 text-[10px] font-black" dir="ltr"
+                                style={{ background: `${t.color}1A`, color: t.color }}>
+                                {nf(r.min_points)} {pts}
+                            </p>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+/* ── عمود واحد في منصة التتويج ──────────────────────────────── */
+const PodiumPlace: React.FC<{
+    entry: Entry; place: 1 | 2 | 3; ar: boolean; pts: string;
+}> = ({ entry, place, ar, pts }) => {
+    const t = tier(entry.rank_idx);
+    const first = place === 1;
+    const medal = place === 1 ? '👑' : place === 2 ? '🥈' : '🥉';
+    const baseH = first ? 'h-16 sm:h-20' : place === 2 ? 'h-10 sm:h-12' : 'h-6 sm:h-8';
+    return (
+        <div className="flex flex-col items-center min-w-0 flex-1 max-w-[190px]">
+            {first && <span className="text-2xl sm:text-3xl animate-bounce" aria-hidden="true">👑</span>}
+            <div className={first ? '-mt-1' : 'mt-7 sm:mt-8'}>
+                <Avatar src={entry.avatar} name={entry.name} idx={entry.rank_idx} glow={first}
+                    size={first ? 'w-20 h-20 sm:w-28 sm:h-28 text-3xl' : 'w-14 h-14 sm:w-20 sm:h-20 text-xl'} />
+            </div>
+            <p className="mt-1 text-sm" aria-hidden="true">{medal}</p>
+            <p className={`mt-0.5 w-full truncate text-center font-black text-white ${first ? 'text-base sm:text-xl' : 'text-xs sm:text-sm'}`}
+                dir="auto" title={entry.name}>
+                {entry.name}
+            </p>
+            <div className="mt-1.5">
+                <RankBadge emoji={entry.emoji} name={ar ? (entry.rank_ar ?? '') : (entry.rank_en ?? '')} idx={entry.rank_idx} big={first} />
+            </div>
+            <p className={`mt-1.5 font-black ${first ? 'text-sm sm:text-base text-[#FFD166]' : 'text-[11px] sm:text-xs text-[#CFE4FF]'}`} dir="ltr">
+                {nf(entry.points)} {pts}
+            </p>
+            <div className={`mt-2 w-full rounded-t-xl border-x border-t ${baseH} flex items-start justify-center pt-1`}
+                style={{ borderColor: `${t.color}55`, background: `linear-gradient(to bottom, ${t.color}55, ${t.color}11)` }}>
+                <span className="text-[11px] sm:text-xs font-black" style={{ color: t.color }} dir="ltr">#{place}</span>
+            </div>
+        </div>
+    );
+};
 
 export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
     const [entries, setEntries] = useState<Entry[] | null>(null);
+    const [ranks, setRanks] = useState<RankDef[]>([]);
     const [name, setName] = useState('');
     const [searching, setSearching] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
@@ -67,6 +239,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             const r = await fetch('/api/leaderboard');
             const j = await r.json();
             setEntries(Array.isArray(j.entries) ? j.entries : []);
+            setRanks(Array.isArray(j.ranks) ? j.ranks : []);
         } catch {
             setEntries([]);
         }
@@ -106,8 +279,8 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
         }
     };
 
-    const top = entries?.[0];
-    const rest = entries?.slice(1) ?? [];
+    const [first, second, third] = [entries?.[0], entries?.[1], entries?.[2]];
+    const rest = entries?.slice(3) ?? [];
     const maxPoints = Math.max(1, ...(entries ?? []).map((e) => e.points));
 
     const t = {
@@ -120,7 +293,9 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
         members: ar ? 'عضو' : 'members',
         pts: ar ? 'نقطة' : 'PTS',
         noData: ar ? 'اللوحة فاضية — البوت لسّه ما سجّل أحد' : 'Board is empty — no points recorded yet',
-        top: ar ? 'المتصدر' : 'TOP',
+        top3: ar ? 'منصة الأبطال' : 'Top 3',
+        ladder: ar ? 'سلم الرتب' : 'Rank Ladder',
+        ladderSub: ar ? 'كل رتبة وبادجها وعدد نقاطها — من كاديت إلى الوزير' : 'Every rank, its badge and required points — from Cadet to Minister',
         toNext: ar ? 'للرتبة الجاية' : 'to next rank',
         emptyName: ar ? 'مافي اسم' : 'No name',
         msgs: ar ? 'رسالة' : 'msgs',
@@ -264,17 +439,12 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                         <div className="relative p-5 flex flex-col sm:flex-row items-center gap-5 text-center sm:text-start">
                             {/* الصورة من Kick */}
                             <div className="relative shrink-0">
-                                <span className="absolute -inset-1.5 rounded-full bg-[#1E6FFF]/40 blur-xl animate-pulse" aria-hidden="true" />
-                                <span className="relative block w-20 h-20 rounded-full p-[3px]" style={{ background: `conic-gradient(from 200deg,#5AA9FF,#1E6FFF,#CFE4FF,#1E6FFF,#5AA9FF)`, boxShadow: '0 0 30px rgba(30,111,255,0.6)' }}>
-                                    {profile.avatar
-                                        ? <img src={profile.avatar} alt={profile.display} className="w-full h-full rounded-full object-cover bg-black" />
-                                        : <span className="w-full h-full rounded-full bg-[#040C1C] flex items-center justify-center text-2xl font-black text-[#5AA9FF]">{(profile.display || '?').charAt(0).toUpperCase()}</span>}
-                                </span>
+                                <Avatar src={profile.avatar} name={profile.display} idx={profile.rank_idx} size="w-20 h-20 text-2xl" glow />
                             </div>
 
                             <div className="min-w-0 flex-1 w-full">
                                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
-                                    <p className="text-xl sm:text-2xl font-black text-white truncate" dir="ltr">
+                                    <p className="text-xl sm:text-2xl font-black text-white truncate" dir="ltr" title={profile.display}>
                                         {profile.display}
                                     </p>
                                     {profile.verified && (
@@ -286,17 +456,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
 
                                 {/* شارة الرتبة */}
                                 <div className="mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                                    <span
-                                        className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-black"
-                                        style={{
-                                            borderColor: `${rankColor(profile.rank_idx)}66`,
-                                            background: `${rankColor(profile.rank_idx)}1F`,
-                                            color: rankColor(profile.rank_idx),
-                                        }}
-                                    >
-                                        <span aria-hidden="true">{profile.emoji}</span>
-                                        <span dir="auto">{ar ? profile.rank_ar : profile.rank_en}</span>
-                                    </span>
+                                    <RankBadge emoji={profile.emoji} name={ar ? profile.rank_ar : profile.rank_en} idx={profile.rank_idx} big />
                                     {profile.position != null && (
                                         <span className="inline-flex items-center gap-1.5 rounded-full border border-[#1E6FFF]/30 bg-[#1E6FFF]/10 px-3 py-1.5 text-[11px] font-black text-[#CFE4FF]" dir="ltr">
                                             {t.yourRank} #{profile.position}
@@ -345,37 +505,25 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                     </div>
                 )}
 
-                {/* ── المتصدر ── */}
-                {top && (
-                    <div className="mt-7 relative overflow-hidden rounded-3xl border border-[#1E6FFF]/35 bg-gradient-to-b from-[#0A1A38]/90 to-transparent">
-                        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#5AA9FF] to-transparent" aria-hidden="true" />
-                        <div className="relative flex flex-col items-center p-5">
-                            <span className="text-[10px] font-black tracking-[0.3em] text-[#5AA9FF]" dir="ltr">{t.top}</span>
-                            <div className="mt-3 relative">
-                                <span className="absolute -inset-2 rounded-full bg-[#1E6FFF]/40 blur-xl animate-pulse" aria-hidden="true" />
-                                <span className="relative block w-20 h-20 rounded-full p-[3px]" style={{ background: `conic-gradient(from 200deg,#5AA9FF,#1E6FFF,#CFE4FF,#1E6FFF,#5AA9FF)`, boxShadow: '0 0 34px rgba(30,111,255,0.65)' }}>
-                                    {top.avatar
-                                        ? <img src={top.avatar} alt={top.name} className="w-full h-full rounded-full object-cover bg-black" />
-                                        : <span className="w-full h-full rounded-full bg-[#040C1C] flex items-center justify-center text-2xl font-black text-[#5AA9FF]">{(top.name || '?').charAt(0).toUpperCase()}</span>}
-                                </span>
-                                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-lg border border-white/30 bg-[#040C1C] px-2 py-0.5 text-[10px] font-black text-[#5AA9FF]" dir="ltr">#1</span>
-                            </div>
-                            <p className="mt-3 text-xl font-black text-white" dir="auto">{top.name}</p>
-                            <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                                <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-black"
-                                    style={{ borderColor: `${rankColor(top.rank_idx)}66`, background: `${rankColor(top.rank_idx)}1F`, color: rankColor(top.rank_idx) }}>
-                                    <span aria-hidden="true">{top.emoji}</span>
-                                    <span dir="auto">{ar ? top.rank_ar : top.rank_en}</span>
-                                </span>
-                                <span className="rounded-full border border-[#1E6FFF]/30 bg-[#1E6FFF]/10 px-2.5 py-1 text-[11px] font-black text-[#CFE4FF]" dir="ltr">
-                                    {nf(top.points)} {t.pts}
-                                </span>
-                            </div>
+                {/* ── سلم الرتب: البادج + الاسم + النقاط لكل رتبة ── */}
+                <RankLadder ranks={ranks} ar={ar} title={t.ladder} sub={t.ladderSub} pts={t.pts} />
+
+                {/* ── منصة التوب 3: الأول وسط فوق، الثاني يمين، الثالث يسار ── */}
+                {first && (
+                    <div className="mt-7">
+                        <div className="flex items-center justify-center gap-2">
+                            <span aria-hidden="true">🏆</span>
+                            <h4 className="text-base sm:text-lg font-black text-white">{t.top3}</h4>
+                        </div>
+                        <div dir="ltr" className="mt-4 flex items-end justify-center gap-1.5 sm:gap-4">
+                            {third && <PodiumPlace entry={third} place={3} ar={ar} pts={t.pts} />}
+                            <PodiumPlace entry={first} place={1} ar={ar} pts={t.pts} />
+                            {second && <PodiumPlace entry={second} place={2} ar={ar} pts={t.pts} />}
                         </div>
                     </div>
                 )}
 
-                {/* ── الباقي ── */}
+                {/* ── الباقي (من الرابع) ── */}
                 <div className="mt-4 space-y-2">
                     {entries === null && Array.from({ length: 5 }).map((_, i) => (
                         <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/[0.02] p-3 animate-pulse" style={{ animationDelay: `${i * 70}ms` }}>
@@ -391,9 +539,9 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                         <p className="py-10 text-center text-sm text-white/35 font-medium">{t.noData}</p>
                     )}
 
-                    {rest.map((e, idx) => {
+                    {rest.map((e) => {
                         const pct = Math.max(6, Math.round((e.points / maxPoints) * 100));
-                        const rc = rankColor(e.rank_idx);
+                        const tc = tier(e.rank_idx);
                         return (
                             <div
                                 key={`${e.name}-${e.rank}`}
@@ -403,15 +551,11 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                                     <span className="w-8 h-8 shrink-0 rounded-xl border border-[#1E6FFF]/25 bg-[#1E6FFF]/10 flex items-center justify-center text-[11px] font-black text-[#CFE4FF]" dir="ltr">
                                         {e.rank < 10 ? `0${e.rank}` : e.rank}
                                     </span>
-                                    <span className="relative w-10 h-10 shrink-0 rounded-full p-[2px]" style={{ background: `linear-gradient(135deg,${rc},#040C1C)` }}>
-                                        {e.avatar
-                                            ? <img src={e.avatar} alt={e.name} loading="lazy" className="w-full h-full rounded-full object-cover bg-black" />
-                                            : <span className="w-full h-full rounded-full bg-[#0A1A38] flex items-center justify-center text-sm font-black text-[#5AA9FF]">{(e.name || '?').charAt(0).toUpperCase()}</span>}
-                                    </span>
+                                    <Avatar src={e.avatar} name={e.name} idx={e.rank_idx} size="w-10 h-10 text-sm" />
                                     <div className="min-w-0 flex-1">
-                                        <p className="truncate text-sm font-black text-white/90" dir="auto">{e.name}</p>
-                                        <p className="mt-0.5 flex items-center gap-1.5 text-[10px] font-bold text-white/40">
-                                            <span style={{ color: rc }}><span aria-hidden="true">{e.emoji}</span> <span dir="auto">{ar ? e.rank_ar : e.rank_en}</span></span>
+                                        <p className="truncate text-sm font-black text-white/90" dir="auto" title={e.name}>{e.name}</p>
+                                        <p className="mt-1">
+                                            <RankBadge emoji={e.emoji} name={ar ? (e.rank_ar ?? '') : (e.rank_en ?? '')} idx={e.rank_idx} />
                                         </p>
                                     </div>
                                     <span className="shrink-0 rounded-xl border border-[#1E6FFF]/25 bg-[#1E6FFF]/10 px-2.5 py-1.5 text-[11px] font-black text-[#CFE4FF]" dir="ltr">
@@ -420,7 +564,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                                 </div>
                                 <div className="mt-2 ms-11 h-1 overflow-hidden rounded-full bg-white/[0.06]">
                                     <div className="police-bar h-full rounded-full"
-                                        style={{ width: `${pct}%`, background: `linear-gradient(to right,${BLUE_HI},${BLUE},#0B4FBF)` }} />
+                                        style={{ width: `${pct}%`, background: tc.bar }} />
                                 </div>
                             </div>
                         );

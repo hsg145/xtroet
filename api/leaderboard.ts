@@ -72,6 +72,52 @@ function rankFor(ranks: Awaited<ReturnType<typeof loadRanks>>, points: number) {
   };
 }
 
+/** صورة Kick + التوثيق لاسم واحد — مع مهلة حتى لا تعلق الحافة. */
+async function kickIdentity(name: string): Promise<{ avatar: string; verified: boolean }> {
+  try {
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 4000);
+    try {
+      const r = await fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(name)}`, {
+        headers: { Accept: 'application/json', 'User-Agent': 'Mozilla/5.0' },
+        signal: ctl.signal,
+      });
+      if (!r.ok) return { avatar: '', verified: false };
+      const j = await r.json();
+      const d = j?.data ?? j;
+      return {
+        avatar: (d?.user?.profile_pic as string) ?? '',
+        verified: d?.verified === true,
+      };
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch {
+    return { avatar: '', verified: false };
+  }
+}
+
+/**
+ * يملأ صور المتصدرين الأوائل فقط (10) بدفعات متوازية محدودة —
+ * حتى تبقى استجابة الـ Edge سريعة. الباقي يظهر بالحرف الأول.
+ */
+async function fillTopAvatars(entries: Array<{ name: string }>): Promise<Array<{ avatar: string; verified: boolean }>> {
+  const TOP_N = 10;
+  const CONC = 5;
+  const top = entries.slice(0, TOP_N);
+  const out: Array<{ avatar: string; verified: boolean }> = new Array(entries.length)
+    .fill(null)
+    .map(() => ({ avatar: '', verified: false }));
+  for (let i = 0; i < top.length; i += CONC) {
+    const chunk = top.slice(i, i + CONC);
+    const res = await Promise.all(chunk.map((e) => kickIdentity(e.name)));
+    res.forEach((r, k) => {
+      out[i + k] = r;
+    });
+  }
+  return out;
+}
+
 export default async function handler(request: Request) {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -209,7 +255,11 @@ export default async function handler(request: Request) {
       };
     });
 
-    return json({ entries }, 200, true);
+    // صور Kick للمتصدرين الأوائل + سلم الرتب الكامل (مصدر واحد من قاعدة البوت)
+    const identities = await fillTopAvatars(entries);
+    const withAvatars = entries.map((e, i) => ({ ...e, ...identities[i] }));
+
+    return json({ entries: withAvatars, ranks }, 200, true);
   } catch (e: any) {
     return json({ entries: [], error: String(e?.message || e).slice(0, 140) }, 200, true);
   }
