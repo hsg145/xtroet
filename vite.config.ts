@@ -412,6 +412,40 @@ export default defineConfig(({ mode }) => {
               }
               return;
             }
+            if (req.url && req.url.startsWith('/api/admin')) {
+              // ---- /api/admin : نفس معالج api/admin.ts الحقيقي محلياً ----
+              const botEnv = parseEnvFile(path.resolve(__dirname, 'BOT/.env'));
+              const injected: Record<string, string | undefined> = {};
+              for (const [k, v] of Object.entries({ ...env, ...botEnv })) {
+                injected[k] = process.env[k];
+                process.env[k] = String(v);
+              }
+              try {
+                const mod: any = await import(pathToFileURL(path.resolve(__dirname, 'api/admin.ts')).href);
+                const chunks: Buffer[] = [];
+                for await (const c of req) chunks.push(c as Buffer);
+                const body = Buffer.concat(chunks).toString('utf8');
+                const request = new Request(`http://${req.headers.host || 'localhost:3000'}${req.url}`, {
+                  method: req.method,
+                  headers: { 'content-type': 'application/json', ...(req.headers as Record<string, string>) },
+                  body: req.method === 'GET' || req.method === 'HEAD' ? undefined : body,
+                });
+                const response: Response = await mod.default(request);
+                res.statusCode = response.status;
+                response.headers.forEach((v, k) => res.setHeader(k, v));
+                res.end(Buffer.from(await response.arrayBuffer()));
+              } catch (e: any) {
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 500;
+                res.end(JSON.stringify({ error: `local admin failed: ${e?.message || e}` }));
+              } finally {
+                for (const [k, v] of Object.entries(injected)) {
+                  if (v === undefined) delete process.env[k];
+                  else process.env[k] = v;
+                }
+              }
+              return;
+            }
             if (req.url && req.url.startsWith('/api/leaderboard')) {
               // ---- /api/leaderboard : نفس ملف api/leaderboard.ts الحقيقي (بدون نسخة من الكود) ----
               // المتغيرات: جذر .env ثم BOT/.env (فوقه) عشان *__BOT توصل للـ handler.

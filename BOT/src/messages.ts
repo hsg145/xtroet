@@ -263,6 +263,47 @@ export const messages = {
 
   /** إعلان انتهاء البث — البوابة انغلقت والنقاط توقفت. */
   liveEnded: (): string => toSingleLine('⚫ البث خلص — النقاط توقفت لحد ما يفتح بث جديد'),
+
+  // ── تحدي رايس ───────────────────────────────────────────────
+
+  /** إعلان افتتاح التحدي — يطلع أول ما ينشئه الأدمن. */
+  challengeStarted: (challenger: string): string =>
+    toSingleLine(`⚔️ تحدي رايس بدأ — @${safeUsername(challenger, 18)} ضد الشات كله!`),
+
+  /** إعلان الكلمة العشوائية — أهم رسالة، الناس لازم تشوفها واضحة. */
+  challengeKeyword: (challenger: string, keyword: string, collected = 0): string =>
+    toSingleLine(
+      `🔑 اكتبوا كلمة واحدة في الشات: ${keyword} — أول واحد يكتبها يسجّل 🔥 الحالي ${formatNumber(collected)}`,
+    ),
+
+  /** تأكيد لأحد كتب الكلمة (مع بدايات وأخوات). */
+  challengeEntry: (username: string, collected: number): string =>
+    toSingleLine(`✅ @${safeUsername(username, 14)} سجّل 🔥 ${formatNumber(collected)}`),
+
+  /** الشات ربح. */
+  challengeChatWon: (challenger: string): string =>
+    toSingleLine(`🎉 الشات كسب ضد @${safeUsername(challenger, 18)}`),
+
+  /** المتحدي ربح. */
+  challengeChallengerWon: (challenger: string): string =>
+    toSingleLine(`😎 @${safeUsername(challenger, 18)} كسب على الشات كله`),
+
+  /** تم توزيع النقاط على كل من كتب الكلمة. */
+  challengeDistributed: (amount: number, count: number): string =>
+    toSingleLine(
+      `🎁 وُزّعت ${formatNumber(amount)} نقطة على ${formatNumber(count)} واحد — ثبّتوا رتبتكم!`,
+    ),
+
+  /** تربل — مضاعفة النقاط لمدة. */
+  challengeDouble: (minutes: number): string =>
+    toSingleLine(`⚡ تربل! نقاطكم مضاعفة ×2 لمدة ${formatNumber(minutes)} دقيقة`),
+
+  /** تخريب — نص نقطة على الرسالة لمدة. */
+  challengeSabotage: (minutes: number): string =>
+    toSingleLine(`💥 تخريب! كل رسالة صارت نص نقطة ×0.5 لمدة ${formatNumber(minutes)} دقيقة`),
+
+  /** ما فيه شيء. */
+  challengeNothing: (): string => toSingleLine('😐 ما صار شيء — الشات ما نال شي'),
 };
 
 /**

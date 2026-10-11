@@ -2,6 +2,7 @@ import { env } from '../config.js';
 import { getLogger } from '../logger.js';
 import { messages } from '../messages.js';
 import type { NormalizedMessage } from '../kick/types.js';
+import type { ChallengeState } from './challenge.js';
 import type { Commands } from './commands.js';
 import type { GateVerdict, LiveGate } from './livestate.js';
 import type { PointsEngine, PromoProvider } from './points.js';
@@ -25,6 +26,11 @@ export interface RouterDeps {
    * الأساسية هي: لا نقاط إلا أثناء بث موثّق.
    */
   live: LiveGate;
+  /**
+   * تحدي رايس. اختياري: تحدي مفعّل يوقف احتساب النقاط على رسالة الكلمة
+   * ويسجّل صاحبها. غيابه لا يوقف البوت — بس ما يصير في تحدي.
+   */
+  challenge?: ChallengeState;
 }
 
 /**
@@ -50,6 +56,14 @@ export class MessageRouter {
       // earn points.
       if (this.deps.sender.isOwnMessage(msg.messageId)) return;
 
+      // ── كلمة التحدي ─────────────────────────────────────────
+      // قبل الأوامر وقبل احتساب النقاط: الكلمة المعلنة ما هي أمر، ولا
+      // يستاهل واحد يصير عنده نقطةextra لمجرد إنه ردّ على إعلان.
+      if (this.deps.challenge?.isKeywordAttempt(msg.content)) {
+        await this.collectChallengeKeyword(msg);
+        return;
+      }
+
       const isCommand = msg.content.trim().startsWith(this.e.COMMAND_PREFIX);
       if (isCommand) {
         log.debug({ user: msg.username, command: msg.content.slice(0, 20) }, 'command received');
@@ -67,6 +81,20 @@ export class MessageRouter {
     } catch (err) {
       log.error({ err, user: msg.username }, 'router failed (caught)');
     }
+  }
+
+/**
+   * سجّل محاولة كتابة كلمة التحدي.
+   *
+   * المحاولة الأولى نناديه في الشات عشان الناس تعرف إنها انقبلت وترجع
+   * تكتب ثانية. الإعادة بتتجاهل بصمت — ما أحد يبي spam.
+   */
+  private async collectChallengeKeyword(msg: NormalizedMessage): Promise<void> {
+    const state = this.deps.challenge;
+    if (!state) return;
+    const result = await state.collect(msg.userId, msg.username);
+    if (result !== 'first') return;
+    this.deps.sender.send(messages.challengeEntry(msg.username, state.snapshot().collected), 'low');
   }
 
   private async award(msg: NormalizedMessage): Promise<void> {

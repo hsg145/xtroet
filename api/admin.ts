@@ -592,6 +592,218 @@ export default async function handler(req: Request) {
       return json({ ok: true });
     }
 
+    /* ══════════════════════════════════════════════════════════
+     *  تحدي رايس — شخص واحد ضد الشات كله
+     * ══════════════════════════════════════════════════════════ */
+
+    const CHALLENGE_COLS =
+      'id,channel_id,challenger,status,winner,keyword,reward_kind,reward_amount,reward_minutes,note,started_at,ended_at,collected_at,applied_at';
+
+    const REWARD_KINDS = ['none', 'distribute', 'double', 'sabotage'];
+
+    /** يقرأ التحدي الجارِ أو آخر واحد، مع عدد اللي كتبوا. */
+    if (action === 'challenge_get') {
+      const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
+      if (!ch) return json({ error: 'no_channel' }, 500);
+
+      const rows = (await sbJson(
+        url,
+        key,
+        `challenges?channel_id=eq.${ch.id}&select=${CHALLENGE_COLS}&order=id.desc&limit=1`,
+      ).catch(() => [])) as any[];
+      const challenge = rows[0] ?? null;
+
+      let entries: any[] = [];
+      let count = 0;
+      if (challenge) {
+        entries = (await sbJson(
+          url,
+          key,
+          `challenge_entries?challenge_id=eq.${challenge.id}&select=kick_user_id,username,collected_at&order=collected_at.desc&limit=300`,
+        ).catch(() => [])) as any[];
+        count = entries.length;
+      }
+
+      return json({
+        challenge,
+        entries,
+        count,
+        // الكلمات معروضة للأدمن — البوت يختار واحدة عشوائي عند الإنشاء،
+        // والأدمن يشوفها بس للحسابات لا أكثر.
+        keywords: ['!MT', '!ناصر', '!PM', '!دخول'],
+        channel: ch,
+      });
+    }
+
+    /* ── ابدأ تحدي جديد ── */
+    if (action === 'challenge_create') {
+      const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
+      if (!ch) return json({ error: 'no_channel' }, 500);
+
+      // في تحدي جارٍ؟ الفهرس الجزئي في القاعدة يمنع اثنين، بس نتحقق
+      // هنا كمان عشان نرجع رسالة مفهومة بدل 500 من Postgres.
+      const active = (await sbJson(
+        url,
+        key,
+        `challenges?channel_id=eq.${ch.id}&status=in.(running,collecting)&select=id`,
+      ).catch(() => [])) as any[];
+      if (active?.length) return json({ error: 'challenge_already_running' }, 409);
+
+      const challenger = String(body.challenger || '').trim().replace(/^@/, '');
+      if (challenger.length < 2 || challenger.length > 24) return json({ error: 'bad_challenger' }, 400);
+
+      // الكلمة عشوائية من القائمة — البوت ما يختارها، عشان ما أحد يقدر
+      // يقراها من الداشبورد ويكسل ويكتبها قبل الناس.
+      const WORDS = ['!MT', '!ناصر', '!PM', '!دخول'];
+      const keyword = WORDS[Math.floor(Math.random() * WORDS.length)]!;
+
+      const created = await sbJson(url, key, 'challenges', {
+        method: 'POST',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({
+          channel_id: ch.id,
+          challenger,
+          status: 'running',
+          keyword,
+          note: String(body.note || '').slice(0, 200),
+          started_at: new Date().toISOString(),
+        }),
+      });
+      if (!created) return json({ error: 'create_failed' }, 500);
+
+      await runAudit('challenge_create', { challenger, keyword });
+      return json({ ok: true, challenge: created });
+    }
+
+    /* ── أوقف التحدي: يختار الفائز → ينتقل لحالة جمع الكلمة ── */
+    if (action === 'challenge_end') {
+      const winner = String(body.winner || '');
+      if (winner !== 'challenger' && winner !== 'chat') return json({ error: 'bad_winner' }, 400);
+      const id = Math.trunc(num(body.id, 0));
+      if (id <= 0) return json({ error: 'bad_id' }, 400);
+
+      const rows = (await sbJson(
+        url,
+        key,
+        `challenges?id=eq.${id}&select=${CHALLENGE_COLS}`,
+      ).catch(() => [])) as any[];
+      const cur = rows[0];
+      if (!cur) return json({ error: 'not_found' }, 404);
+      if (cur.status !== 'running') return json({ error: 'not_running', status: cur.status }, 409);
+
+      const r = await sb(url, key, `challenges?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          winner,
+          status: 'collecting',
+          ended_at: new Date().toISOString(),
+        }),
+      });
+      if (!r.ok) return json({ error: 'save_failed' }, 500);
+
+      // إعلان النتيجة في الشات (البوت ما يعرف، فأن نرسله).
+      const line =
+        winner === 'challenger'
+          ? `😎 @${cur.challenger} كسب على الشات كله — الكلمة السرية جاية!`
+          : `🎉 الشات كسب ضد @${cur.challenger} — الكلمة السرية جاية!`;
+      await outbox(url, key, cur.channel_id, line);
+
+      await runAudit('challenge_end', { id, winner });
+      return json({ ok: true });
+    }
+
+    /* ── إيقاف الجمع + تطبيق المكافأة/العقاب ── */
+    if (action === 'challenge_apply') {
+      const id = Math.trunc(num(body.id, 0));
+      if (id <= 0) return json({ error: 'bad_id' }, 400);
+
+      const kind = String(body.reward_kind || 'none');
+      if (!REWARD_KINDS.includes(kind)) return json({ error: 'bad_reward_kind' }, 400);
+
+      const amount = Math.trunc(num(body.reward_amount, 0));
+      const minutes = Math.trunc(num(body.reward_minutes, 0));
+      if (amount < 0 || amount > 1000000) return json({ error: 'bad_amount' }, 400);
+      if (minutes < 0 || minutes > 10080) return json({ error: 'bad_minutes' }, 400);
+      // التوزيع بلا رقم ولا مدة = توزيع محروق: نرفض بدل ما ننفّذ صفر.
+      if (kind === 'distribute' && amount < 1) return json({ error: 'need_amount' }, 400);
+      // المضاعفة/التخريب بلا مدة = دائم للأبد: نرفض.
+      if ((kind === 'double' || kind === 'sabotage') && minutes < 1) return json({ error: 'need_minutes' }, 400);
+
+      const rows = (await sbJson(
+        url,
+        key,
+        `challenges?id=eq.${id}&select=${CHALLENGE_COLS}`,
+      ).catch(() => [])) as any[];
+      const cur = rows[0];
+      if (!cur) return json({ error: 'not_found' }, 404);
+      if (cur.status !== 'collecting') return json({ error: 'not_collecting', status: cur.status }, 409);
+
+      // 1) نخزّن خيار المكافأة على التحدي (للتدقيق والتاريخ).
+      await sb(url, key, `challenges?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          reward_kind: kind,
+          reward_amount: kind === 'distribute' ? amount : 0,
+          reward_minutes: minutes,
+          collected_at: new Date().toISOString(),
+        }),
+      });
+
+      // 2) دالة القاعدة تنفّذ مرة واحدة (قفل + applied_at) — نضغط مرتين
+      //    فما يطلع توزيع مزدوج.
+      let result: any = null;
+      if (kind !== 'none') {
+        result = await sbJson(url, key, 'rpc/apply_challenge_reward', {
+          method: 'POST',
+          body: JSON.stringify({ p_challenge_id: id }),
+        }).catch((e) => ({ error: String(e?.message || e).slice(0, 160) }));
+      } else {
+        await sb(url, key, `challenges?id=eq.${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ applied_at: new Date().toISOString(), status: 'done' }),
+        });
+        result = { ok: true, recipients: 0 };
+      }
+
+      const count = (await sbJson(
+        url,
+        key,
+        `challenge_entries?challenge_id=eq.${id}&select=kick_user_id`,
+      ).catch(() => [])) as any[];
+
+      // 3) إعلان النتيجة في الشات.
+      const n = count.length;
+      let line: string;
+      if (kind === 'distribute') line = `🎁 وُزّعت ${amount} نقطة على ${n} واحد — ثبّتوا رتبتكم!`;
+      else if (kind === 'double') line = `⚡ تربل! نقاطكم مضاعفة ×2 لمدة ${minutes} دقيقة`;
+      else if (kind === 'sabotage') line = `💥 تخريب! كل رسالة صارت نص نقطة ×0.5 لمدة ${minutes} دقيقة`;
+      else line = '😐 ما صار شيء';
+      await outbox(url, key, cur.channel_id, line);
+
+      await runAudit('challenge_apply', { id, kind, amount, minutes, recipients: n });
+      return json({ ok: true, recipients: n, result });
+    }
+
+    /* ── إلغاء تحدي جارٍ ── */
+    if (action === 'challenge_cancel') {
+      const id = Math.trunc(num(body.id, 0));
+      if (id <= 0) return json({ error: 'bad_id' }, 400);
+      const rows = (await sbJson(url, key, `challenges?id=eq.${id}&select=id,status,channel_id`).catch(() => [])) as any[];
+      const cur = rows[0];
+      if (!cur) return json({ error: 'not_found' }, 404);
+      if (cur.status !== 'running' && cur.status !== 'collecting') {
+        return json({ error: 'not_active', status: cur.status }, 409);
+      }
+      const r = await sb(url, key, `challenges?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'cancelled', ended_at: new Date().toISOString() }),
+      });
+      if (!r.ok) return json({ error: 'save_failed' }, 500);
+      await outbox(url, key, cur.channel_id, '🚫 أُلغي التحدي');
+      await runAudit('challenge_cancel', { id });
+      return json({ ok: true });
+    }
+
     /* ── السجل ── */
     if (action === 'audit_list') {
       const rows = await sbJson(url, key, 'admin_audit?select=created_at,action,detail,device_id,ip&order=created_at.desc&limit=50');

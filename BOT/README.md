@@ -109,6 +109,75 @@ LIVE_REQUIRED_BOT=false
 Admin commands (`!addpts`, `!setpts`, `!تصفير`) are never gated — the owner can
 still fix the leaderboard at any time.
 
+## تحدي رايس — one person against the whole chat
+
+A challenge between one member (Nasser / Raees / the admin) and the entire
+chat. The admin controls every step from the **Challenge** tab in the
+dashboard; the bot announces and executes.
+
+### Required setup — run this once
+
+```
+supabase/migrations/007_challenge.sql
+```
+
+Supabase Dashboard → SQL Editor → New query → paste → Run. It is idempotent,
+so running it twice is harmless.
+
+### The flow
+
+| Step | Who | What happens |
+| --- | --- | --- |
+| 1 | Admin | Press **ابدأ** and type the challenger. The bot announces it in chat within ~2s. |
+| 2 | — | Points count normally, which means **only while a broadcast is live** (see the live gate above). |
+| 3 | Admin | Press **أوقف** and pick the winner: the challenger, or the chat. |
+| 4 | Bot | Picks a keyword at random from `!MT` / `!ناصر` / `!PM` / `!دخول` and announces it. |
+| 5 | Chat | Everyone types the keyword. Each person is counted **once**, however many times they type it. The counter updates live in the dashboard every 2s. |
+| 6 | Admin | Pick the reward or penalty, then press **إيقاف وتطبيق**. |
+
+There is no timer on step 5 — it ends when the admin presses stop.
+
+### The keyword is chosen by the bot
+
+The bot picks the word when the challenge is created, not the admin. That
+way nobody can read the keyword off the dashboard and pre-type it in chat to
+farm the distribution.
+
+### Rewards and penalties
+
+Chosen by the admin, applied to everyone who typed the keyword:
+
+| Option | Effect | Needs |
+| --- | --- | --- |
+| **توزيع نقاط** | `+N` points each, ranks update normally | an amount |
+| **تربل** | points doubled (`multiplier 2`) | a duration in minutes |
+| **تخريب** | half a point per message (`multiplier 0.5`) | a duration in minutes |
+| **ما في شيء** | nothing | — |
+
+`multiplier` is the same column the dashboard's boosts and punishments use,
+and `admin-state` re-reads it every 15s, so the effect starts on its own.
+
+### Running it twice is impossible
+
+`apply_challenge_reward()` takes a `FOR UPDATE` row lock, returns early when
+`applied_at` is already set, and marks it at the end. Pressing the button
+five times still distributes once.
+
+### No duplicates, guaranteed by the database
+
+`challenge_entries` has `primary key (challenge_id, kick_user_id)`. A user who
+types the keyword twenty times gets one row — Postgres discards the other
+nineteen. The bot's in-memory `Set` is only there to reply fast in chat; the
+constraint is the real guarantee.
+
+One challenge can be active per channel at a time, enforced by a partial
+unique index rather than only by the UI.
+
+### Live state
+
+`GET /health` reports the challenge under `challenge`: status, the keyword
+while collecting, and how many people have entered.
+
 ## Commands you may need
 
 | Command | What it does |

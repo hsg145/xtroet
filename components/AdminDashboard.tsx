@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChallengeTab } from './ChallengeTab';
+import { callAdmin } from './adminApi';
 
 /**
  * لوحة إدارة البوت — صفحة مستقلة على /admin (غرفة القيادة).
@@ -6,7 +8,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
  *
  * المميزات: نقاط/رتبة/تصفير، تايم آوت (يوقف النقاط حتى للمشرفين)، تعزيزات
  * وعقوبات شخصية، فعاليات عامة (دبل/تربل/تخريب/مخصص)، أكواد نقاط مخفية،
- * تعديل أسعار الرتب (يتحدث عند الكل)، إعلانات الشات، سجل العمليات الكامل.
+ * تحدي رايس، تعديل أسعار الرتب (يتحدث عند الكل)، إعلانات الشات، سجل العمليات.
  */
 
 type Lang = 'ar' | 'en';
@@ -27,23 +29,6 @@ function deviceId(): string {
   } catch {
     return 'unknown-device';
   }
-}
-
-async function callAdmin(action: string, params: Record<string, unknown> = {}): Promise<any> {
-  const token = sessionStorage.getItem(TOKEN_KEY) || '';
-  const r = await fetch('/api/admin', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, deviceId: deviceId(), token, ...params }),
-  });
-  const j = await r.json().catch(() => ({}));
-  if (r.status === 401) throw new Error('unauthorized');
-  if (!r.ok) {
-    const e: any = new Error(j.error || 'failed');
-    e.data = j;
-    throw e;
-  }
-  return j;
 }
 
 function useNow(active: boolean): number {
@@ -381,7 +366,7 @@ const L: React.FC<{ children: React.ReactNode; label: string }> = ({ children, l
 );
 
 /* ── الصفحة الرئيسية للوحة ──────────────────────────────────── */
-type Tab = 'home' | 'users' | 'events' | 'drops' | 'ranks' | 'log';
+type Tab = 'home' | 'users' | 'events' | 'drops' | 'challenge' | 'ranks' | 'log';
 
 export const AdminDashboard: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => (navigator.language || 'ar').startsWith('ar') ? 'ar' : 'ar');
@@ -467,6 +452,7 @@ export const AdminDashboard: React.FC = () => {
     { id: 'users', ar: 'المستخدمون', en: 'Users', icon: '👥' },
     { id: 'events', ar: 'الفعاليات', en: 'Events', icon: '🔥' },
     { id: 'drops', ar: 'الأكواد', en: 'Drops', icon: '🎁' },
+    { id: 'challenge', ar: 'تحدي رايس', en: 'Challenge', icon: '⚔️' },
     { id: 'ranks', ar: 'أسعار الرتب', en: 'Rank prices', icon: '🎖️' },
     { id: 'log', ar: 'السجل', en: 'Log', icon: '📜' },
   ];
@@ -579,6 +565,7 @@ export const AdminDashboard: React.FC = () => {
               {tab === 'users' && <UsersTab ar={ar} now={now} busy={busy} run={run} />}
               {tab === 'events' && <EventsTab ar={ar} now={now} ev={ev} busy={busy} run={run} />}
               {tab === 'drops' && <DropsTab ar={ar} now={now} drop={dr} busy={busy} run={run} />}
+              {tab === 'challenge' && <ChallengeTab ar={ar} now={now} busy={busy} />}
               {tab === 'ranks' && <RanksTab ar={ar} busy={busy} run={run} />}
               {tab === 'log' && <LogTab ar={ar} />}
             </main>
