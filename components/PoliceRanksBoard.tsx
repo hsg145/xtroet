@@ -262,6 +262,7 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
     const [searching, setSearching] = useState(false);
     const [profile, setProfile] = useState<Profile | null>(null);
     const [err, setErr] = useState<string | null>(null);
+    const [boardErr, setBoardErr] = useState<string | null>(null);
 
     const ar = lang === 'ar';
 
@@ -271,8 +272,11 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
             const j = await r.json();
             setEntries(Array.isArray(j.entries) ? j.entries : []);
             setRanks(Array.isArray(j.ranks) ? j.ranks : []);
-        } catch {
+            // الـ API يرجع entries فاضية مع error (مثل 401 من Supabase) — ما نخبيه
+            setBoardErr(j.entries?.length ? null : (j.error || null));
+        } catch (e: any) {
             setEntries([]);
+            setBoardErr(String(e?.message || e).slice(0, 120));
         }
     }, []);
 
@@ -570,7 +574,12 @@ export const PoliceRanksBoard: React.FC<{ lang: 'ar' | 'en' }> = ({ lang }) => {
                     ))}
 
                     {capped !== null && capped.length === 0 && (
-                        <p className="py-10 text-center text-sm text-white/35 font-medium">{t.noData}</p>
+                        <p className="py-10 text-center text-sm text-white/35 font-medium">
+                            {t.noData}
+                            {boardErr && (
+                                <span className="block mt-1.5 text-[11px] font-mono text-red-400/80" dir="ltr">{boardErr}</span>
+                            )}
+                        </p>
                     )}
 
                     {rest.map((e) => {

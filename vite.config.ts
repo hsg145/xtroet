@@ -1,7 +1,23 @@
+import fs from 'node:fs';
 import path from 'path';
 import crypto from 'node:crypto';
+import { pathToFileURL } from 'node:url';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+
+/** يقرأ ملف .env بدون المكتبة — نفس قواعد dotenv (بدون export، يقبل ' و " ). */
+const parseEnvFile = (p: string): Record<string, string> => {
+  const out: Record<string, string> = {};
+  if (!fs.existsSync(p)) return out;
+  for (const line of fs.readFileSync(p, 'utf8').split(/\r?\n/)) {
+    const m = /^\s*([A-Za-z0-9_]+)\s*=\s*(.*)$/.exec(line);
+    if (!m) continue;
+    let v = m[2].trim();
+    if ((v.startsWith('"') && v.endsWith('"')) || (v.startsWith("'") && v.endsWith("'"))) v = v.slice(1, -1);
+    out[m[1]] = v;
+  }
+  return out;
+};
 
 const KICK_DEFAULT_SCOPES = 'user:read channel:read chat:write events:subscribe';
 const b64url = (buf: Buffer) => buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -393,6 +409,37 @@ export default defineConfig(({ mode }) => {
               } catch (err: any) {
                 res.statusCode = 502;
                 res.end(JSON.stringify({ platform, count: null, error: err.message || 'failed' }));
+              }
+              return;
+            }
+            if (req.url && req.url.startsWith('/api/leaderboard')) {
+              // ---- /api/leaderboard : نفس ملف api/leaderboard.ts الحقيقي (بدون نسخة من الكود) ----
+              // المتغيرات: جذر .env ثم BOT/.env (فوقه) عشان *__BOT توصل للـ handler.
+              const botEnv = parseEnvFile(path.resolve(__dirname, 'BOT/.env'));
+              const injected: Record<string, string | undefined> = {};
+              for (const [k, v] of Object.entries({ ...env, ...botEnv })) {
+                injected[k] = process.env[k];
+                process.env[k] = String(v);
+              }
+              try {
+                const mod: any = await import(pathToFileURL(path.resolve(__dirname, 'api/leaderboard.ts')).href);
+                const request = new Request(`http://${req.headers.host || 'localhost:3000'}${req.url}`, {
+                  method: req.method,
+                  headers: { accept: 'application/json' },
+                });
+                const response: Response = await mod.default(request);
+                res.statusCode = response.status;
+                response.headers.forEach((v, k) => res.setHeader(k, v));
+                res.end(Buffer.from(await response.arrayBuffer()));
+              } catch (e: any) {
+                res.setHeader('Content-Type', 'application/json');
+                res.statusCode = 500;
+                res.end(JSON.stringify({ entries: [], error: `local leaderboard failed: ${e?.message || e}` }));
+              } finally {
+                for (const [k, v] of Object.entries(injected)) {
+                  if (v === undefined) delete process.env[k];
+                  else process.env[k] = v;
+                }
               }
               return;
             }
