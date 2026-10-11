@@ -597,20 +597,31 @@ export default async function handler(req: Request) {
      * ══════════════════════════════════════════════════════════ */
 
     const CHALLENGE_COLS =
-      'id,channel_id,challenger,status,winner,keyword,reward_kind,reward_amount,reward_minutes,note,started_at,ended_at,collected_at,applied_at';
+      'id,channel_id,challenger,title,status,winner,keyword,chat_reward_kind,chat_reward_amount,chat_reward_minutes,penalty_kind,penalty_minutes,reward_kind,reward_amount,reward_minutes,note,started_at,ended_at,collected_at,applied_at';
 
     const REWARD_KINDS = ['none', 'distribute', 'double', 'sabotage'];
+    const CHAT_REWARD_KINDS = ['none', 'distribute', 'double'];
+    const PENALTY_KINDS = ['none', 'sabotage'];
 
     /** يقرأ التحدي الجارِ أو آخر واحد، مع عدد اللي كتبوا. */
     if (action === 'challenge_get') {
       const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
       if (!ch) return json({ error: 'no_channel' }, 500);
 
-      const rows = (await sbJson(
-        url,
-        key,
-        `challenges?channel_id=eq.${ch.id}&select=${CHALLENGE_COLS}&order=id.desc&limit=1`,
-      ).catch(() => [])) as any[];
+      // ما نبلع خطأ القاعدة هنا. لو الأعمدة الجديدة (migration 008) ما
+      // اشتغلت، الـ select يفشل — ولو بلعناه بتطلع الواجهة "ما في فعالية"
+      // والنصProgramming يظن إن كل شي تمام. نرجّع الخطأ بوضوح.
+      let rows: any[];
+      try {
+        rows = (await sbJson(url, key, `challenges?channel_id=eq.${ch.id}&select=${CHALLENGE_COLS}&order=id.desc&limit=1`)) as any[];
+      } catch (e: any) {
+        const msg = String(e?.message || e);
+        // خطأ عمود ناقص = الـ migration ما اشتغلت. قولها كلمة واضحة.
+        const missing = msg.includes('does not exist')
+          ? 'شغّل supabase/migrations/008_challenge_preset.sql'
+          : msg.slice(0, 160);
+        return json({ error: 'db_error', detail: missing }, 500);
+      }
       const challenge = rows[0] ?? null;
 
       let entries: any[] = [];
@@ -624,24 +635,15 @@ export default async function handler(req: Request) {
         count = entries.length;
       }
 
-      return json({
-        challenge,
-        entries,
-        count,
-        // الكلمات معروضة للأدمن — البوت يختار واحدة عشوائي عند الإنشاء،
-        // والأدمن يشوفها بس للحسابات لا أكثر.
-        keywords: ['!MT', '!ناصر', '!PM', '!دخول'],
-        channel: ch,
-      });
+      return json({ challenge, entries, count, channel: ch });
     }
 
-    /* ── ابدأ تحدي جديد ── */
+    /* ── ابدأ فعالية جديدة ──
+     *  الاسم والخياران يتحددون هنا، قبل ما تبدأ — ما في مفاجآت وقت النهاية. */
     if (action === 'challenge_create') {
       const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
       if (!ch) return json({ error: 'no_channel' }, 500);
 
-      // في تحدي جارٍ؟ الفهرس الجزئي في القاعدة يمنع اثنين، بس نتحقق
-      // هنا كمان عشان نرجع رسالة مفهومة بدل 500 من Postgres.
       const active = (await sbJson(
         url,
         key,
@@ -649,10 +651,32 @@ export default async function handler(req: Request) {
       ).catch(() => [])) as any[];
       if (active?.length) return json({ error: 'challenge_already_running' }, 409);
 
-      const challenger = String(body.challenger || '').trim().replace(/^@/, '');
-      if (challenger.length < 2 || challenger.length > 24) return json({ error: 'bad_challenger' }, 400);
+      // اسم الفعالية — إجباري، وهو اللي يطلع في إعلان الشات.
+      const title = String(body.title || '').trim().replace(/[\r\n]+/g, ' ');
+      if ([...title].length < 2 || [...title].length > 60) return json({ error: 'bad_title' }, 400);
 
-      // الكلمة عشوائية من القائمة — البوت ما يختارها، عشان ما أحد يقدر
+      const challenger = String(body.challenger || '').trim().replace(/^@+/, '');
+      // نقبل العربية والإنجليزية: الاسم معروض في الشات، وما في أي استعلام
+      // قاعدة عليه، فمافيش سبب نرفض الاسم العربي.
+      if ([...challenger].length < 2 || [...challenger].length > 24) return json({ error: 'bad_challenger' }, 400);
+
+      // ── لو الشات كسب: الجائزة
+      const chatKind = String(body.chat_reward_kind || 'none');
+      if (!CHAT_REWARD_KINDS.includes(chatKind)) return json({ error: 'bad_chat_reward' }, 400);
+      const chatAmount = Math.trunc(num(body.chat_reward_amount, 0));
+      const chatMinutes = Math.trunc(num(body.chat_reward_minutes, 0));
+      if (chatAmount < 0 || chatAmount > 1000000) return json({ error: 'bad_amount' }, 400);
+      if (chatMinutes < 0 || chatMinutes > 10080) return json({ error: 'bad_minutes' }, 400);
+      if (chatKind === 'distribute' && chatAmount < 1) return json({ error: 'need_amount' }, 400);
+      if (chatKind === 'double' && chatMinutes < 1) return json({ error: 'need_minutes' }, 400);
+
+      // ── لو ناصر كسب: العقاب
+      const penaltyKind = String(body.penalty_kind || 'none');
+      if (!PENALTY_KINDS.includes(penaltyKind)) return json({ error: 'bad_penalty' }, 400);
+      const penaltyMinutes = Math.trunc(num(body.penalty_minutes, 0));
+      if (penaltyMinutes < 1 || penaltyMinutes > 10080) return json({ error: 'need_minutes' }, 400);
+
+      // الكلمة عشوائية من القائمة — البوت ما يختارها وقت البدء، عشان ما أحد
       // يقراها من الداشبورد ويكسل ويكتبها قبل الناس.
       const WORDS = ['!MT', '!ناصر', '!PM', '!دخول'];
       const keyword = WORDS[Math.floor(Math.random() * WORDS.length)]!;
@@ -663,15 +687,23 @@ export default async function handler(req: Request) {
         body: JSON.stringify({
           channel_id: ch.id,
           challenger,
+          title,
           status: 'running',
           keyword,
+          chat_reward_kind: chatKind,
+          chat_reward_amount: chatKind === 'distribute' ? chatAmount : 0,
+          chat_reward_minutes: chatKind === 'double' ? chatMinutes : 0,
+          penalty_kind: penaltyKind,
+          penalty_minutes: penaltyKind === 'none' ? 0 : penaltyMinutes,
           note: String(body.note || '').slice(0, 200),
           started_at: new Date().toISOString(),
         }),
       });
       if (!created) return json({ error: 'create_failed' }, 500);
 
-      await runAudit('challenge_create', { challenger, keyword });
+      await runAudit('challenge_create', {
+        title, challenger, keyword, chatKind, penaltyKind,
+      });
       return json({ ok: true, challenge: created });
     }
 
@@ -702,32 +734,22 @@ export default async function handler(req: Request) {
       if (!r.ok) return json({ error: 'save_failed' }, 500);
 
       // إعلان النتيجة في الشات (البوت ما يعرف، فأن نرسله).
+      const t = String(cur.title || '').trim();
+      const head = t ? `«${t}» ` : '';
       const line =
         winner === 'challenger'
-          ? `😎 @${cur.challenger} كسب على الشات كله — الكلمة السرية جاية!`
-          : `🎉 الشات كسب ضد @${cur.challenger} — الكلمة السرية جاية!`;
+          ? `😎 ${head}@${cur.challenger} كسب على الشات كله — الكلمة السرية جاية!`
+          : `🎉 ${head}الشات كسب ضد @${cur.challenger} — الكلمة السرية جاية!`;
       await outbox(url, key, cur.channel_id, line);
 
       await runAudit('challenge_end', { id, winner });
       return json({ ok: true });
     }
 
-    /* ── إيقاف الجمع + تطبيق المكافأة/العقاب ── */
+    /* ── إيقاف الجمع + تطبيق الجائزة/العقاب المختار مسبقاً ── */
     if (action === 'challenge_apply') {
       const id = Math.trunc(num(body.id, 0));
       if (id <= 0) return json({ error: 'bad_id' }, 400);
-
-      const kind = String(body.reward_kind || 'none');
-      if (!REWARD_KINDS.includes(kind)) return json({ error: 'bad_reward_kind' }, 400);
-
-      const amount = Math.trunc(num(body.reward_amount, 0));
-      const minutes = Math.trunc(num(body.reward_minutes, 0));
-      if (amount < 0 || amount > 1000000) return json({ error: 'bad_amount' }, 400);
-      if (minutes < 0 || minutes > 10080) return json({ error: 'bad_minutes' }, 400);
-      // التوزيع بلا رقم ولا مدة = توزيع محروق: نرفض بدل ما ننفّذ صفر.
-      if (kind === 'distribute' && amount < 1) return json({ error: 'need_amount' }, 400);
-      // المضاعفة/التخريب بلا مدة = دائم للأبد: نرفض.
-      if ((kind === 'double' || kind === 'sabotage') && minutes < 1) return json({ error: 'need_minutes' }, 400);
 
       const rows = (await sbJson(
         url,
@@ -738,32 +760,12 @@ export default async function handler(req: Request) {
       if (!cur) return json({ error: 'not_found' }, 404);
       if (cur.status !== 'collecting') return json({ error: 'not_collecting', status: cur.status }, 409);
 
-      // 1) نخزّن خيار المكافأة على التحدي (للتدقيق والتاريخ).
-      await sb(url, key, `challenges?id=eq.${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          reward_kind: kind,
-          reward_amount: kind === 'distribute' ? amount : 0,
-          reward_minutes: minutes,
-          collected_at: new Date().toISOString(),
-        }),
-      });
-
-      // 2) دالة القاعدة تنفّذ مرة واحدة (قفل + applied_at) — نضغط مرتين
-      //    فما يطلع توزيع مزدوج.
-      let result: any = null;
-      if (kind !== 'none') {
-        result = await sbJson(url, key, 'rpc/apply_challenge_reward', {
-          method: 'POST',
-          body: JSON.stringify({ p_challenge_id: id }),
-        }).catch((e) => ({ error: String(e?.message || e).slice(0, 160) }));
-      } else {
-        await sb(url, key, `challenges?id=eq.${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ applied_at: new Date().toISOString(), status: 'done' }),
-        });
-        result = { ok: true, recipients: 0 };
-      }
+      // الدالة تختار الفرع من winner المخزّن، وتنفّذ مرة واحدة (قفل +
+      // applied_at). نضغط مرتين فما يطلع توزيع مزدوج.
+      const result = await sbJson(url, key, 'rpc/apply_challenge_reward', {
+        method: 'POST',
+        body: JSON.stringify({ p_challenge_id: id }),
+      }).catch((e) => ({ ok: false, error: String(e?.message || e).slice(0, 160) }));
 
       const count = (await sbJson(
         url,
@@ -771,16 +773,23 @@ export default async function handler(req: Request) {
         `challenge_entries?challenge_id=eq.${id}&select=kick_user_id`,
       ).catch(() => [])) as any[];
 
-      // 3) إعلان النتيجة في الشات.
+      // ── نص الإعلان حسب الفرع اللي انفّذ فعلاً (مو اللي طلبناه).
+      const chatWon = cur.winner === 'chat';
+      const kind = chatWon ? cur.chat_reward_kind : cur.penalty_kind;
+      const amount = chatWon ? Number(cur.chat_reward_amount) : 0;
+      const mins = chatWon ? Number(cur.chat_reward_minutes) : Number(cur.penalty_minutes);
+      const title = String(cur.title || '').trim();
       const n = count.length;
+      const head = title ? `«${title}» ` : '';
+
       let line: string;
-      if (kind === 'distribute') line = `🎁 وُزّعت ${amount} نقطة على ${n} واحد — ثبّتوا رتبتكم!`;
-      else if (kind === 'double') line = `⚡ تربل! نقاطكم مضاعفة ×2 لمدة ${minutes} دقيقة`;
-      else if (kind === 'sabotage') line = `💥 تخريب! كل رسالة صارت نص نقطة ×0.5 لمدة ${minutes} دقيقة`;
-      else line = '😐 ما صار شيء';
+      if (kind === 'distribute') line = `🎁 ${head}وُزّعت ${amount} نقطة على ${n} واحد — ثبّتوا رتبتكم!`;
+      else if (kind === 'double') line = `⚡ ${head}تربل! نقاطكم مضاعفة ×2 لمدة ${mins} دقيقة`;
+      else if (kind === 'sabotage') line = `💥 ${head}تخريب! كل رسالة صارت نص نقطة ×0.5 لمدة ${mins} دقيقة`;
+      else line = `😐 ${head}ما صار شيء`;
       await outbox(url, key, cur.channel_id, line);
 
-      await runAudit('challenge_apply', { id, kind, amount, minutes, recipients: n });
+      await runAudit('challenge_apply', { id, winner: cur.winner, kind, amount, minutes: mins, recipients: n });
       return json({ ok: true, recipients: n, result });
     }
 

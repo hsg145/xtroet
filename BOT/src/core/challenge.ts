@@ -166,7 +166,7 @@ export class ChallengeState {
         this.seen.clear();
         this.collectedCount = 0;
         this.announcedKeyword = false;
-        this.opts.send(messages.challengeStarted(next.challenger));
+        this.opts.send(messages.challengeStarted(next.title || 'تحدي رايس', next.challenger));
         this.announcedId = next.id;
         return true;
       }

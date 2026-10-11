@@ -1,8 +1,8 @@
-/**
- * اختبارات "تحدي رايس".
+﻿/**
+ * Ø§Ø®ØªØ¨Ø§Ø±Ø§Øª "ØªØ­Ø¯ÙŠ Ø±Ø§ÙŠØ³".
  *
- * أهم شي فيها: مضاعفة الكلمة ما تاخذ حق غير أول مرة. و"مطابقة الكلمة"
- * ما تبلع أي كلمة بتتهي فيها الاسم (لولا كذا "!دخول" بتطابق "!دخولتي").
+ * Ø£Ù‡Ù… Ø´ÙŠ ÙÙŠÙ‡Ø§: Ù…Ø¶Ø§Ø¹ÙØ© Ø§Ù„ÙƒÙ„Ù…Ø© Ù…Ø§ ØªØ§Ø®Ø° Ø­Ù‚ ØºÙŠØ± Ø£ÙˆÙ„ Ù…Ø±Ø©. Ùˆ"Ù…Ø·Ø§Ø¨Ù‚Ø© Ø§Ù„ÙƒÙ„Ù…Ø©"
+ * Ù…Ø§ ØªØ¨Ù„Ø¹ Ø£ÙŠ ÙƒÙ„Ù…Ø© Ø¨ØªØªÙ‡ÙŠ ÙÙŠÙ‡Ø§ Ø§Ù„Ø§Ø³Ù… (Ù„ÙˆÙ„Ø§ ÙƒØ°Ø§ "!Ø¯Ø®ÙˆÙ„" Ø¨ØªØ·Ø§Ø¨Ù‚ "!Ø¯Ø®ÙˆÙ„ØªÙŠ").
  */
 import { describe, expect, it } from 'vitest';
 import { CHALLENGE_KEYWORDS, ChallengeState, matchesKeyword, pickKeyword } from '../src/core/challenge.js';
@@ -14,7 +14,13 @@ function row(over: Partial<ChallengeRow> = {}): ChallengeRow {
   return {
     id: 7,
     channel_id: CH,
-    challenger: 'xtroet',
+    challenger: 'ناصر',
+    title: 'كأس الأبطال',
+    chat_reward_kind: 'distribute',
+    chat_reward_amount: 25,
+    chat_reward_minutes: 0,
+    penalty_kind: 'none',
+    penalty_minutes: 0,
     status: 'running',
     winner: null,
     keyword: null,
@@ -37,10 +43,9 @@ describe('pickKeyword', () => {
     }
   });
 
-  it('maps each bucket to a different word', () => {
-    // 0 → first, 0.5 → middle, 0.999 → last.
-    expect(pickKeyword(() => 0)).toBe('!MT');
-    expect(pickKeyword(() => 0.999)).toBe('!دخول');
+it('maps each bucket to a different word', () => {
+    expect(pickKeyword(() => 0)).toBe(CHALLENGE_KEYWORDS[0]);
+    expect(pickKeyword(() => 0.999)).toBe(CHALLENGE_KEYWORDS[CHALLENGE_KEYWORDS.length - 1]);
   });
 
   it('never returns undefined even at the upper edge', () => {
@@ -51,7 +56,7 @@ describe('pickKeyword', () => {
 describe('matchesKeyword', () => {
   it('matches the word alone', () => {
     expect(matchesKeyword('!MT', '!MT')).toBe(true);
-    expect(matchesKeyword('!دخول', '!دخول')).toBe(true);
+    expect(matchesKeyword('!Ø¯Ø®ÙˆÙ„', '!Ø¯Ø®ÙˆÙ„')).toBe(true);
   });
 
   it('ignores case for Latin words', () => {
@@ -60,22 +65,22 @@ describe('matchesKeyword', () => {
   });
 
   it('matches inside a sentence', () => {
-    expect(matchesKeyword('يا ناصر !MT الحين', '!MT')).toBe(true);
-    expect(matchesKeyword('خلاص دخلنا !دخول', '!دخول')).toBe(true);
+    expect(matchesKeyword('ÙŠØ§ Ù†Ø§ØµØ± !MT Ø§Ù„Ø­ÙŠÙ†', '!MT')).toBe(true);
+    expect(matchesKeyword('Ø®Ù„Ø§Øµ Ø¯Ø®Ù„Ù†Ø§ !Ø¯Ø®ÙˆÙ„', '!Ø¯Ø®ÙˆÙ„')).toBe(true);
   });
 
   it('trims whitespace around it', () => {
-    expect(matchesKeyword('   !دخول   ', '!دخول')).toBe(true);
+    expect(matchesKeyword('   !Ø¯Ø®ÙˆÙ„   ', '!Ø¯Ø®ÙˆÙ„')).toBe(true);
   });
 
   it('does NOT match a longer word that merely starts with it', () => {
-    expect(matchesKeyword('!دخولCOME', '!دخول')).toBe(false);
-    expect(matchesKeyword('!دخولتي', '!دخول')).toBe(false);
+    expect(matchesKeyword('!Ø¯Ø®ÙˆÙ„COME', '!Ø¯Ø®ÙˆÙ„')).toBe(false);
+    expect(matchesKeyword('!Ø¯Ø®ÙˆÙ„ØªÙŠ', '!Ø¯Ø®ÙˆÙ„')).toBe(false);
   });
 
   it('does NOT match a different word', () => {
     expect(matchesKeyword('!PM', '!MT')).toBe(false);
-    expect(matchesKeyword('مرحبا', '!دخول')).toBe(false);
+    expect(matchesKeyword('Ù…Ø±Ø­Ø¨Ø§', '!Ø¯Ø®ÙˆÙ„')).toBe(false);
   });
 
   it('rejects an empty keyword', () => {
@@ -83,7 +88,7 @@ describe('matchesKeyword', () => {
   });
 });
 
-describe('ChallengeState — collecting', () => {
+describe('ChallengeState â€” collecting', () => {
   function stateWith(ch: ChallengeRow | null) {
     const sent: string[] = [];
     const s = new ChallengeState({
@@ -102,8 +107,15 @@ describe('ChallengeState — collecting', () => {
     (s as unknown as { opts: { fetchActive: () => Promise<ChallengeRow | null> } }).opts.fetchActive =
       async () => row({ status: 'running' });
     await s.refresh();
-    expect(sent.some((t) => t.includes('xtroet'))).toBe(true);
+    expect(sent.some((t) => t.includes('ناصر'))).toBe(true);
     expect(s.snapshot().active).toBe(true);
+  });
+
+  it('puts the activity name in the announcement', async () => {
+    const { s, sent } = stateWith(row({ status: 'running', title: 'كأس الأبطال' }));
+    await s.refresh();
+    expect(sent[0]).toContain('كأس الأبطال');
+    expect(sent[0]).toContain('ناصر');
   });
 
   it('does not re-announce the same challenge on every poll', async () => {
@@ -111,11 +123,12 @@ describe('ChallengeState — collecting', () => {
     const sent: string[] = [];
     const s = new ChallengeState({ channelId: CH, send: (t) => sent.push(t), fetchActive: async () => ch });
 
-    ch = row({ status: 'running' });
+    ch = row({ status: 'running', title: 'كأس الأبطال' });
     await s.refresh();
     await s.refresh();
     await s.refresh();
-    expect(sent.filter((t) => t.includes('xtroet'))).toHaveLength(1);
+    // Announcement carries the title — check that, not the raw username.
+    expect(sent.filter((t) => t.includes('كأس الأبطال'))).toHaveLength(1);
   });
 
   it('announces the keyword exactly once when it flips to collecting', async () => {
@@ -169,6 +182,24 @@ describe('ChallengeState — collecting', () => {
     expect(running.isKeywordAttempt('!MT')).toBe(false);
   });
 
+  it('stays silent in chat while people type the keyword', async () => {
+    // 100 people type it. The bot must not say a word — the dashboard
+    // counter is the only feedback, otherwise chat drowns in "✅ @x سجّل".
+    const sent: string[] = [];
+    const s = new ChallengeState({
+      channelId: CH,
+      send: (t) => sent.push(t),
+      fetchActive: async () => row({ status: 'collecting', keyword: '!MT' }),
+    });
+    await s.refresh();
+    sent.length = 0; // forget the keyword announcement itself
+
+    for (let i = 1; i <= 100; i++) await s.collect(i, `user${i}`);
+
+    expect(s.snapshot().collected).toBe(100);
+    expect(sent, 'collecting must produce no chat output at all').toEqual([]);
+  });
+
   it('forgets everything when the challenge ends', async () => {
     let ch: ChallengeRow | null = row({ status: 'collecting', keyword: '!MT' });
     const s = new ChallengeState({ channelId: CH, send: () => {}, fetchActive: async () => ch });
@@ -189,7 +220,7 @@ describe('ChallengeState — collecting', () => {
     await s.refresh();
     await s.collect(1, 'ali');
 
-    // تحدي ث��ٍ بنفس الكلمة — الواحد الأول ما ينحسب مرتين.
+    // ØªØ­Ø¯ÙŠ Ø«ï¿½ï¿½Ù Ø¨Ù†ÙØ³ Ø§Ù„ÙƒÙ„Ù…Ø© â€” Ø§Ù„ÙˆØ§Ø­Ø¯ Ø§Ù„Ø£ÙˆÙ„ Ù…Ø§ ÙŠÙ†Ø­Ø³Ø¨ Ù…Ø±ØªÙŠÙ†.
     ch = row({ id: 2, status: 'collecting', keyword: '!MT' });
     await s.refresh();
     expect(await s.collect(1, 'ali')).toBe('first');

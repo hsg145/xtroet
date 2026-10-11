@@ -25,27 +25,43 @@ const BLOOD = '#DC2626';
 
 type Status = 'running' | 'collecting' | 'done' | 'cancelled';
 type Winner = 'challenger' | 'chat' | null;
-type RewardKind = 'none' | 'distribute' | 'double' | 'sabotage';
 
 interface Challenge {
   id: number;
   challenger: string;
+  title: string;
   status: Status;
   winner: Winner;
   keyword: string | null;
-  reward_kind: RewardKind;
-  reward_amount: number;
-  reward_minutes: number;
+  /** لو الشات كسب. */
+  chat_reward_kind: ChatReward;
+  chat_reward_amount: number;
+  chat_reward_minutes: number;
+  /** لو ناصر كسب. */
+  penalty_kind: Penalty;
+  penalty_minutes: number;
   started_at: string;
   ended_at: string | null;
   applied_at: string | null;
 }
+
+type ChatReward = 'none' | 'distribute' | 'double';
+type Penalty = 'none' | 'sabotage';
 
 interface Entry {
   kick_user_id: number;
   username: string;
   collected_at: string;
 }
+
+/**
+ * اسم المتحدي ثابت ما يتغيّر.
+ *
+ * كان فيه خانة input، بس كانت تمسح الحروف العربية أثناء الكتابة
+ * (`replace(/[^A-Za-z0-9_.]/g,'')`) — تكتب "ناصر" فيطلع الحقل فاضي والزر
+ * يضل معطّل. فثبتّ الاسم بدل ما أخلي المستخدم يكتب شي ما يتغيّر.
+ */
+const CHALLENGER = 'ناصر';
 
 const nf = (n: number) => Math.round(Number(n) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
@@ -129,13 +145,15 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
   const [ch, setCh] = useState<Challenge | null>(null);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [count, setCount] = useState(0);
-  const [challenger, setChallenger] = useState('');
+  const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('25');
   const [minutes, setMinutes] = useState('30');
-  const [reward, setReward] = useState<RewardKind>('distribute');
+  const [penaltyMinutes, setPenaltyMinutes] = useState('30');
+  const [chatReward, setChatReward] = useState<ChatReward>('distribute');
+  const [penalty, setPenalty] = useState<Penalty>('none');
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<{ ok: boolean; text: string } | null>(null);
-  const [liveCount, setLiveCount] = useState(0);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const timer = useRef<number | null>(null);
 
   const say = useCallback((ok: boolean, text: string) => {
@@ -148,13 +166,19 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
       const j = await callAdmin('challenge_get');
       setCh(j.challenge ?? null);
       setEntries(Array.isArray(j.entries) ? j.entries : []);
-      const n = Number(j.count) || 0;
-      // نخلي liveCount يساوي دائماً آخر عدد مقروء — الحركة تعتمد على
-      // تغيّر القيمة، فخلّينا نحط الأرقام الصحيحة وما نعمل تقدير.
-      setCount(n);
-      setLiveCount(n);
-    } catch {
-      /* البوت لسّ ما قرأ القاعدة بعد، أو الشبكة تلعثمت — ننتظر */
+      setCount(Number(j.count) || 0);
+      setLoadError(null);
+    } catch (e: any) {
+      // ما نبلع الخطأ. لو الـ migration ناقصة، المستخدم لازم يشوف السبب
+      // بدل ما يظن إن ما في فعالية أصلاً.
+      const d = e?.data;
+      if (String(e?.message) === 'unauthorized') {
+        sessionStorage.removeItem('xtr_admin_token');
+        sessionStorage.removeItem('xtr_admin_exp');
+        location.reload();
+        return;
+      }
+      setLoadError(d?.detail || d?.error || 'ما قدرنا نوصل للقاعدة');
     }
   }, []);
 
@@ -177,14 +201,24 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
     } catch (e: any) {
       const code = e?.data?.error;
       const map: Record<string, string> = {
-        challenge_already_running: ar ? 'في تحدٍ شغّال حالياً — أوقفه الأول' : 'A challenge is already running',
+        challenge_already_running: ar ? 'في فعالية شغّالة حالياً — أوقفها الأول' : 'An activity is already running',
+        bad_title: ar ? 'اكتب اسم الفعالية (حرفين على الأقل)' : 'Type an activity name (2 chars minimum)',
         bad_challenger: ar ? 'اسم المتحدي لازم 2–24 حرف' : 'Challenger must be 2–24 chars',
+        bad_chat_reward: ar ? 'خيار الجائزة مو صحيح' : 'Invalid chat reward',
+        bad_penalty: ar ? 'خيار العقاب مو صحيح' : 'Invalid penalty',
         need_amount: ar ? 'حدّد كم نقطة للتوزيع' : 'Set the points to distribute',
         need_minutes: ar ? 'حدّد المدة بالدقائق' : 'Set a duration in minutes',
-        not_running: ar ? 'التحدي مو شغّال' : 'Challenge is not running',
-        not_collecting: ar ? 'مو في مرحلة جمع' : 'Not in the collecting phase',
+        bad_amount: ar ? 'رقم النقاط مو صحيح' : 'Invalid point amount',
+        bad_minutes: ar ? 'المدة لازم بين 1 و 10080 دقيقة' : 'Duration must be 1–10080 minutes',
+        not_running: ar ? 'الفعالية مو شغّالة' : 'The activity is not running',
+        not_collecting: ar ? 'مو في مرحلة جمع الكلمة' : 'Not in the collecting phase',
+        not_active: ar ? 'الفعالية خلصت أو ملغاة' : 'Already finished or cancelled',
+        not_found: ar ? 'ما لقينا الفعالية' : 'Activity not found',
+        db_error: ar ? 'خطأ قاعدة البيانات' : 'Database error',
       };
-      say(false, map[code] || (ar ? 'فشلت العملية' : 'Action failed'));
+      // لو الكود مو معروف، ورّيه ما قالته القاعدة بدل "فشلت العملية" —
+      // هذا اللي خلّى زر الإلغاء يبان فاشل بلا سبب.
+      say(false, map[code] || e?.data?.detail || code || (ar ? 'فشلت العملية' : 'Action failed'));
     } finally {
       setSaving(false);
     }
@@ -195,6 +229,31 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
   const collecting = status === 'collecting';
   const running = status === 'running';
   const finished = status === 'done' || status === 'cancelled';
+
+  // ما نقدر نبدأ قبل ما كل اختيار يكون مكتمل — ونمنع طلب ناقص من أصله.
+  const canStart =
+    [...title.trim()].length >= 2 &&
+    (chatReward !== 'distribute' || Number(amount) >= 1) &&
+    (chatReward !== 'double' || Number(minutes) >= 1) &&
+    (penalty !== 'sabotage' || Number(penaltyMinutes) >= 1);
+
+  const start = () =>
+    act('challenge_create', {
+      title: title.trim(),
+      challenger: CHALLENGER,
+      chat_reward_kind: chatReward,
+      chat_reward_amount: Number(amount) || 0,
+      chat_reward_minutes: Number(minutes) || 0,
+      penalty_kind: penalty,
+      penalty_minutes: Number(penaltyMinutes) || 0,
+    }, ar ? 'بدأت الفعالية!' : 'Activity started!');
+
+  /** وصف مختصر للخط المختار — نعرضه وقت التطبيق. */
+  const presetLabel = winner === 'chat'
+    ? chatReward === 'distribute' ? `${amount} نقطة لكل واحد`
+      : chatReward === 'double' ? `تربل ×2 لمدة ${minutes} دقيقة`
+        : 'ما في جائزة'
+    : penalty === 'sabotage' ? `تخريب ×0.5 لمدة ${penaltyMinutes} دقيقة` : 'ما في عقاب';
 
   const REWARDS: Array<{ id: RewardKind; icon: string; ar: string; en: string; hint: string }> = [
     { id: 'none', icon: '😐', ar: 'ما في شيء', en: 'Nothing', hint: 'ما مكافأة ولا عقاب' },
@@ -207,13 +266,23 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
     <div className="grid gap-4">
       <style>{CSS}</style>
 
+      {loadError && (
+        <div className="adm-card adm-in rounded-3xl p-5 border"
+          style={{ background: 'rgba(220,38,38,.12)', borderColor: 'rgba(220,38,38,.45)' }}>
+          <p className="text-sm font-black text-red-300">
+            {ar ? 'ما قدرنا نقرأ التحدي من القاعدة' : 'Could not read the challenge from the database'}
+          </p>
+          <p className="mt-1.5 text-[12px] text-white/60" dir="auto">{loadError}</p>
+        </div>
+      )}
+
       {/* العنوان */}
       <div className="adm-card adm-in ch-card rounded-3xl p-5 sm:p-6 border border-white/10">
         <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div>
+          <div className="min-w-0">
             <h2 className="text-lg sm:text-xl font-black flex items-center gap-2">
               <span aria-hidden="true">⚔️</span>
-              {ar ? 'تحدي رايس' : 'Raees Challenge'}
+              {ch?.title?.trim() || (ar ? 'تحدي رايس' : 'Raees Challenge')}
             </h2>
             <p className="mt-1 text-[12px] text-white/45">
               {ar ? 'شخص واحد ضد الشات كله — أنت تقرر كل شي من هنا' : 'One person against the whole chat — you control everything from here'}
@@ -250,34 +319,108 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
         {ar ? 'النقاط تُحتسب وقت البث فقط — شوف قسم "نقاط البث"' : 'Points only count during a live broadcast'}
       </p>
 
-      {/* ── ما في تحدٍ: إنشاء ── */}
+      {/* ── ما في فعالية: الإنشاء ── */}
       {!ch && (
-        <Sec title={ar ? 'ابدأ تحدياً جديداً' : 'Start a challenge'} icon="🚀" state="on" tone={GOLD}>
-          <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-            <label className="block">
-              <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
-                {ar ? 'اسم المتحدي (ناصر / رايس)' : 'Challenger (username)'}
-              </span>
-              <input className="ch-inp" dir="ltr" value={challenger} maxLength={24} autoComplete="off"
-                placeholder="xtroet"
-                onChange={(e) => setChallenger(e.target.value.replace(/[^A-Za-z0-9_.]/g, ''))}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && challenger.trim().length >= 2 && !saving) {
-                    void act('challenge_create', { challenger: challenger.trim() }, ar ? 'بدأ التحدي!' : 'Challenge started!');
-                  }
-                }} />
-            </label>
-            <button className="adm-btn rounded-2xl px-6 py-2.5 text-[13px] font-black"
-              style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
-              disabled={saving || challenger.trim().length < 2}>
-              ⚔️ {ar ? 'ابدأ' : 'Start'}
-            </button>
+        <div className="grid gap-4">
+          {/* 1) الاسم */}
+          <Sec title={ar ? 'اسم الفعالية' : 'Activity name'} icon="🏷️" state="on" tone={GOLD}>
+            <input className="ch-inp" dir="auto" value={title} maxLength={60} autoComplete="off"
+              placeholder={ar ? 'مثلاً: كأسandria للتفاعل' : 'e.g. Alexandria Cup'}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && canStart && !saving) void start();
+              }} />
+            <div className="mt-3 flex items-center gap-3 rounded-2xl px-4 py-3"
+              style={{ background: 'rgba(212,175,55,.10)', border: '1px solid rgba(212,175,55,.34)' }}>
+              <span className="text-2xl" aria-hidden="true">👑</span>
+              <div className="min-w-0">
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
+                  {ar ? 'المتحدي' : 'Challenger'}
+                </p>
+                <p className="truncate text-sm font-black text-white" dir="rtl">{CHALLENGER}</p>
+              </div>
+            </div>
+          </Sec>
+
+          {/* 2) الجوائز والعقوبات — تتحدد قبل ما تبدأ */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Sec title={ar ? 'لو الشات كسب' : 'If the chat wins'} icon="🎉" state="on" tone={EMERALD}>
+              <div className="grid gap-2">
+                {([
+                  { id: 'distribute' as ChatReward, icon: '🎁', label: ar ? 'توزيع نقاط' : 'Distribute points' },
+                  { id: 'double' as ChatReward, icon: '⚡', label: ar ? 'تربل — نقاط مضاعفة' : 'Double points' },
+                  { id: 'none' as ChatReward, icon: '😐', label: ar ? 'ما في جائزة' : 'No reward' },
+                ]).map((o) => (
+                  <button key={o.id} className={`ch-opt ${chatReward === o.id ? 'on' : ''}`}
+                    onClick={() => setChatReward(o.id)}>
+                    <p className="text-lg" aria-hidden="true">{o.icon}</p>
+                    <p className="text-[12px] font-black">{o.label}</p>
+                  </button>
+                ))}
+              </div>
+
+              {chatReward === 'distribute' && (
+                <label className="mt-3 block">
+                  <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
+                    {ar ? 'نقاط لكل واحد' : 'Points each'}
+                  </span>
+                  <input className="ch-inp" dir="ltr" type="number" min={1} max={1000000} value={amount}
+                    onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))} />
+                </label>
+              )}
+
+              {chatReward === 'double' && (
+                <label className="mt-3 block">
+                  <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
+                    {ar ? 'المدة بالدقائق' : 'Duration (minutes)'}
+                  </span>
+                  <input className="ch-inp" dir="ltr" type="number" min={1} max={10080} value={minutes}
+                    onChange={(e) => setMinutes(e.target.value.replace(/[^0-9]/g, ''))} />
+                </label>
+              )}
+            </Sec>
+
+            <Sec title={ar ? 'لو ناصر كسب' : 'If Nasser wins'} icon="⚔️" state="on" tone={BLOOD}>
+              <div className="grid gap-2">
+                {([
+                  { id: 'sabotage' as Penalty, icon: '💥', label: ar ? 'تخريب — نص نقطة' : 'Sabotage — half a point' },
+                  { id: 'none' as Penalty, icon: '🕊️', label: ar ? 'ما في عقاب' : 'No penalty' },
+                ]).map((o) => (
+                  <button key={o.id} className={`ch-opt ${penalty === o.id ? 'on' : ''}`}
+                    onClick={() => setPenalty(o.id)}>
+                    <p className="text-lg" aria-hidden="true">{o.icon}</p>
+                    <p className="text-[12px] font-black">{o.label}</p>
+                  </button>
+                ))}
+              </div>
+
+              {penalty === 'sabotage' && (
+                <label className="mt-3 block">
+                  <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
+                    {ar ? 'مدة العقاب بالدقائق' : 'Penalty duration (minutes)'}
+                  </span>
+                  <input className="ch-inp" dir="ltr" type="number" min={1} max={10080} value={penaltyMinutes}
+                    onChange={(e) => setPenaltyMinutes(e.target.value.replace(/[^0-9]/g, ''))} />
+                  <span className="mt-1.5 block text-[11px] text-white/35">
+                    {ar ? 'كل رسالة صارت نص نقطة ×0.5 بدل نقطة كاملة' : 'Each message counts 0.5 instead of 1'}
+                  </span>
+                </label>
+              )}
+            </Sec>
           </div>
-          <p className="mt-3 text-[11px] text-white/40">
-            {ar ? 'البوت بيعلنه في الشات فوراً، وبيختار كلمة سرية عشوائية ما تشوفها إلا لما يوقف التحدي.'
+
+          <button className="adm-btn w-full rounded-2xl py-4 text-[15px] font-black"
+            style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
+            disabled={!canStart || saving}
+            onClick={() => void start()}>
+            {saving ? (ar ? 'جاري…' : '…') : `⚔️ ${ar ? 'ابدأ الفعالية' : 'Start the activity'}`}
+          </button>
+
+          <p className="text-center text-[11px] text-white/35">
+            {ar ? 'البوت بيعلنها بالشات فوراً، وبيختار كلمة سرية ما تشوفها إلا لما توقفها.'
               : 'The bot announces it in chat instantly and picks a secret keyword you only see when it ends.'}
           </p>
-        </Sec>
+        </div>
       )}
 
       {/* ── تحدي جارٍ ── */}
@@ -378,56 +521,32 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
             </Sec>
           )}
 
-          {/* المكافأة / العقاب */}
+          {/* التطبيق — الخيار انحدد وقت البداية، هنا بس ضغطة واحدة */}
           {collecting && (
-            <Sec title={ar ? 'المكافأة أو العقاب' : 'Reward or penalty'} icon="🎖️" state="on" tone={EMERALD}>
-              <p className="mb-3 text-[12px] text-white/50">
-                {winner === 'chat'
-                  ? ar ? 'الشات كسب → اللي يكتب الكلمة ينال المكافأة' : 'The chat won → participants get the reward'
-                  : ar ? 'المتحدي كسب → تقدر تعاقب الشات أو تكرّمه' : 'The challenger won → punish or reward the chat'}
-              </p>
-
-              <div className="grid gap-2 sm:grid-cols-4">
-                {REWARDS.map((r) => (
-                  <button key={r.id} className={`ch-opt ${reward === r.id ? 'on' : ''}`}
-                    disabled={saving} onClick={() => setReward(r.id)}>
-                    <p className="text-xl" aria-hidden="true">{r.icon}</p>
-                    <p className="mt-1 text-[12px] font-black">{ar ? r.ar : r.en}</p>
-                    <p className="mt-0.5 text-[10px] text-white/40">{r.hint}</p>
-                  </button>
-                ))}
+            <Sec title={ar ? 'إنهاء وتطبيق' : 'Finish and apply'} icon="🎯" state="on" tone={GOLD}>
+              <div className="rounded-2xl p-4 text-center"
+                style={{ background: 'rgba(255,255,255,.035)', border: '1px solid rgba(255,255,255,.09)' }}>
+                <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">
+                  {winner === 'chat' ? (ar ? 'الشات كسب' : 'The chat won') : (ar ? 'ناصر كسب' : 'Nasser won')}
+                </p>
+                <p className="mt-1.5 text-lg font-black">
+                  {winner === 'chat'
+                    ? ch.chat_reward_kind === 'distribute' ? `🎁 ${ch.chat_reward_amount} نقطة لكل واحد`
+                      : ch.chat_reward_kind === 'double' ? `⚡ تربل ×2 لمدة ${ch.chat_reward_minutes} دقيقة`
+                        : '😐 ما في جائزة'
+                    : ch.penalty_kind === 'sabotage' ? `💥 تخريب ×0.5 لمدة ${ch.penalty_minutes} دقيقة`
+                      : '🕊️ ما في عقاب'}
+                </p>
+                <p className="mt-1 text-[11px] text-white/35">
+                  {ar ? 'انتصف على كل من كتب الكلمة' : 'applies to everyone who typed the keyword'}
+                </p>
               </div>
 
-              {(reward === 'distribute' || reward === 'double' || reward === 'sabotage') && (
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  {reward === 'distribute' && (
-                    <label className="block">
-                      <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
-                        {ar ? 'نقاط لكل واحد' : 'Points each'}
-                      </span>
-                      <input className="ch-inp" dir="ltr" type="number" min={1} max={1000000} value={amount}
-                        onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))} />
-                    </label>
-                  )}
-                  <label className="block">
-                    <span className="mb-1.5 block text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
-                      {ar ? 'المدة بالدقائق' : 'Duration (minutes)'}
-                    </span>
-                    <input className="ch-inp" dir="ltr" type="number" min={1} max={10080} value={minutes}
-                      onChange={(e) => setMinutes(e.target.value.replace(/[^0-9]/g, ''))} />
-                  </label>
-                </div>
-              )}
-
-              <button className="mt-4 w-full rounded-2xl py-3 text-[14px] font-black"
+              <button className="mt-4 w-full rounded-2xl py-3.5 text-[14px] font-black"
                 style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
                 disabled={saving}
-                onClick={() => void act('challenge_apply', {
-                  id: ch.id,
-                  reward_kind: reward,
-                  reward_amount: Number(amount) || 0,
-                  reward_minutes: Number(minutes) || 0,
-                }, ar ? `انفّذ على ${count} واحد` : `Applied to ${count} people`)}>
+                onClick={() => void act('challenge_apply', { id: ch.id },
+                  ar ? `انفّذ على ${count} واحد` : `Applied to ${count} people`)}>
                 {saving ? (ar ? 'جاري…' : 'Working…') : `🎯 ${ar ? 'إيقاف وتطبيق' : 'Stop & apply'} (${nf(count)})`}
               </button>
             </Sec>
@@ -449,19 +568,21 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
             </p>
             {ch.status === 'done' && count > 0 && (
               <p className="mt-1 text-[12px] text-white/45">
-                {ch.reward_kind === 'distribute'
-                  ? ar ? `وُزّعت ${nf(ch.reward_amount)} نقطة على ${nf(count)} واحد` : `${nf(ch.reward_amount)} points to ${nf(count)} people`
-                  : ch.reward_kind === 'double'
-                    ? ar ? 'تربل — نقاط مضاعفة' : 'Double points'
-                    : ch.reward_kind === 'sabotage'
-                      ? ar ? 'تخريب — نص نقطة' : 'Sabotage — half a point'
-                      : (ar ? 'ما صار شيء' : 'Nothing applied')}
+                {ch.winner === 'chat'
+                  ? ch.chat_reward_kind === 'distribute'
+                    ? ar ? `وُزّعت ${nf(ch.chat_reward_amount)} نقطة على ${nf(count)} واحد` : `${nf(ch.chat_reward_amount)} points to ${nf(count)} people`
+                    : ch.chat_reward_kind === 'double'
+                      ? ar ? 'تربل — نقاط مضاعفة' : 'Double points'
+                      : (ar ? 'ما في جائزة' : 'No reward given')
+                  : ch.penalty_kind === 'sabotage'
+                    ? ar ? 'تخريب — نص نقطة على الرسالة' : 'Sabotage — half a point per message'
+                    : (ar ? 'ما في عقاب' : 'No penalty')}
               </p>
             )}
           </div>
           <button className="mt-2 w-full rounded-2xl py-2.5 text-[12px] font-black"
             style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
-            onClick={() => { setCh(null); setEntries([]); setCount(0); setChallenger(''); void load(); }}>
+            onClick={() => { setCh(null); setEntries([]); setCount(0); void load(); }}>
             ⚔️ {ar ? 'تحدٍ جديد' : 'New challenge'}
           </button>
         </Sec>

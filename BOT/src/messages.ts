@@ -266,19 +266,17 @@ export const messages = {
 
   // ── تحدي رايس ───────────────────────────────────────────────
 
-  /** إعلان افتتاح التحدي — يطلع أول ما ينشئه الأدمن. */
-  challengeStarted: (challenger: string): string =>
-    toSingleLine(`⚔️ تحدي رايس بدأ — @${safeUsername(challenger, 18)} ضد الشات كله!`),
+  /** إعلان افتتاح الفعالية — يطلع أول ما ينشئها الأدمن، ومعه اسمها. */
+  challengeStarted: (title: string, challenger: string): string =>
+    toSingleLine(
+      `⚔️ بدأت فعالية «${safeUsername(title, 28)}» — @${safeUsername(challenger, 18)} ضد الشات كله!`,
+    ),
 
   /** إعلان الكلمة العشوائية — أهم رسالة، الناس لازم تشوفها واضحة. */
   challengeKeyword: (challenger: string, keyword: string, collected = 0): string =>
     toSingleLine(
       `🔑 اكتبوا كلمة واحدة في الشات: ${keyword} — أول واحد يكتبها يسجّل 🔥 الحالي ${formatNumber(collected)}`,
     ),
-
-  /** تأكيد لأحد كتب الكلمة (مع بدايات وأخوات). */
-  challengeEntry: (username: string, collected: number): string =>
-    toSingleLine(`✅ @${safeUsername(username, 14)} سجّل 🔥 ${formatNumber(collected)}`),
 
   /** الشات ربح. */
   challengeChatWon: (challenger: string): string =>

@@ -1,6 +1,5 @@
 import { env } from '../config.js';
 import { getLogger } from '../logger.js';
-import { messages } from '../messages.js';
 import type { NormalizedMessage } from '../kick/types.js';
 import type { ChallengeState } from './challenge.js';
 import type { Commands } from './commands.js';
@@ -86,15 +85,15 @@ export class MessageRouter {
 /**
    * سجّل محاولة كتابة كلمة التحدي.
    *
-   * المحاولة الأولى نناديه في الشات عشان الناس تعرف إنها انقبلت وترجع
-   * تكتب ثانية. الإعادة بتتجاهل بصمت — ما أحد يبي spam.
+   * بدون أي ردّ بالشات. كان في رسالة "✅ @x سجّل 🔥 12" لكل واحد، وبطلت
+   * لأن الفعالية تجي 100+ واحد وكل واحد يبي يحجز مكان — الشات يتغرق
+   * بإشعارات ما أحد يقراها. العدّاد في لوحة الإدارة يحرك لحاله كل ثانيتين
+   * وهذا يكفي家企业.
    */
   private async collectChallengeKeyword(msg: NormalizedMessage): Promise<void> {
     const state = this.deps.challenge;
     if (!state) return;
-    const result = await state.collect(msg.userId, msg.username);
-    if (result !== 'first') return;
-    this.deps.sender.send(messages.challengeEntry(msg.username, state.snapshot().collected), 'low');
+    await state.collect(msg.userId, msg.username);
   }
 
   private async award(msg: NormalizedMessage): Promise<void> {

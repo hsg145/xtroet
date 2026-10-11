@@ -15,9 +15,18 @@ export interface ChallengeRow {
   id: number;
   channel_id: number;
   challenger: string;
+  /** اسم الفعالية — يكتبه الأدمن ويطلع في إعلان الشات. */
+  title: string;
   status: ChallengeStatus;
   winner: ChallengeWinner;
   keyword: string | null;
+  /** جوائز الشات لو كسب. */
+  chat_reward_kind: 'none' | 'distribute' | 'double';
+  chat_reward_amount: number;
+  chat_reward_minutes: number;
+  /** عقاب الشات لو ناصر كسب. */
+  penalty_kind: 'none' | 'sabotage';
+  penalty_minutes: number;
   reward_kind: RewardKind;
   reward_amount: number;
   reward_minutes: number;
@@ -52,16 +61,23 @@ export function normalizeChallenge(row: Record<string, unknown> | null): Challen
   const id = Number(row.id);
   if (!Number.isFinite(id) || id <= 0) return null;
   const winner = row.winner === 'challenger' || row.winner === 'chat' ? row.winner : null;
+  const mins = (v: unknown) => Math.max(0, Math.trunc(Number(v)) || 0);
   return {
     id,
     channel_id: Number(row.channel_id) || 0,
     challenger: String(row.challenger ?? '').trim(),
+    title: String(row.title ?? '').trim(),
     status: asStatus(row.status),
     winner,
     keyword: typeof row.keyword === 'string' && row.keyword.trim() !== '' ? row.keyword.trim() : null,
+    chat_reward_kind: asChatReward(row.chat_reward_kind),
+    chat_reward_amount: mins(row.chat_reward_amount),
+    chat_reward_minutes: mins(row.chat_reward_minutes),
+    penalty_kind: row.penalty_kind === 'sabotage' ? 'sabotage' : 'none',
+    penalty_minutes: mins(row.penalty_minutes),
     reward_kind: asReward(row.reward_kind),
-    reward_amount: Math.max(0, Math.trunc(Number(row.reward_amount)) || 0),
-    reward_minutes: Math.max(0, Math.trunc(Number(row.reward_minutes)) || 0),
+    reward_amount: mins(row.reward_amount),
+    reward_minutes: mins(row.reward_minutes),
     note: String(row.note ?? ''),
     started_at: String(row.started_at ?? ''),
     ended_at: row.ended_at ? String(row.ended_at) : null,
@@ -70,8 +86,12 @@ export function normalizeChallenge(row: Record<string, unknown> | null): Challen
   };
 }
 
+function asChatReward(v: unknown): 'none' | 'distribute' | 'double' {
+  return v === 'distribute' || v === 'double' ? v : 'none';
+}
+
 const COLUMNS =
-  'id, channel_id, challenger, status, winner, keyword, reward_kind, reward_amount, reward_minutes, note, started_at, ended_at, collected_at, applied_at';
+  'id, channel_id, challenger, title, status, winner, keyword, chat_reward_kind, chat_reward_amount, chat_reward_minutes, penalty_kind, penalty_minutes, reward_kind, reward_amount, reward_minutes, note, started_at, ended_at, collected_at, applied_at';
 
 /** التحدي الجارِ (running أو collecting) — واحد فقط لكل قناة. */
 export async function fetchActiveChallenge(channelId: number): Promise<ChallengeRow | null> {
