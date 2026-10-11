@@ -154,6 +154,14 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
   const [saving, setSaving] = useState(false);
   const [flash, setFlash] = useState<{ ok: boolean; text: string } | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  /**
+   * الفعاليات المكتملة اللي ضغطنا "تحدٍ جديد" بعدها.
+   *
+   * من غيرها، الاستطلاع كل ٨ ثواني يجيب آخر فعالية من القاعدة — وهي
+   * نفسها المكتملة — ويرجّعك لشاشة "انتهى" بدل ما يوريك نموذج الإنشاء.
+   * فنتجاهلها لحد ما تبدأ واحدة جديدة فعلاً.
+   */
+  const dismissed = useRef<Set<number>>(new Set());
   const timer = useRef<number | null>(null);
 
   const say = useCallback((ok: boolean, text: string) => {
@@ -164,9 +172,14 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
   const load = useCallback(async () => {
     try {
       const j = await callAdmin('challenge_get');
-      setCh(j.challenge ?? null);
-      setEntries(Array.isArray(j.entries) ? j.entries : []);
-      setCount(Number(j.count) || 0);
+      const c = j.challenge ?? null;
+      // فعالية مكتملة رفضنا نعرضها = ما في شي نعرضه، نبيّن نموذج الإنشاء.
+      const finished = c?.status === 'done' || c?.status === 'cancelled';
+      const hide = c !== null && finished && dismissed.current.has(c.id);
+
+      setCh(hide ? null : c);
+      setEntries(hide ? [] : Array.isArray(j.entries) ? j.entries : []);
+      setCount(hide ? 0 : Number(j.count) || 0);
       setLoadError(null);
     } catch (e: any) {
       // ما نبلع الخطأ. لو الـ migration ناقصة، المستخدم لازم يشوف السبب
@@ -182,11 +195,13 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
     }
   }, []);
 
-  /* تحدٍ في الجمع: تحديث كل ثانيتين — العدّاد لازم يقفز مع الشات. */
+  /* تحدٍ في الجمع: تحديث كل ثانيتين — العدّاد لازم يقفز مع الشات.
+     ما في نسخة نشطة: 15 ثانية تكفي، أقل ما نضغط على القاعدة بلا داعي. */
   useEffect(() => {
     void load();
     const live = ch?.status === 'collecting';
-    timer.current = window.setInterval(() => void load(), live ? 2000 : 8000);
+    const busy = ch?.status === 'running' || live;
+    timer.current = window.setInterval(() => void load(), live ? 2000 : busy ? 8000 : 15_000);
     return () => {
       if (timer.current) window.clearInterval(timer.current);
     };
@@ -614,11 +629,29 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
               </p>
             )}
           </div>
-          <button className="mt-2 w-full rounded-2xl py-2.5 text-[12px] font-black"
+          <button className="mt-2 w-full rounded-2xl py-3 text-[13px] font-black"
             style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
-            onClick={() => { setCh(null); setEntries([]); setCount(0); void load(); }}>
-            ⚔️ {ar ? 'تحدٍ جديد' : 'New challenge'}
+            onClick={() => {
+              // لا تستدعِ load() هنا: هي رجّعنا لنفس الشاشة المكتملة.
+              // نتجاهلها في الاستطلاع ونبيّن نموذج الإنشاء مباشرة.
+              if (ch) dismissed.current.add(ch.id);
+              setCh(null);
+              setEntries([]);
+              setCount(0);
+              setTitle('');
+            }}>
+            ⚔️ {ar ? 'ابدأ فعالية جديدة' : 'Start a new activity'}
           </button>
+          {ch && (
+            <button className="mt-2 w-full rounded-2xl py-2 text-[11px] font-black"
+              style={{ background: 'transparent', border: '1px solid rgba(255,255,255,.10)', color: 'rgba(255,255,255,.45)' }}
+              onClick={() => {
+                dismissed.current.delete(ch.id);
+                void load();
+              }}>
+              {ar ? 'ارجع لنتيجة آخر فعالية' : 'Back to the last result'}
+            </button>
+          )}
         </Sec>
       )}
 

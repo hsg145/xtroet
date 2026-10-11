@@ -674,7 +674,10 @@ export default async function handler(req: Request) {
       const penaltyKind = String(body.penalty_kind || 'none');
       if (!PENALTY_KINDS.includes(penaltyKind)) return json({ error: 'bad_penalty' }, 400);
       const penaltyMinutes = Math.trunc(num(body.penalty_minutes, 0));
-      if (penaltyMinutes < 1 || penaltyMinutes > 10080) return json({ error: 'need_minutes' }, 400);
+      // المدة مطلوبة بس للتخريب. "ما في عقاب" يعني صفر — كان الفحص يشترط
+      // دقيقة على طول فرفض الاختيار الطبيعي: none مع 0.
+      if (penaltyMinutes < 0 || penaltyMinutes > 10080) return json({ error: 'bad_minutes' }, 400);
+      if (penaltyKind === 'sabotage' && penaltyMinutes < 1) return json({ error: 'need_minutes' }, 400);
 
       // الكلمة عشوائية من القائمة — البوت ما يختارها وقت البدء، عشان ما أحد
       // يقراها من الداشبورد ويكسل ويكتبها قبل الناس.
@@ -699,12 +702,14 @@ export default async function handler(req: Request) {
           started_at: new Date().toISOString(),
         }),
       });
-      if (!created) return json({ error: 'create_failed' }, 500);
+      // return=representation ترجع مصفوفة، حتى لو إinsert صف واحد بس.
+      const row = Array.isArray(created) ? created[0] : created;
+      if (!row) return json({ error: 'create_failed' }, 500);
 
       await runAudit('challenge_create', {
         title, challenger, keyword, chatKind, penaltyKind,
       });
-      return json({ ok: true, challenge: created });
+      return json({ ok: true, challenge: row });
     }
 
     /* ── أوقف التحدي: يختار الفائز → ينتقل لحالة جمع الكلمة ── */
