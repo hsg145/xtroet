@@ -39,7 +39,8 @@ browser, find `"chatroom":{"id":NUMBER`, and put that number in `.env` as
 
 | Command | Meaning |
 | --- | --- |
-| `!رتبة` | your own rank, points and progress to the next one |
+| `!نقاطي` | your own rank, points and progress to the next one |
+| `!رتبتي` | same as `!نقاطي` |
 | `!توب` | top 5 on the leaderboard |
 | `!رتب` | the full rank ladder |
 | `!حالة` | bot status |
@@ -47,8 +48,66 @@ browser, find `"chatroom":{"id":NUMBER`, and put that number in `.env` as
 | `!setpts <name> <n>` | set points, may be negative (xtroet only) |
 | `!تصفير <name>` | reset a user to zero (xtroet only) |
 
-Each normal chat message is worth +1 point, subject to
-`POINTS_COOLDOWN_SECONDS` (default 10s).
+`!نقاط` (without the ي) stays BotRix's and is deliberately not registered here.
+
+## Points only count during a live broadcast
+
+**Nobody earns a point unless the channel owner has an actual live broadcast
+running.** No broadcast = zero points, no matter how many messages anyone
+writes.
+
+The gate is `src/core/livestate.ts`. It polls
+`GET /public/v1/channels?slug=…` every `LIVE_POLL_MS` (default 20s), reads the
+`stream` object, and decides before any point is recorded.
+
+A stream counts as a verified broadcast only when **all** of these hold:
+
+- `broadcaster_user_id` matches the channel the bot is bound to
+- `stream.is_live === true` (strict boolean, not a truthy value)
+- `stream.start_time` is a real date — Kick sends `0001-01-01T00:00:00Z` when
+  nobody is broadcasting, and that is rejected
+- `stream.url` and `stream.key` are both present
+
+If `is_live` says yes but `url`/`key` are missing, the signal is only half
+there: the gate requires `LIVE_CONFIRM_CHECKS` consecutive readings before it
+believes it. One weak reading is never enough.
+
+The gate is **fail-closed** — any doubt means no points:
+
+| Situation | Result |
+| --- | --- |
+| Bot just started, no poll yet | closed |
+| Kick unreachable | keep the last verified answer for up to `LIVE_MAX_STALE_MS`, then close |
+| Answer older than `LIVE_MAX_STALE_MS` | closed |
+| Channel id not resolved yet | closed |
+| One dropped poll right after a broadcast ends | grace period (`LIVE_OFFLINE_GRACE_MS`, 30s) keeps it open so nobody loses points to a blip |
+
+Opening is never delayed by the grace period — only closing is, and only when
+Kick has *positively* said the broadcast ended.
+
+When the gate opens or closes, the bot announces it in chat once, and the
+`!نقاطي` / `!رتبتي` reply adds a second line reminding everyone that points
+only count while Nasser is broadcasting.
+
+`GET /health` reports the whole gate state under `live` — open/closed, why,
+last check, viewer count, and how many times it has flipped.
+
+To turn the rule off temporarily (maintenance only):
+
+```
+LIVE_REQUIRED_BOT=false
+```
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `LIVE_REQUIRED_BOT` | `true` | master switch — `false` counts points always |
+| `LIVE_POLL_MS_BOT` | `20000` | how often Kick is asked |
+| `LIVE_MAX_STALE_MS_BOT` | `90000` | when the last verified answer expires |
+| `LIVE_OFFLINE_GRACE_MS_BOT` | `30000` | absorb one lost poll after a stream ends |
+| `LIVE_CONFIRM_CHECKS_BOT` | `2` | consecutive weak readings needed to trust one |
+
+Admin commands (`!addpts`, `!setpts`, `!تصفير`) are never gated — the owner can
+still fix the leaderboard at any time.
 
 ## Commands you may need
 

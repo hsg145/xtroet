@@ -18,6 +18,7 @@
 import { env } from '../src/config.js';
 import { Commands } from '../src/core/commands.js';
 import { Flusher } from '../src/core/flusher.js';
+import { LiveGate } from '../src/core/livestate.js';
 import { PointsEngine } from '../src/core/points.js';
 import { RankStore } from '../src/core/ranks.js';
 import { MessageRouter } from '../src/core/router.js';
@@ -111,12 +112,34 @@ async function main(): Promise<void> {
     },
   });
 
+  // The simulator runs offline, so it cannot ask Kick whether a broadcast is
+  // live. It hands the router a gate that is permanently open unless
+  // SIMULATE_LIVE=0, which reproduces the real "no broadcast, no points" rule.
+  const simulateLive = (process.env.SIMULATE_LIVE ?? '1') !== '0';
+  const liveGate = new LiveGate({
+    probe: async () => null,
+    slug: e.KICK_TARGET_CHANNEL_SLUG,
+    channelId: () => channelId,
+    required: !simulateLive,
+    pollMs: 60_000,
+    maxStaleMs: 60_000,
+    offlineGraceMs: 0,
+    confirmChecks: 1,
+  });
+  if (simulateLive) {
+    liveGate.applyEvaluation(
+      { verdict: 'live-strong', reason: 'simulator', startedAt: Date.now(), sessionKey: 'sim', viewerCount: 1 },
+      Date.now(),
+    );
+  }
+
   const commands = new Commands({
     channelId,
     broadcasterUserId: channelId,
     engine,
     ranks,
     sender,
+    live: liveGate,
     statusInfo: () => ({ uptime: '0s', queue: 0, pending: 0, lastFlush: 'لم', lastEvent: 'لم', subscriptionOk: false }),
   });
 
@@ -130,6 +153,7 @@ async function main(): Promise<void> {
     flushNow: () => flusher.flushNow(),
     // Never let the simulator award points to itself.
     selfUserIds: new Set<number>(),
+    live: liveGate,
   });
 
   console.log(`  sender  : ${DRY ? 'dry (console only)' : 'real Kick sender'}`);

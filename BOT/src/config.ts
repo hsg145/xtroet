@@ -54,6 +54,11 @@ const BOT_ENV_KEYS = [
   'MAX_QUEUE_SIZE',
   'SEND_INTERVAL_MS',
   'POINTS_MIN',
+  'LIVE_REQUIRED',
+  'LIVE_POLL_MS',
+  'LIVE_MAX_STALE_MS',
+  'LIVE_OFFLINE_GRACE_MS',
+  'LIVE_CONFIRM_CHECKS',
   'CODE_VERIFIER',
   'CHAT_SOURCE',
 ] as const;
@@ -158,6 +163,18 @@ const envSchema = z
     MAX_QUEUE_SIZE: int(50).pipe(z.number().min(1)),
     SEND_INTERVAL_MS: int(1200).pipe(z.number().min(200)),
     POINTS_MIN: bool(true),
+
+    // --- بوابة البث: لا نقاط إلا أثناء بث حيّ موثّق ---
+    // LIVE_REQUIRED=false يتجاوز القاعدة (وضع صيانة فقط) — لا تشغّله إلا مؤقتاً.
+    LIVE_REQUIRED: bool(true),
+    /** كم مرة نفحص كيك عن حالة البث. */
+    LIVE_POLL_MS: int(20_000).pipe(z.number().min(5_000)),
+    /** بعد هذا الفشل المتتالي تنتهي صلاحية آخر نتيجة موثوقة وتُقفل البوابة. */
+    LIVE_MAX_STALE_MS: int(90_000).pipe(z.number().min(15_000)),
+    /** مهلة أمان: نبقي البوابة مفتوحة شوي بعد إغلاق بث مؤكد (فحص واحد ضاع). */
+    LIVE_OFFLINE_GRACE_MS: int(30_000).pipe(z.number().min(0)),
+    /** كم فحص ضعيف متتالي (is_live بدون url/key) لازم قبل ما نصدّقه بثاً. */
+    LIVE_CONFIRM_CHECKS: int(2).pipe(z.number().min(1)),
   })
   .superRefine((env, ctx) => {
     if (!env.SUPABASE_SECRET_KEY && !env.SUPABASE_SERVICE_ROLE_KEY) {

@@ -11,6 +11,7 @@ import {
   parseTarget,
 } from './command-parser.js';
 import { CooldownMap } from './cooldown.js';
+import type { LiveGate } from './livestate.js';
 import type { PointsEngine } from './points.js';
 import { crossedRanks, type RankStore } from './ranks.js';
 import type { ChatSender } from './sender.js';
@@ -32,7 +33,12 @@ export interface CommandDeps {
   broadcasterUserId: number;
   engine: PointsEngine;
   ranks: RankStore;
-  sender: ChatSender;
+sender: ChatSender;
+  /**
+   * بوابة البث. الأوامر ما تنحجب عنها — وحدة منها هي اللي تقرر إذا نرسل
+   * الرسالة الثانية اللي تقول إن النقاط وقت البث بس.
+   */
+  live: LiveGate;
   statusInfo: () => {
     uptime: string;
     queue: number;
@@ -109,7 +115,7 @@ export class Commands {
     }
   }
 
-  /** !رتبة [name] -- own rank, or someone else's when a name is given. */
+/** !رتبة / !نقاطي [name] -- own rank, or someone else's when a name is given. */
   private async cmdRank(msg: NormalizedMessage, rest: string): Promise<void> {
     const target = parseTarget(rest);
 
@@ -117,20 +123,25 @@ export class Commands {
       const state = await this.deps.engine.ensure(this.deps.channelId, msg.userId, msg.username);
       const progress = computeProgress(this.deps.ranks.all(), state.points);
       const position = await fetchPosition(this.deps.channelId, msg.userId).catch(() => null);
-this.deps.sender.send(
+      this.deps.sender.send(
         messages.rankOf({
-        username: msg.username,
-        rank: progress.current,
-        points: state.points,
-        position,
-        ratio: progress.ratio,
-        remaining: progress.remaining,
-        nextRank: progress.next,
-        percent: progress.percent,
-      }),
+          username: msg.username,
+          rank: progress.current,
+          points: state.points,
+          position,
+          ratio: progress.ratio,
+          remaining: progress.remaining,
+          nextRank: progress.next,
+          percent: progress.percent,
+        }),
         'high',
         msg.messageId,
       );
+      // الرسالة الثانية: تُرسل بس إذا كان البث مفتوح فعلياً — لأنها هي
+      // اللي تشرح للناس ليش نقاطهم تتحرك وقت البث بس.
+      if (this.deps.live.allowsAward().allowed) {
+        this.deps.sender.send(messages.liveOnlyNotice(), 'low');
+      }
       return;
     }
 
@@ -143,7 +154,7 @@ this.deps.sender.send(
 
     const progress = computeProgress(this.deps.ranks.all(), member.points);
     const position = await fetchPosition(this.deps.channelId, member.kick_user_id).catch(() => null);
-this.deps.sender.send(
+    this.deps.sender.send(
       messages.rankOf({
         username: member.username || target,
         rank: progress.current,
@@ -156,6 +167,9 @@ this.deps.sender.send(
       }),
       'high',
     );
+    if (this.deps.live.allowsAward().allowed) {
+      this.deps.sender.send(messages.liveOnlyNotice(), 'low');
+    }
   }
 
   private async cmdTop(): Promise<void> {

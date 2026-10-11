@@ -3,6 +3,7 @@ import { getLogger } from './logger.js';
 import { AdminState } from './core/admin-state.js';
 import { Commands, COMMAND_ALIASES } from './core/commands.js';
 import { Flusher } from './core/flusher.js';
+import { LiveGate } from './core/livestate.js';
 import { PointsEngine } from './core/points.js';
 import { RankStore } from './core/ranks.js';
 import { MessageRouter } from './core/router.js';
@@ -10,7 +11,7 @@ import { createServer, WebhookChatSource, type HttpServer } from './core/server.
 import { ChatSender } from './core/sender.js';
 import { messages } from './messages.js';
 import { fetchRanks, upsertChannel, type RankChangeRow } from './db/repo.js';
-import { getChannelBySlug } from './kick/api.js';
+import { getChannelBySlug, getRawChannelBySlug } from './kick/api.js';
 import { exchangeCode, tokenManager } from './kick/oauth.js';
 import { IdleWatcher, SubscriptionReconciler } from './kick/subscriptions.js';
 import { PusherChatSource, resolveChatroomId } from './kick/pusher.js';
@@ -129,6 +130,38 @@ async function main(): Promise<void> {
   const idleWatcher = new IdleWatcher(e.EVENT_IDLE_WARN_SECONDS);
   const reconciler = new SubscriptionReconciler(channelId, e.SUBSCRIPTION_REFRESH_MS);
 
+  // Live-gate counters, surfaced in /health so "النقاط واقفة" is always
+  // explainable without digging through the logs.
+  let liveTransitions = 0;
+  let lastLiveChange: Date | null = null;
+
+  // ── بوابة البث ────────────────────────────────────────────
+  // القاعدة: لا نقاط إلا إذا فتح صاحب القناة بثاً حقيقياً. الخلفية تسأل كيك
+  // كل LIVE_POLL_MS، والراوتر يقرأ النتيجة من الذاكرة قبل كل رسالة.
+  const liveGate = new LiveGate({
+    probe: async (slug) => {
+      const token = await tokenManager.accessToken();
+      return getRawChannelBySlug(slug, token);
+    },
+    slug: e.KICK_TARGET_CHANNEL_SLUG,
+    channelId: () => channelId,
+    required: e.LIVE_REQUIRED,
+    pollMs: e.LIVE_POLL_MS,
+    maxStaleMs: e.LIVE_MAX_STALE_MS,
+    offlineGraceMs: e.LIVE_OFFLINE_GRACE_MS,
+    confirmChecks: e.LIVE_CONFIRM_CHECKS,
+  });
+
+// إعلان بداية/نهاية البث — مرة واحدة لكل تغيّر، حتى يعرف الناس إن النقاط
+  // اشتغلت أو وقفت. نعتمد على تغيّر `live` وحده حتى لا يتكرر الإعلان مع كل فحص.
+  liveGate.onChange((snap, prev) => {
+    if (snap.live === prev.live) return;
+    if (!e.ANNOUNCE_RANKUPS) return;
+    liveTransitions += 1;
+    lastLiveChange = new Date();
+    sender.send(snap.live ? messages.liveStarted(snap.viewerCount) : messages.liveEnded(), 'high');
+  });
+
   const flusher = new Flusher({
     channelId,
     engine,
@@ -143,6 +176,7 @@ async function main(): Promise<void> {
     engine,
     ranks,
     sender,
+    live: liveGate,
     statusInfo: () => ({
       uptime: uptime(Math.floor((Date.now() - startedAt) / 1000)),
       queue: sender.length,
@@ -163,6 +197,7 @@ async function main(): Promise<void> {
     flushNow: () => flusher.flushNow(),
     selfUserIds,
     promo: (ch, uid, content) => adminState.promo(ch, uid, content),
+    live: liveGate,
   });
 
   // A wrong PC clock makes every webhook signature fail, which gets the app
@@ -243,6 +278,12 @@ async function main(): Promise<void> {
       ranksLoaded: ranks.all().length,
       flushStatus: flusher.status,
       senderStats: sender.stats,
+      /** بوابة البث: ليش النقاط محسوبة أو واقفة الآن. */
+      live: {
+        ...liveGate.snapshot(),
+        lastChangeAt: lastLiveChange?.toISOString() ?? null,
+        transitions: liveTransitions,
+      },
       ingest: {
         mode,
         pusher: {
@@ -287,6 +328,7 @@ async function main(): Promise<void> {
 
   flusher.start();
   idleWatcher.start();
+  liveGate.start();
   ranks.startRefresh(e.RANKS_REFRESH_MS);
   tokenManager.startAutoRefresh();
   // Dashboard promos: refresh events/mutes/drops + send queued announcements.
@@ -352,6 +394,11 @@ async function main(): Promise<void> {
     `  points    : +1 per message | cooldown ${e.POINTS_COOLDOWN_SECONDS}s | flush ${e.FLUSH_INTERVAL_MS}ms | announce ${e.ANNOUNCE_RANKUPS}`,
   );
   console.log(`  ranks     : ${ranks.all().length} loaded, refreshed every ${Math.round(e.RANKS_REFRESH_MS / 60000)} min`);
+  console.log(
+    e.LIVE_REQUIRED
+      ? `  live gate : ${e.LIVE_POLL_MS / 1000}s poll | stale>${Math.round(e.LIVE_MAX_STALE_MS / 1000)}s | confirm x${e.LIVE_CONFIRM_CHECKS} — points ONLY during a verified broadcast`
+      : `  live gate : DISABLED (LIVE_REQUIRED=false) — points are counted even with no broadcast`,
+  );
   console.log(`  health    : GET /health`);
   console.log(`  listening : http://localhost:${e.PORT}\n`);
 
@@ -366,6 +413,7 @@ async function main(): Promise<void> {
 
     reconciler.stop();
     idleWatcher.stop();
+    liveGate.stop();
     ranks.stopRefresh();
     clearInterval(outboxTimer);
     adminState.stopRefresh();

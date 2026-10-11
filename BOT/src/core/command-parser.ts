@@ -63,13 +63,19 @@ export function parseCommand(content: string, prefix: string, aliases: Record<st
 /**
  * Command registry.
  * `!نقاط` / `!points` are intentionally NOT registered: BotRix owns them and
- * their data may not be imported.
+ * their data may not be imported. `!نقاطي` (with the ي suffix) is ours — it is
+ * a different word, "my points", and is what people actually type.
  */
 export const COMMAND_ALIASES: Record<string, string> = {
   // own rank — !رتبتي only (no short form, so a typo never silently works)
   'رتبتي': 'rank',
   'رتبتيك': 'rank',
+  // own points — !نقاطي ("my points"). Distinct from !نقاط, which stays BotRix's.
+  'نقاطي': 'rank',
+  'نقاطى': 'rank',
+  'نقاطيي': 'rank',
   'rank': 'rank',
+  'myrank': 'rank',
   // ranks list
   'رتب': 'ranks',
   'ranks': 'ranks',

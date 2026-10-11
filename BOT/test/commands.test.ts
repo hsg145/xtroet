@@ -92,6 +92,19 @@ it('matches !رتبتي and rejects the removed !رتبة form', () => {
     expect(parse('!points')?.name).toBe('unknown');
   });
 
+  it('registers !نقاطي ("my points") as the rank command', () => {
+    expect(COMMAND_ALIASES['نقاطي']).toBe('rank');
+    for (const input of ['!نقاطي', '!نقاطي  ', ' !نقاطي', '!نقاطى']) {
+      expect(parse(input)?.name, input).toBe('rank');
+    }
+  });
+
+  it('keeps !نقاط (BotRix) and !نقاطي (ours) apart', () => {
+    // They differ by one letter, so the shorter form must NOT swallow ours.
+    expect(parse('!نقاط')?.name).toBe('unknown');
+    expect(parse('!نقاطي')?.name).toBe('rank');
+  });
+
   it('ignores messages without the prefix', () => {
     expect(parse('مرحبا')).toBeNull();
     expect(parse('')).toBeNull();

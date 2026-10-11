@@ -3,6 +3,7 @@ import { getLogger } from '../logger.js';
 import { messages } from '../messages.js';
 import type { NormalizedMessage } from '../kick/types.js';
 import type { Commands } from './commands.js';
+import type { GateVerdict, LiveGate } from './livestate.js';
 import type { PointsEngine, PromoProvider } from './points.js';
 import type { RankStore } from './ranks.js';
 import type { ChatSender } from './sender.js';
@@ -19,6 +20,11 @@ export interface RouterDeps {
   selfUserIds: Set<number>;
   /** Dashboard promos (events, mutes, multipliers, drop codes). Optional. */
   promo?: PromoProvider;
+  /**
+   * بوابة البث. بدونها البوت ما يوزّع نقاط أبداً (fail-closed)، لأن القاعدة
+   * الأساسية هي: لا نقاط إلا أثناء بث موثّق.
+   */
+  live: LiveGate;
 }
 
 /**
@@ -65,6 +71,19 @@ export class MessageRouter {
 
   private async award(msg: NormalizedMessage): Promise<void> {
     const log = getLogger();
+
+    // ── بوابة البث: أول شي، قبل أي قراءة من القاعدة ──────────
+    // لازم نتأكد إن صاحب القناة فتح بث حقيقي قبل ما نسجّل نقطة لأحد.
+    // المقروءة من الذاكرة (الخلفية تحدّثها كل LIVE_POLL_MS) فبتكون رخيصة.
+    const gate = this.deps.live.allowsAward();
+    if (!gate.allowed) {
+      log.info(
+        { user: msg.username, reason: gate.reason, content: msg.content.slice(0, 40) },
+        'point blocked: no verified live broadcast',
+      );
+      return;
+    }
+
     const state = await this.deps.engine.ensure(this.deps.channelId, msg.userId, msg.username);
 
     const decision = this.deps.engine.award(state, {

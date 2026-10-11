@@ -244,6 +244,25 @@ export const messages = {
 
   rankOfOtherNotFound: (username: string): string =>
     toSingleLine(`🔍 ما لقيت @${safeUsername(username, 14)} — لازم يكتب قبل`),
+
+  /**
+   * الرسالة الثانية — ترافق بطاقة النقاط وقت ما يكون البث مفتوح.
+   *
+   * تُرسل فقط أثناء بث موثّق، عشان توضّح للناس إن نقطة تتحسب وقت البث فقط،
+   * فتنتفي الشائعات اللي تنتج من كلامهم قبل البث.
+   */
+  liveOnlyNotice: () => toSingleLine('📡 مع العلم النقاط فقط تنحسب لما ناصر يفتح بث'),
+
+  /** إعلان بداية البث — البوابة فتحت والنقاط اشتغلت. */
+  liveStarted: (viewers: number | null): string =>
+    toSingleLine(
+      viewers != null
+        ? `🔴 البث انطلق — النقاط صارت تنحسب ⏱️ المشاهدون ${formatNumber(viewers)}`
+        : '🔴 البث انطلق — النقاط صارت تنحسب',
+    ),
+
+  /** إعلان انتهاء البث — البوابة انغلقت والنقاط توقفت. */
+  liveEnded: (): string => toSingleLine('⚫ البث خلص — النقاط توقفت لحد ما يفتح بث جديد'),
 };
 
 /**

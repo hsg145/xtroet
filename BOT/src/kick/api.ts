@@ -82,6 +82,27 @@ export async function getOwnChannel(token: string): Promise<KickChannel | null> 
   return { broadcasterUserId: channel.broadcaster_user_id, slug: channel.slug };
 }
 
+/**
+ * GET /public/v1/channels?slug=... — يرجع المدخل الخام كما هو.
+ *
+ * السبب: بوابة البث (core/livestate.ts) تحتاج حقل `stream` بتفاصيله
+ * (url / key / start_time / is_live) للتحقق من البث. getChannelBySlug يرد
+ * فقط بالمعرّف والاسم، فنحتاج مدخلاً خاماً.
+ *
+ * يرجع null إذا ما لقى القناة (ما يرمي).
+ */
+export async function getRawChannelBySlug(
+  slug: string,
+  token: string,
+): Promise<Record<string, unknown> | null> {
+  const raw = await request<unknown>('/public/v1/channels', { token, query: { slug } });
+  const parsed = kickChannelsSchema.safeParse(raw);
+  const channel = parsed.success ? parsed.data.data?.[0] : undefined;
+  if (!channel) return null;
+  // نترك الحقول كلها كما ردّت، بما فيها stream غير المعروفة لـ zod.
+  return channel as unknown as Record<string, unknown>;
+}
+
 export interface ChatSendOptions {
   replyToMessageId?: string;
   /** User access token -> broadcaster_user_id required. Bot token ignores it. */
