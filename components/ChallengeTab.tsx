@@ -212,7 +212,8 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
         bad_minutes: ar ? 'المدة لازم بين 1 و 10080 دقيقة' : 'Duration must be 1–10080 minutes',
         not_running: ar ? 'الفعالية مو شغّالة' : 'The activity is not running',
         not_collecting: ar ? 'مو في مرحلة جمع الكلمة' : 'Not in the collecting phase',
-        not_active: ar ? 'الفعالية خلصت أو ملغاة' : 'Already finished or cancelled',
+        not_active: ar ? 'الفعالية خلصت' : 'Already finished',
+        already_decided: ar ? 'الفعالية مقفلة — القرار نهائي' : 'Locked — the decision is final',
         not_found: ar ? 'ما لقينا الفعالية' : 'Activity not found',
         db_error: ar ? 'خطأ قاعدة البيانات' : 'Database error',
       };
@@ -247,6 +248,21 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
       penalty_kind: penalty,
       penalty_minutes: Number(penaltyMinutes) || 0,
     }, ar ? 'بدأت الفعالية!' : 'Activity started!');
+
+  /**
+   * اختيار الفائز. القرار نهائي — فنسأل مرة قبل ما نثبّته، وبعدها ما فيه
+   * رجعة: القفل يصير في القاعدة نفسها (challenge_end ترفض أي status غير
+   * running، وchallenge_cancel ترفض بعد ما يتسجّل winner).
+   */
+  const [confirmWinner, setConfirmWinner] = useState<Winner>(null);
+  const decide = (w: Exclude<Winner, null>) => setConfirmWinner(w);
+  const commitWinner = async () => {
+    const w = confirmWinner;
+    setConfirmWinner(null);
+    if (!w || !ch) return;
+    await act('challenge_end', { id: ch.id, winner: w },
+      w === 'chat' ? (ar ? 'كسب الشات — الكلمة السرية جاية!' : 'The chat won!') : (ar ? 'كسب ناصر — الكلمة السرية جاية!' : 'Nasser won!'));
+  };
 
   /** وصف مختصر للخط المختار — نعرضه وقت التطبيق. */
   const presetLabel = winner === 'chat'
@@ -456,35 +472,37 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
             )}
           </Sec>
 
-          {/* زر إيقاف + اختيار الفائز */}
+          {/* اختيار الفائز — القرار نهائي بمجرد الضغط، فنتأكد قبله */}
           {running && (
             <Sec title={ar ? 'من كسب؟' : 'Who won?'} icon="🏁" state="on" tone={GOLD}>
+              <p className="mb-3 text-center text-[11px] font-black text-amber-300/80">
+                {ar ? '⚠️ هذا القرار نهائي — ما بتقدر ترجع عنه بعد الضغط'
+                  : '⚠️ Final — this cannot be undone once you press it'}
+              </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 <button className="ch-opt" disabled={saving}
-                  onClick={() => void act('challenge_end', { id: ch.id, winner: 'challenger' },
-                    ar ? 'انتهى التحدي — المتحدي كسب!' : 'Ended — the challenger won!')}>
+                  onClick={() => decide('challenger')}>
                   <p className="text-2xl" aria-hidden="true">👑</p>
-                  <p className="mt-1 text-[13px] font-black">{ar ? 'ناصر / رايس كسب' : 'The challenger won'}</p>
+                  <p className="mt-1 text-[13px] font-black">{ar ? 'ناصر كسب' : 'Nasser won'}</p>
                   <p className="mt-0.5 text-[11px] text-white/45">
-                    {ar ? 'تختار أنت العقاب' : 'you pick the penalty'}
+                    {ch.penalty_kind === 'sabotage'
+                      ? ar ? `يطبق تخريب ×0.5 لمدة ${ch.penalty_minutes} دقيقة` : `sabotage ×0.5 for ${ch.penalty_minutes} min`
+                      : (ar ? 'ما في عقاب' : 'no penalty')}
                   </p>
                 </button>
                 <button className="ch-opt" disabled={saving}
-                  onClick={() => void act('challenge_end', { id: ch.id, winner: 'chat' },
-                    ar ? 'انتهى التحدي — الشات كسب!' : 'Ended — the chat won!')}>
+                  onClick={() => decide('chat')}>
                   <p className="text-2xl" aria-hidden="true">🎉</p>
                   <p className="mt-1 text-[13px] font-black">{ar ? 'الشات كسب' : 'The chat won'}</p>
                   <p className="mt-0.5 text-[11px] text-white/45">
-                    {ar ? 'هدية للمشاركين' : 'a gift for the participants'}
+                    {ch.chat_reward_kind === 'distribute'
+                      ? ar ? `يوزع ${ch.chat_reward_amount} نقطة لكل واحد` : `${ch.chat_reward_amount} points each`
+                      : ch.chat_reward_kind === 'double'
+                        ? ar ? `تربل ×2 لمدة ${ch.chat_reward_minutes} دقيقة` : `double ×2 for ${ch.chat_reward_minutes} min`
+                        : (ar ? 'ما في جائزة' : 'no reward')}
                   </p>
                 </button>
               </div>
-              <button className="mt-3 w-full rounded-2xl py-2.5 text-[12px] font-black"
-                style={{ background: 'rgba(255,255,255,.05)', border: '1px solid rgba(255,255,255,.13)', color: 'rgba(255,255,255,.65)' }}
-                disabled={saving}
-                onClick={() => void act('challenge_cancel', { id: ch.id }, ar ? 'أُلغي التحدي' : 'Challenge cancelled')}>
-                🚫 {ar ? 'ألغِ التحدي' : 'Cancel challenge'}
-              </button>
             </Sec>
           )}
 
@@ -554,6 +572,22 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
         </>
       )}
 
+      {/* شريط القفل — يظهر بمجرد ما يتسجّل الفائز */}
+      {collecting && winner && (
+        <div className="adm-card adm-in rounded-3xl p-4 flex items-center gap-3"
+          style={{ background: 'rgba(16,185,129,.10)', border: '1px solid rgba(16,185,129,.38)' }}>
+          <span className="text-2xl" aria-hidden="true">🔒</span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-black text-emerald-300">
+              {winner === 'chat' ? (ar ? 'النتيجة: الشات كسب' : 'Result: the chat won') : (ar ? 'النتيجة: ناصر كسب' : 'Result: Nasser won')}
+            </p>
+            <p className="mt-0.5 text-[11px] text-white/45">
+              {ar ? 'الفعالية مقفلة — ما بينفع تلغيها أو ترجع عن القرار.' : 'Locked — this activity can no longer be cancelled or reversed.'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* ── خلص ── */}
       {ch && finished && (
         <Sec title={ar ? 'انتهى التحدي' : 'Challenge finished'} icon="🏁" state="done" tone={ch.status === 'done' ? EMERALD : 'rgba(255,255,255,.4)'}>
@@ -586,6 +620,47 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
             ⚔️ {ar ? 'تحدٍ جديد' : 'New challenge'}
           </button>
         </Sec>
+      )}
+
+      {/* نافذة تأكيد الفائز — القرار ما بينترجع */}
+      {confirmWinner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,.72)', backdropFilter: 'blur(6px)' }}
+          onClick={() => setConfirmWinner(null)}>
+          <div className="adm-card ch-card w-full max-w-sm rounded-3xl p-6 text-center ch-pop"
+            style={{ border: '1px solid rgba(212,175,55,.45)' }}
+            onClick={(e) => e.stopPropagation()}>
+            <p className="text-4xl" aria-hidden="true">{confirmWinner === 'chat' ? '🎉' : '👑'}</p>
+            <p className="mt-3 text-lg font-black">
+              {confirmWinner === 'chat' ? (ar ? 'الشات كسب' : 'The chat won') : (ar ? 'ناصر كسب' : 'Nasser won')}
+            </p>
+            <p className="mt-2 text-[13px] text-white/55">
+              {confirmWinner === 'chat'
+                ? ch?.chat_reward_kind === 'distribute' ? ar ? `يتوزع ${ch.chat_reward_amount} نقطة على كل من كتب الكلمة` : `${ch.chat_reward_amount} points to everyone who typed it`
+                  : ch?.chat_reward_kind === 'double' ? ar ? `تربل ×2 لمدة ${ch.chat_reward_minutes} دقيقة` : `double ×2 for ${ch.chat_reward_minutes} minutes`
+                    : (ar ? 'ما في جائزة' : 'No reward')
+                : ch?.penalty_kind === 'sabotage' ? ar ? `تخريب — نص نقطة ×0.5 لمدة ${ch.penalty_minutes} دقيقة` : `Sabotage — half a point for ${ch.penalty_minutes} minutes`
+                  : (ar ? 'ما في عقاب' : 'No penalty')}
+            </p>
+            <p className="mt-3 rounded-xl px-3 py-2 text-[11px] font-black"
+              style={{ background: 'rgba(220,38,38,.14)', color: '#FCA5A5' }}>
+              {ar ? 'ما بتقدر ترجع عن هذا القرار' : 'This decision cannot be undone'}
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <button className="adm-btn rounded-2xl py-3 text-[13px] font-black"
+                style={{ background: 'rgba(255,255,255,.06)', border: '1px solid rgba(255,255,255,.14)', color: '#fff' }}
+                onClick={() => setConfirmWinner(null)}>
+                {ar ? 'تراجع' : 'Back'}
+              </button>
+              <button className="adm-btn rounded-2xl py-3 text-[13px] font-black"
+                style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
+                disabled={saving}
+                onClick={() => void commitWinner()}>
+                {saving ? '…' : ar ? 'أأكيد' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

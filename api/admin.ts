@@ -793,16 +793,19 @@ export default async function handler(req: Request) {
       return json({ ok: true, recipients: n, result });
     }
 
-    /* ── إلغاء تحدي جارٍ ── */
+    /* ── إلغاء فعالية — مسموح بس قبل ما أحد يختار فائز ──────────────
+   *  بمجرد ما يتسجّل winner، القرار نهائي وما ينcancel. كان الكود
+   *  يسمح بالإلغاء في collecting كمان، فكان ممكن تلغي بعد ما
+   *  تختار "الشات كسب" وتلخبط الناس بمKataمة الكلمة.
+   * ─────────────────────────────────────────────────────────── */
     if (action === 'challenge_cancel') {
       const id = Math.trunc(num(body.id, 0));
       if (id <= 0) return json({ error: 'bad_id' }, 400);
-      const rows = (await sbJson(url, key, `challenges?id=eq.${id}&select=id,status,channel_id`).catch(() => [])) as any[];
+      const rows = (await sbJson(url, key, `challenges?id=eq.${id}&select=id,status,winner,channel_id`).catch(() => [])) as any[];
       const cur = rows[0];
       if (!cur) return json({ error: 'not_found' }, 404);
-      if (cur.status !== 'running' && cur.status !== 'collecting') {
-        return json({ error: 'not_active', status: cur.status }, 409);
-      }
+      if (cur.status !== 'running') return json({ error: 'not_running', status: cur.status }, 409);
+      if (cur.winner) return json({ error: 'already_decided' }, 409);
       const r = await sb(url, key, `challenges?id=eq.${id}`, {
         method: 'PATCH',
         body: JSON.stringify({ status: 'cancelled', ended_at: new Date().toISOString() }),
