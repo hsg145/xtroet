@@ -4,7 +4,7 @@
  * Ø£Ù‡Ù… Ø´ÙŠ ÙÙŠÙ‡Ø§: Ù…Ø¶Ø§Ø¹ÙØ© Ø§Ù„ÙƒÙ„Ù…Ø© Ù…Ø§ ØªØ§Ø®Ø° Ø­Ù‚ ØºÙŠØ± Ø£ÙˆÙ„ Ù…Ø±Ø©. Ùˆ"Ù…Ø·Ø§Ø¨Ù‚Ø© Ø§Ù„ÙƒÙ„Ù…Ø©"
  * Ù…Ø§ ØªØ¨Ù„Ø¹ Ø£ÙŠ ÙƒÙ„Ù…Ø© Ø¨ØªØªÙ‡ÙŠ ÙÙŠÙ‡Ø§ Ø§Ù„Ø§Ø³Ù… (Ù„ÙˆÙ„Ø§ ÙƒØ°Ø§ "!Ø¯Ø®ÙˆÙ„" Ø¨ØªØ·Ø§Ø¨Ù‚ "!Ø¯Ø®ÙˆÙ„ØªÙŠ").
  */
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { CHALLENGE_KEYWORDS, ChallengeState, matchesKeyword, pickKeyword } from '../src/core/challenge.js';
 import type { ChallengeRow } from '../src/db/challenge.js';
 
@@ -200,8 +200,7 @@ describe('ChallengeState â€” collecting', () => {
     expect(sent, 'collecting must produce no chat output at all').toEqual([]);
   });
 
-  it('forgets everything when the challenge ends', async () => {
-    let ch: ChallengeRow | null = row({ status: 'collecting', keyword: '!MT' });
+  it('forgets everything when the challenge ends', async () => {    let ch: ChallengeRow | null = row({ status: 'collecting', keyword: '!MT' });
     const s = new ChallengeState({ channelId: CH, send: () => {}, fetchActive: async () => ch });
     await s.refresh();
     await s.collect(1, 'ali');
@@ -225,5 +224,51 @@ describe('ChallengeState â€” collecting', () => {
     await s.refresh();
     expect(await s.collect(1, 'ali')).toBe('first');
     expect(s.snapshot().collected).toBe(1);
+  });
+});
+
+describe('ChallengeState — adaptive polling (saves Supabase logs)', () => {
+  it('polls slow while quiet, fast while a challenge runs', async () => {
+    vi.useFakeTimers();
+    try {
+      let ch: ChallengeRow | null = null;
+      let polls = 0;
+      const s = new ChallengeState({
+        channelId: CH,
+        send: () => {},
+        fetchActive: async () => {
+          polls++;
+          return ch;
+        },
+      });
+
+      // activeMs=100, idleMs=5000. First tick runs immediately.
+      s.startRefresh(100, 5000);
+      await vi.advanceTimersByTimeAsync(0);
+      expect(polls).toBe(1);
+
+      // Quiet: next poll only after the idle delay.
+      await vi.advanceTimersByTimeAsync(4999);
+      expect(polls).toBe(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(polls).toBe(2);
+
+      // A challenge appears: the loop switches to the fast delay.
+      ch = row({ status: 'running' });
+      await vi.advanceTimersByTimeAsync(5000);
+      const afterSwitch = polls;
+      expect(afterSwitch).toBeGreaterThan(2);
+
+      // Now every 100ms (fast) instead of 5000ms.
+      await vi.advanceTimersByTimeAsync(100);
+      expect(polls).toBe(afterSwitch + 1);
+
+      s.stopRefresh();
+      const frozen = polls;
+      await vi.advanceTimersByTimeAsync(60000);
+      expect(polls).toBe(frozen);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -217,6 +217,26 @@ little while, or check `/health`.
 `GET /health` reports the challenge under `challenge`: status, the keyword
 while collecting, and how many people have entered.
 
+### Keeping Supabase logs (and the free quota) small
+
+The bot is designed to ask the database almost nothing while nothing is
+happening — query volume is what burns the Log Ingestion quota:
+
+| What | When quiet | When active |
+| --- | --- | --- |
+| Challenge watcher | 1 query / 30s | every 2s |
+| Team battle watcher | 1 query / 30s | every 2s |
+| Point flusher | no query at all (empty batch is skipped in memory) | 1 RPC per tick |
+| Admin promos | every 15s (mutes must land fast) | every 15s |
+| Outbox announcements | 1 cheap query / 5s | 1 cheap query / 5s |
+| Ranks | every 5 min | every 5 min |
+
+The two watchers used to poll every 2 seconds around the clock — about
+86,000 queries a day just to ask "anything new?". Adaptive polling cut that
+to ~6,000. An announcement after creating something from the dashboard can
+lag up to 30 seconds in the worst case; that is the trade, and it is worth
+it.
+
 ## معركة الفرق — the chat against itself
 
 Teams from chat compete against each other (unlike the challenge, which is

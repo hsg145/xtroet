@@ -200,14 +200,37 @@ export class TeamBattleState {
     this.announcedRunning = false;
   }
 
-  startRefresh(intervalMs = 2000): void {
+  /**
+   * استطلاع تكيّفي — نفس قصة التحدي: سريع (2s) أثناء معركة نشطة،
+   * وبطيء (30s) وقت الهدوء. يوفّر ~40 ألف استعلام في اليوم.
+   */
+  startRefresh(activeMs = 2000, idleMs = 30_000): void {
     this.stopRefresh();
-    void this.refresh();
-    this.timer = setInterval(() => void this.refresh(), intervalMs);
-    this.timer.unref();
+    this.refreshActiveMs = activeMs;
+    this.refreshIdleMs = idleMs;
+    this.refreshRunning = true;
+    void this.tickRefresh();
+  }
+
+  private refreshActiveMs = 2000;
+  private refreshIdleMs = 30_000;
+  private refreshRunning = false;
+
+  private async tickRefresh(): Promise<void> {
+    if (!this.refreshRunning) return;
+    try {
+      await this.refresh();
+    } catch {
+      // refresh() لا يرمي أبداً أصلاً — الحماية للاحتياط فقط.
+    }
+    if (!this.refreshRunning) return;
+    const delay = this.current ? this.refreshActiveMs : this.refreshIdleMs;
+    this.timer = setTimeout(() => void this.tickRefresh(), delay);
+    this.timer.unref?.();
   }
 
   stopRefresh(): void {
+    this.refreshRunning = false;
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;
   }

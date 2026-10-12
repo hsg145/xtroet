@@ -207,14 +207,43 @@ export class ChallengeState {
     this.announcedId = null;
   }
 
-  startRefresh(intervalMs = 2000): void {
+  /**
+   * استطلاع تكيّفي — أهم توفير في المشروع كله من ناحية Supabase.
+   *
+   * كان setInterval ثابت كل ثانيتين، يعني ~43 ألف استعلام في اليوم لسؤال
+   * "في تحدي جديد؟" حتى ولا شي صاير — وهذا أغلب ما يحرق Log Ingestion.
+   * الآن: سريع (2s) فقط أثناء تحدي نشط، وبطيء (30s) وقت الهدوء.
+   * الإعلان يتأخر 30 ثانية كحد أقصى بعد إنشاء التحدي من الموقع — مقبول،
+   * لأن البديل هو حرق الحصة الشهرية في أسبوع.
+   */
+  startRefresh(activeMs = 2000, idleMs = 30_000): void {
     this.stopRefresh();
-    void this.refresh();
-    this.timer = setInterval(() => void this.refresh(), intervalMs);
-    this.timer.unref();
+    this.refreshActiveMs = activeMs;
+    this.refreshIdleMs = idleMs;
+    this.refreshRunning = true;
+    void this.tickRefresh();
+  }
+
+  private refreshActiveMs = 2000;
+  private refreshIdleMs = 30_000;
+  private refreshRunning = false;
+
+  private async tickRefresh(): Promise<void> {
+    if (!this.refreshRunning) return;
+    try {
+      await this.refresh();
+    } catch {
+      // refresh() لا يرمي أبداً أصلاً — الحماية للاحتياط فقط.
+    }
+    if (!this.refreshRunning) return;
+    // نشط = تحدي جارٍ يستاهل المتابعة اللحظية. هادئ = ننام.
+    const delay = this.current ? this.refreshActiveMs : this.refreshIdleMs;
+    this.timer = setTimeout(() => void this.tickRefresh(), delay);
+    this.timer.unref?.();
   }
 
   stopRefresh(): void {
+    this.refreshRunning = false;
     if (this.timer) clearInterval(this.timer);
     this.timer = undefined;
   }
