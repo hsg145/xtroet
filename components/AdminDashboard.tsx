@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChallengeTab } from './ChallengeTab';
 import { callAdmin } from './adminApi';
+import { Ic, type IconName } from './AdminIcons';
 
 /**
  * لوحة إدارة البوت — صفحة مستقلة على /admin (غرفة القيادة).
@@ -137,6 +138,50 @@ const ADM_CSS = `
   transform:translateX(-120%);animation:adm-shine 4.5s ease-in-out infinite}
 @keyframes adm-shine{0%{transform:translateX(-120%)}55%,100%{transform:translateX(120%)}}
 
+/* ── بلاطة أيقونة موحدة: كل عنوان قسم يبدأ بواحدة ── */
+.adm-ico{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;
+  border-radius:11px;flex-shrink:0;background:rgba(201,162,75,.10);
+  border:1px solid rgba(201,162,75,.35);color:#F4D98A;
+  transition:transform .3s cubic-bezier(.16,1,.3,1),box-shadow .3s,border-color .3s}
+.adm-ico.red{background:rgba(239,68,68,.10);border-color:rgba(248,113,113,.42);color:#FCA5A5}
+.adm-ico.green{background:rgba(16,185,129,.10);border-color:rgba(52,211,153,.42);color:#6EE7B7}
+.adm-ico.blue{background:rgba(96,165,250,.10);border-color:rgba(96,165,250,.42);color:#93C5FD}
+.adm-ico.dim{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:rgba(255,255,255,.55)}
+h2:hover .adm-ico{transform:scale(1.1) rotate(-6deg)}
+
+/* ── الشريط الجانبي: الأقسام على اليمين ── */
+.adm-nav{position:relative;display:flex;align-items:center;gap:.8rem;width:100%;text-align:start;
+  padding:.78rem .95rem;border-radius:18px;font-size:13px;font-weight:900;cursor:pointer;
+  color:rgba(255,255,255,.55);border:1px solid transparent;background:transparent;overflow:hidden;
+  transition:color .3s,background .3s,border-color .3s,transform .3s cubic-bezier(.16,1,.3,1),box-shadow .3s}
+.adm-nav .adm-ico{transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .3s,border-color .3s,color .3s,box-shadow .3s}
+.adm-nav:hover{color:#fff;background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.10);transform:translateX(-3px)}
+[dir="ltr"] .adm-nav:hover{transform:translateX(3px)}
+.adm-nav:hover .adm-ico{transform:scale(1.14) rotate(-8deg);border-color:rgba(244,217,138,.6);
+  box-shadow:0 6px 18px -6px rgba(201,162,75,.7)}
+.adm-nav:active{transform:scale(.97)}
+.adm-nav.on{color:#0B0906;background:linear-gradient(120deg,${GOLD_LT},${GOLD} 55%,${GOLD_DK});
+  border-color:transparent;box-shadow:0 14px 34px -12px rgba(201,162,75,.85),inset 0 1px 0 rgba(255,255,255,.5)}
+.adm-nav.on::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(105deg,transparent 25%,rgba(255,255,255,.5) 50%,transparent 75%);
+  transform:translateX(-130%);animation:adm-shine 4.5s ease-in-out infinite}
+.adm-nav.on .adm-ico{background:rgba(0,0,0,.20);border-color:rgba(0,0,0,.30);color:#0B0906;transform:scale(1.04)}
+.adm-nav.on::before{content:"";position:absolute;inset-inline-start:0;top:24%;bottom:24%;width:3px;
+  border-radius:99px;background:#0B0906;opacity:.7}
+.adm-nav .nav-chev{margin-inline-start:auto;opacity:0;transform:translateX(6px);transition:opacity .3s,transform .3s;display:inline-flex}
+[dir="ltr"] .adm-nav .nav-chev{transform:translateX(-6px) scaleX(-1)}
+.adm-nav.on .nav-chev,.adm-nav:hover .nav-chev{opacity:.85;transform:none}
+@keyframes adm-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.adm-rise{animation:adm-rise .55s cubic-bezier(.16,1,.3,1) both}
+
+/* السهم يتبع اتجاه القراءة */
+.flip-rtl{transition:transform .3s}
+[dir="rtl"] .flip-rtl{transform:scaleX(-1)}
+
+/* نبضة حية للحالة */
+@keyframes adm-blinkdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.72)}}
+.adm-livedot{animation:adm-blinkdot 1.6s ease-in-out infinite}
+
 .adm-btn{position:relative;overflow:hidden;transition:transform .25s cubic-bezier(.16,1,.3,1),filter .25s,box-shadow .25s}
 .adm-btn:hover{filter:brightness(1.09);transform:translateY(-1.5px)}
 .adm-btn:active{transform:scale(.96)}
@@ -256,9 +301,9 @@ const LockScreen: React.FC<{ ar: boolean; onLogin: () => void }> = ({ ar, onLogi
       <div className="relative mx-auto w-24 h-24">
         <span className="adm-lock-ring adm-spin-slow" aria-hidden="true" />
         <span className="adm-lock-ring adm-spin-rev" style={{ inset: '-22%' }} aria-hidden="true" />
-        <span className="absolute inset-0 rounded-full flex items-center justify-center text-4xl adm-breathe"
-          style={{ background: 'radial-gradient(circle at 40% 30%,#1a1409,#080604)', border: '1px solid rgba(201,162,75,.45)' }} aria-hidden="true">
-          {locked ? '🔒' : '👑'}
+        <span className="absolute inset-0 rounded-full flex items-center justify-center adm-breathe"
+          style={{ background: 'radial-gradient(circle at 40% 30%,#1a1409,#080604)', border: '1px solid rgba(201,162,75,.45)', color: GOLD }} aria-hidden="true">
+          {locked ? <Ic n="lock" size={34} /> : <Ic n="crown" size={34} />}
         </span>
       </div>
 
@@ -291,7 +336,7 @@ const LockScreen: React.FC<{ ar: boolean; onLogin: () => void }> = ({ ar, onLogi
             className="absolute inset-y-0 end-3 my-auto h-8 px-2 rounded-lg text-white/40 hover:text-white/80 text-xs font-black transition-colors"
             aria-label={show ? (ar ? 'إخفاء' : 'Hide') : (ar ? 'إظهار' : 'Show')}
           >
-            {show ? '🙈' : '👁'}
+            {show ? <Ic n="eyeOff" size={15} /> : <Ic n="eye" size={15} />}
           </button>
         </div>
 
@@ -306,7 +351,7 @@ const LockScreen: React.FC<{ ar: boolean; onLogin: () => void }> = ({ ar, onLogi
       </form>
 
       {locked ? (
-        <p className="mt-4 text-sm font-black text-red-400 adm-breathe" dir="ltr">🔒 {fmtLeft(lockedUntil! - now, ar)}</p>
+        <p className="mt-4 text-sm font-black text-red-400 adm-breathe flex items-center justify-center gap-2" dir="ltr"><Ic n="lock" size={14} /> {fmtLeft(lockedUntil! - now, ar)}</p>
       ) : (
         left != null && (
           <div className="mt-4">
@@ -321,11 +366,11 @@ const LockScreen: React.FC<{ ar: boolean; onLogin: () => void }> = ({ ar, onLogi
       {err && <p className="mt-3 text-xs font-black text-red-400 adm-pop">{err}</p>}
 
       <div className="mt-6 flex items-center justify-center gap-2 text-[10px] font-bold text-white/25">
-        <span aria-hidden="true">🛡</span>
+        <span className="adm-ico dim" style={{ width: 22, height: 22, borderRadius: 8 }}><Ic n="shield" size={12} /></span>
         <span>{ar ? 'تشفير HMAC · 10 محاولات لكل جهاز · قفل 24 ساعة' : 'HMAC token · 10 tries per device · 24h lockout'}</span>
       </div>
-      <a href="/" className="mt-5 inline-block text-[11px] font-black text-white/30 hover:text-white/60 transition-colors">
-        ← {ar ? 'رجوع للموقع' : 'Back to site'}
+      <a href="/" className="mt-5 inline-flex items-center gap-1.5 text-[11px] font-black text-white/30 hover:text-white/60 transition-colors">
+        <Ic n="back" size={13} className="flip-rtl" /> {ar ? 'رجوع للموقع' : 'Back to site'}
       </a>
     </div>
   );
@@ -447,14 +492,14 @@ export const AdminDashboard: React.FC = () => {
   const ev = data?.event && data.event.ends_at && new Date(data.event.ends_at).getTime() > now ? data.event : null;
   const dr = data?.drop && data.drop.ends_at && new Date(data.drop.ends_at).getTime() > now ? data.drop : null;
 
-  const TABS: Array<{ id: Tab; ar: string; en: string; icon: string }> = [
-    { id: 'home', ar: 'نظرة عامة', en: 'Overview', icon: '🏠' },
-    { id: 'users', ar: 'المستخدمون', en: 'Users', icon: '👥' },
-    { id: 'events', ar: 'الفعاليات', en: 'Events', icon: '🔥' },
-    { id: 'drops', ar: 'الأكواد', en: 'Drops', icon: '🎁' },
-    { id: 'challenge', ar: 'تحدي رايس', en: 'Challenge', icon: '⚔️' },
-    { id: 'ranks', ar: 'أسعار الرتب', en: 'Rank prices', icon: '🎖️' },
-    { id: 'log', ar: 'السجل', en: 'Log', icon: '📜' },
+  const TABS: Array<{ id: Tab; ar: string; en: string; icon: IconName }> = [
+    { id: 'home', ar: 'نظرة عامة', en: 'Overview', icon: 'home' },
+    { id: 'users', ar: 'المستخدمون', en: 'Users', icon: 'users' },
+    { id: 'events', ar: 'الفعاليات', en: 'Events', icon: 'flame' },
+    { id: 'drops', ar: 'الأكواد', en: 'Drops', icon: 'gift' },
+    { id: 'challenge', ar: 'تحدي رايس', en: 'Challenge', icon: 'swords' },
+    { id: 'ranks', ar: 'أسعار الرتب', en: 'Rank prices', icon: 'medal' },
+    { id: 'log', ar: 'السجل', en: 'Log', icon: 'log' },
   ];
 
   return (
@@ -468,7 +513,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="adm-scan" />
       </div>
 
-      <div className="relative z-10 min-h-screen w-full max-w-[1180px] mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="relative z-10 min-h-screen w-full max-w-[1380px] mx-auto px-4 sm:px-6 py-6 sm:py-10">
         {!authed ? (
           <div className="max-w-md mx-auto adm-in pt-6">
             <LockScreen ar={ar} onLogin={() => setAuthed(true)} />
@@ -480,9 +525,9 @@ export const AdminDashboard: React.FC = () => {
               <div className="adm-panel px-5 sm:px-7 py-5">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-3.5 min-w-0">
-                    <span className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 adm-breathe"
-                      style={{ background: 'radial-gradient(circle at 40% 30%,#1c160b,#080604)', border: '1px solid rgba(201,162,75,.5)' }} aria-hidden="true">
-                      👑
+                    <span className="relative w-14 h-14 rounded-2xl flex items-center justify-center shrink-0 adm-breathe"
+                      style={{ background: 'radial-gradient(circle at 40% 30%,#1c160b,#080604)', border: '1px solid rgba(201,162,75,.5)', color: GOLD }} aria-hidden="true">
+                      <Ic n="crown" size={26} />
                     </span>
                     <div className="min-w-0">
                       <h1 className="text-lg sm:text-2xl font-black leading-none" style={{ textShadow: `0 4px 24px ${GOLD}44` }}>
@@ -496,17 +541,17 @@ export const AdminDashboard: React.FC = () => {
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="hidden sm:inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-[10px] font-black"
                       style={{ background: 'rgba(16,185,129,.1)', border: '1px solid rgba(16,185,129,.35)', color: '#6EE7B7' }} dir="ltr">
-                      <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: EMERALD, boxShadow: `0 0 10px ${EMERALD}` }} />
+                      <span className="adm-livedot w-1.5 h-1.5 rounded-full" style={{ background: EMERALD, boxShadow: `0 0 10px ${EMERALD}` }} />
                       #{data?.channel?.slug ?? '…'}
                     </span>
                     <button onClick={() => setLang((l) => (l === 'ar' ? 'en' : 'ar'))}
-                      className="adm-btn ghost rounded-2xl px-3.5 py-2 text-[11px] font-black text-white/70" aria-label="language">
-                      {ar ? 'EN' : 'عربي'}
+                      className="adm-btn ghost rounded-2xl px-3.5 py-2 text-[11px] font-black text-white/70 inline-flex items-center gap-1.5" aria-label="language">
+                      <Ic n="lang" size={14} /> {ar ? 'EN' : 'عربي'}
                     </button>
-                    <a href="/" className="adm-btn ghost rounded-2xl px-3.5 py-2 text-[11px] font-black text-white/70 no-underline">
-                      {ar ? 'الموقع' : 'Site'}
+                    <a href="/" className="adm-btn ghost rounded-2xl px-3.5 py-2 text-[11px] font-black text-white/70 no-underline inline-flex items-center gap-1.5">
+                      <Ic n="globe" size={14} /> {ar ? 'الموقع' : 'Site'}
                     </a>
-                    <B tone="red" onClick={logout} className="!px-3.5 !py-2 !text-[11px]">{ar ? 'خروج' : 'Exit'}</B>
+                    <B tone="red" onClick={logout} className="!px-3.5 !py-2 !text-[11px] inline-flex items-center gap-1.5"><Ic n="logout" size={14} /> {ar ? 'خروج' : 'Exit'}</B>
                   </div>
                 </div>
 
@@ -515,19 +560,19 @@ export const AdminDashboard: React.FC = () => {
                     {ev && (
                       <span className="adm-pop inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-black"
                         style={{ background: 'rgba(239,68,68,.12)', border: '1px solid rgba(248,113,113,.45)', color: '#FCA5A5' }}>
-                        <span aria-hidden="true">🔥</span>
+                        <Ic n="flame" size={14} />
                         {ev.label || `×${ev.mult}`}
-                        <span dir="ltr" className="adm-breathe">⏳ {fmtLeft(new Date(ev.ends_at).getTime() - now, ar)}</span>
-                        <button onClick={() => void run('event_stop', {}, ar ? 'توقفت الفعالية' : 'Event stopped')} className="underline opacity-70 hover:opacity-100">✕</button>
+                        <span dir="ltr" className="adm-breathe inline-flex items-center gap-1"><Ic n="clock" size={12} /> {fmtLeft(new Date(ev.ends_at).getTime() - now, ar)}</span>
+                        <button onClick={() => void run('event_stop', {}, ar ? 'توقفت الفعالية' : 'Event stopped')} className="opacity-70 hover:opacity-100 inline-flex" aria-label="stop"><Ic n="x" size={12} /></button>
                       </span>
                     )}
                     {dr && (
                       <span className="adm-pop inline-flex items-center gap-2 rounded-full px-4 py-2 text-[12px] font-black"
                         style={{ background: 'rgba(16,185,129,.12)', border: '1px solid rgba(16,185,129,.45)', color: '#6EE7B7' }}>
-                        <span aria-hidden="true">🎁</span>
+                        <Ic n="gift" size={14} />
                         {ar ? 'كود نشط' : 'Drop live'}
-                        <span dir="ltr">⏳ {fmtLeft(new Date(dr.ends_at).getTime() - now, ar)}</span>
-                        <button onClick={() => void run('drop_stop', {}, ar ? 'توقف الكود' : 'Drop stopped')} className="underline opacity-70 hover:opacity-100">✕</button>
+                        <span dir="ltr" className="inline-flex items-center gap-1"><Ic n="clock" size={12} /> {fmtLeft(new Date(dr.ends_at).getTime() - now, ar)}</span>
+                        <button onClick={() => void run('drop_stop', {}, ar ? 'توقف الكود' : 'Drop stopped')} className="opacity-70 hover:opacity-100 inline-flex" aria-label="stop"><Ic n="x" size={12} /></button>
                       </span>
                     )}
                   </div>
@@ -535,40 +580,84 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </header>
 
-            {/* التبويبات */}
-            <nav className="mt-4 adm-panel adm-in px-2.5 py-2.5 flex gap-2 overflow-x-auto adm-scroll" style={{ animationDelay: '80ms' }} aria-label="admin tabs">
-              {TABS.map((t) => (
-                <button key={t.id} onClick={() => setTab(t.id)}
-                  className={`adm-tab shrink-0 rounded-2xl px-4 sm:px-5 py-3 text-[13px] font-black whitespace-nowrap ${tab === t.id ? 'on' : 'text-white/55'}`}
-                  style={tab === t.id ? undefined : { background: 'rgba(255,255,255,.04)', border: '1px solid rgba(255,255,255,.09)' }}
-                  aria-current={tab === t.id ? 'page' : undefined}>
-                  <span aria-hidden="true" className="me-1.5">{t.icon}</span>
-                  {ar ? t.ar : t.en}
-                </button>
-              ))}
-            </nav>
+            {/* ── المحتوى: الأقسام يمين + الشاشة ── */}
+            <div className="mt-4 flex flex-col lg:flex-row gap-4 items-start">
+              {/* الشريط الجانبي — أول عنصر في RTL فيجلس يمين */}
+              <aside className="w-full lg:w-[292px] shrink-0 lg:sticky lg:top-6">
+                <div className="adm-panel adm-in p-3">
+                  <p className="px-2.5 pt-1.5 pb-2.5 text-[10px] font-black uppercase tracking-[0.24em] text-white/35">
+                    {ar ? 'الأقسام' : 'SECTIONS'}
+                  </p>
+                  <nav className="flex lg:flex-col gap-1.5 overflow-x-auto lg:overflow-visible adm-scroll pb-1 lg:pb-0" aria-label="admin tabs">
+                    {TABS.map((t, i) => {
+                      const on = tab === t.id;
+                      const live = (t.id === 'events' && !!ev) || (t.id === 'drops' && !!dr);
+                      return (
+                        <button key={t.id} onClick={() => setTab(t.id)}
+                          className={`adm-nav adm-rise shrink-0 ${on ? 'on' : ''}`}
+                          style={{ animationDelay: `${i * 55}ms` }}
+                          aria-current={on ? 'page' : undefined}>
+                          <span className="adm-ico"><Ic n={t.icon} size={17} /></span>
+                          <span className="whitespace-nowrap">{ar ? t.ar : t.en}</span>
+                          {live && (
+                            <span className="adm-livedot w-2 h-2 rounded-full shrink-0" style={{ background: on ? '#0B0906' : EMERALD, boxShadow: on ? 'none' : `0 0 10px ${EMERALD}` }} aria-label="live" />
+                          )}
+                          <span className="nav-chev"><Ic n="back" size={14} style={ar ? undefined : { transform: 'scaleX(-1)' }} /></span>
+                        </button>
+                      );
+                    })}
+                  </nav>
+                </div>
 
-            {toast && (
-              <div className="adm-toast mt-4 text-center">
-                <span className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-black"
-                  style={toast.ok
-                    ? { background: 'rgba(16,185,129,.14)', border: '1px solid rgba(16,185,129,.5)', color: '#6EE7B7' }
-                    : { background: 'rgba(239,68,68,.14)', border: '1px solid rgba(248,113,113,.5)', color: '#FCA5A5' }}>
-                  <span aria-hidden="true">{toast.ok ? '✅' : '⛔'}</span>
-                  {toast.text}
-                </span>
+                {/* بطاقة الحالة الحية */}
+                <div className="adm-panel adm-in mt-3 p-4 hidden lg:block" style={{ animationDelay: '140ms' }}>
+                  <p className="text-[10px] font-black uppercase tracking-[0.22em] text-white/35 flex items-center gap-1.5">
+                    <Ic n="pulse" size={13} /> {ar ? 'الحالة الحية' : 'LIVE'}
+                  </p>
+                  <div className="mt-3 space-y-2.5">
+                    <div className="flex items-center gap-2 text-[12px] font-black text-white/80">
+                      <span className="adm-livedot w-1.5 h-1.5 rounded-full shrink-0" style={{ background: EMERALD, boxShadow: `0 0 8px ${EMERALD}` }} />
+                      <span dir="ltr" className="truncate">#{data?.channel?.slug ?? '…'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] font-bold text-white/55">
+                      <span className="adm-ico dim" style={{ width: 24, height: 24, borderRadius: 8 }}><Ic n="flame" size={13} /></span>
+                      <span className="flex-1">{ar ? 'الفعالية' : 'Event'}</span>
+                      <span className="text-white/80" dir="ltr">{ev ? fmtLeft(new Date(ev.ends_at).getTime() - now, ar) : '—'}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[12px] font-bold text-white/55">
+                      <span className="adm-ico dim" style={{ width: 24, height: 24, borderRadius: 8 }}><Ic n="gift" size={13} /></span>
+                      <span className="flex-1">{ar ? 'الكود' : 'Drop'}</span>
+                      <span className="text-white/80" dir="ltr">{dr ? fmtLeft(new Date(dr.ends_at).getTime() - now, ar) : '—'}</span>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+
+              {/* الشاشة */}
+              <div className="flex-1 min-w-0 w-full">
+                {toast && (
+                  <div className="adm-toast mb-4 text-center">
+                    <span className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-[13px] font-black"
+                      style={toast.ok
+                        ? { background: 'rgba(16,185,129,.14)', border: '1px solid rgba(16,185,129,.5)', color: '#6EE7B7' }
+                        : { background: 'rgba(239,68,68,.14)', border: '1px solid rgba(248,113,113,.5)', color: '#FCA5A5' }}>
+                      <Ic n={toast.ok ? 'check' : 'x'} size={14} />
+                      {toast.text}
+                    </span>
+                  </div>
+                )}
+
+                <main key={tab}>
+                  {tab === 'home' && <HomeTab ar={ar} data={data} busy={busy} run={run} goto={setTab} />}
+                  {tab === 'users' && <UsersTab ar={ar} now={now} busy={busy} run={run} />}
+                  {tab === 'events' && <EventsTab ar={ar} now={now} ev={ev} busy={busy} run={run} />}
+                  {tab === 'drops' && <DropsTab ar={ar} now={now} drop={dr} busy={busy} run={run} />}
+                  {tab === 'challenge' && <ChallengeTab ar={ar} now={now} busy={busy} />}
+                  {tab === 'ranks' && <RanksTab ar={ar} busy={busy} run={run} />}
+                  {tab === 'log' && <LogTab ar={ar} />}
+                </main>
               </div>
-            )}
-
-            <main className="mt-4" key={tab}>
-              {tab === 'home' && <HomeTab ar={ar} data={data} busy={busy} run={run} goto={setTab} />}
-              {tab === 'users' && <UsersTab ar={ar} now={now} busy={busy} run={run} />}
-              {tab === 'events' && <EventsTab ar={ar} now={now} ev={ev} busy={busy} run={run} />}
-              {tab === 'drops' && <DropsTab ar={ar} now={now} drop={dr} busy={busy} run={run} />}
-              {tab === 'challenge' && <ChallengeTab ar={ar} now={now} busy={busy} />}
-              {tab === 'ranks' && <RanksTab ar={ar} busy={busy} run={run} />}
-              {tab === 'log' && <LogTab ar={ar} />}
-            </main>
+            </div>
           </>
         )}
       </div>
@@ -583,19 +672,19 @@ const HomeTab: React.FC<{ ar: boolean; data: any; busy: boolean; run: RunFn; got
   const [text, setText] = useState('');
   const s = data?.stats;
   const cards = [
-    { label: ar ? 'الأعضاء' : 'Members', value: s ? nf(s.members) : '…', icon: '👥', tint: GOLD },
-    { label: ar ? 'مجموع النقاط' : 'Total points', value: s ? nf(s.totalPoints) : '…', icon: '💎', tint: EMERALD },
-    { label: ar ? 'مكتومين الآن' : 'Muted now', value: s ? nf(s.mutes) : '…', icon: '⏱', tint: '#F87171' },
-    { label: ar ? 'معزّزين / معاقبين' : 'Boosted / punished', value: s ? nf(s.boosts) : '…', icon: '⚡', tint: '#FBBF24' },
-    { label: ar ? 'رسائل بالانتظار' : 'Queued messages', value: s ? nf(s.pendingOutbox) : '…', icon: '📬', tint: '#60A5FA' },
+    { label: ar ? 'الأعضاء' : 'Members', value: s ? nf(s.members) : '…', icon: 'users' as const, tint: GOLD, soft: '' },
+    { label: ar ? 'مجموع النقاط' : 'Total points', value: s ? nf(s.totalPoints) : '…', icon: 'gem' as const, tint: EMERALD, soft: 'green' },
+    { label: ar ? 'مكتومين الآن' : 'Muted now', value: s ? nf(s.mutes) : '…', icon: 'ban' as const, tint: '#F87171', soft: 'red' },
+    { label: ar ? 'معزّزين / معاقبين' : 'Boosted / punished', value: s ? nf(s.boosts) : '…', icon: 'zap' as const, tint: '#FBBF24', soft: '' },
+    { label: ar ? 'رسائل بالانتظار' : 'Queued messages', value: s ? nf(s.pendingOutbox) : '…', icon: 'send' as const, tint: '#60A5FA', soft: 'blue' },
   ];
   return (
     <div className="grid gap-4">
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {cards.map((c, i) => (
           <div key={c.label} className="adm-card adm-stat adm-in p-4 text-center" style={{ animationDelay: `${i * 70}ms` }}>
-            <p className="text-2xl" aria-hidden="true">{c.icon}</p>
-            <p className="mt-1.5 text-xl sm:text-2xl font-black" dir="ltr" style={{ color: c.tint }}>{c.value}</p>
+            <div className="flex justify-center"><span className={`adm-ico ${c.soft}`} style={{ width: 38, height: 38, borderRadius: 13 }}><Ic n={c.icon} size={19} /></span></div>
+            <p className="mt-2 text-xl sm:text-2xl font-black" dir="ltr" style={{ color: c.tint }}>{c.value}</p>
             <p className="mt-0.5 text-[9px] font-black uppercase tracking-wider text-white/40">{c.label}</p>
           </div>
         ))}
@@ -603,7 +692,7 @@ const HomeTab: React.FC<{ ar: boolean; data: any; busy: boolean; run: RunFn; got
 
       <Panel delay={120}>
         <h2 className="text-sm font-black text-white flex items-center gap-2">
-          <span aria-hidden="true">📣</span> {ar ? 'إعلان في الشات' : 'Chat announcement'}
+          <span className="adm-ico"><Ic n="mega" size={15} /></span> {ar ? 'إعلان في الشات' : 'Chat announcement'}
         </h2>
         <p className="mt-1 text-[11px] text-white/40 font-bold">{ar ? 'يظهر خلال 5 ثوانٍ في شات البوت' : 'Appears in chat within 5 seconds'}</p>
         <div className="mt-3 flex flex-col sm:flex-row gap-2">
@@ -615,8 +704,8 @@ const HomeTab: React.FC<{ ar: boolean; data: any; busy: boolean; run: RunFn; got
           </B>
         </div>
         <div className="mt-2 flex flex-wrap gap-1.5">
-          {(ar ? ['🔥 فعالية الدبل بدأت — نقاطكم ×2!', '⚠️ انتبهوا: تذكير بالدبل', '🎖 رتب جديدة وصلت!'] :
-            ['🔥 Double points event — x2!', '⚠️ Reminder: double event', '🎖 New ranks unlocked!']).map((q) => (
+          {(ar ? ['فعالية الدبل بدأت — نقاطكم ×2!', 'انتبهوا: تذكير بالدبل', 'رتب جديدة وصلت!'] :
+            ['Double points event — x2!', 'Reminder: double event', 'New ranks unlocked!']).map((q) => (
             <button key={q} onClick={() => setText(q)}
               className="rounded-full px-3 py-1.5 text-[10px] font-black text-white/50 border border-white/10 bg-white/[0.03] hover:text-white/85 hover:border-[#C9A24B]/45 transition-colors">
               {q}
@@ -627,24 +716,24 @@ const HomeTab: React.FC<{ ar: boolean; data: any; busy: boolean; run: RunFn; got
 
       <Panel delay={200}>
         <h2 className="text-sm font-black text-white flex items-center gap-2">
-          <span aria-hidden="true">⚡</span> {ar ? 'اختصارات سريعة' : 'Quick actions'}
+          <span className="adm-ico"><Ic n="zap" size={15} /></span> {ar ? 'اختصارات سريعة' : 'Quick actions'}
         </h2>
         <div className="mt-3 grid sm:grid-cols-3 gap-2">
-          <B tone="gold" disabled={busy} onClick={() => void run('event_start', { kind: 'double', mult: 2, minutes: 10 }, ar ? 'بدأ الدبل 🔥' : 'Double live')}>
-            🔥 {ar ? 'دبل 10 دقائق' : 'Double 10 min'}
+          <B tone="gold" disabled={busy} onClick={() => void run('event_start', { kind: 'double', mult: 2, minutes: 10 }, ar ? 'بدأ الدبل' : 'Double live')} className="inline-flex items-center justify-center gap-1.5">
+            <Ic n="flame" size={14} /> {ar ? 'دبل 10 دقائق' : 'Double 10 min'}
           </B>
-          <B tone="red" disabled={busy} onClick={() => void run('event_stop', {}, ar ? 'تم إيقاف الفعالية' : 'Event stopped')}>
-            ⏹ {ar ? 'إيقاف الفعالية' : 'Stop event'}
+          <B tone="red" disabled={busy} onClick={() => void run('event_stop', {}, ar ? 'تم إيقاف الفعالية' : 'Event stopped')} className="inline-flex items-center justify-center gap-1.5">
+            <Ic n="stop" size={14} /> {ar ? 'إيقاف الفعالية' : 'Stop event'}
           </B>
-          <B tone="blue" onClick={() => goto('users')}>
-            👥 {ar ? 'إدارة شخص' : 'Manage a user'}
+          <B tone="blue" onClick={() => goto('users')} className="inline-flex items-center justify-center gap-1.5">
+            <Ic n="users" size={14} /> {ar ? 'إدارة شخص' : 'Manage a user'}
           </B>
         </div>
       </Panel>
 
       <Panel delay={280}>
         <h2 className="text-sm font-black text-white flex items-center gap-2">
-          <span aria-hidden="true">📜</span> {ar ? 'آخر العمليات' : 'Recent activity'}
+          <span className="adm-ico"><Ic n="log" size={15} /></span> {ar ? 'آخر العمليات' : 'Recent activity'}
         </h2>
         <div className="mt-2.5 space-y-1.5 adm-scroll max-h-64">
           {(data?.recent ?? []).length === 0 && <p className="text-[11px] text-white/30">—</p>}
@@ -720,7 +809,7 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
     <div className="grid gap-4">
       <Panel delay={0}>
         <h2 className="text-sm font-black text-white flex items-center gap-2">
-          <span aria-hidden="true">🔍</span> {ar ? 'ابحث عن شخص' : 'Find a user'}
+          <span className="adm-ico"><Ic n="search" size={15} /></span> {ar ? 'ابحث عن شخص' : 'Find a user'}
         </h2>
         <form onSubmit={search} className="mt-3 flex flex-col sm:flex-row gap-2">
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={ar ? 'اسم الشخص في كيك…' : 'Kick username…'}
@@ -751,13 +840,13 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
                   </span>
                 )}
                 {res.modifier?.mute_until && new Date(res.modifier.mute_until).getTime() > now && (
-                  <span className="rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: 'rgba(239,68,68,.14)', border: '1px solid rgba(248,113,113,.45)', color: '#FCA5A5' }} dir="ltr">
-                    ⏱ {fmtLeft(new Date(res.modifier.mute_until).getTime() - now, ar)}
+                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: 'rgba(239,68,68,.14)', border: '1px solid rgba(248,113,113,.45)', color: '#FCA5A5' }} dir="ltr">
+                    <Ic n="clock" size={10} /> {fmtLeft(new Date(res.modifier.mute_until).getTime() - now, ar)}
                   </span>
                 )}
                 {res.modifier?.multiplier != null && res.modifier?.multiplier_until && new Date(res.modifier.multiplier_until).getTime() > now && (
-                  <span className="rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: 'rgba(251,191,36,.14)', border: '1px solid rgba(251,191,36,.45)', color: '#FBBF24' }} dir="ltr">
-                    ×{res.modifier.multiplier} ⏳ {fmtLeft(new Date(res.modifier.multiplier_until).getTime() - now, ar)}
+                  <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black" style={{ background: 'rgba(251,191,36,.14)', border: '1px solid rgba(251,191,36,.45)', color: '#FBBF24' }} dir="ltr">
+                    ×{res.modifier.multiplier} <Ic n="clock" size={10} /> {fmtLeft(new Date(res.modifier.multiplier_until).getTime() - now, ar)}
                   </span>
                 )}
               </div>
@@ -767,7 +856,7 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
           <div className="mt-5 grid md:grid-cols-2 gap-3">
             {/* النقاط والرتبة */}
             <div className="adm-card p-4">
-              <p className="text-xs font-black text-white flex items-center gap-2"><span aria-hidden="true">💎</span> {ar ? 'النقاط والرتبة' : 'Points & rank'}</p>
+              <p className="text-xs font-black text-white flex items-center gap-2"><span className="adm-ico"><Ic n="gem" size={15} /></span> {ar ? 'النقاط والرتبة' : 'Points & rank'}</p>
               <div className="mt-3 flex gap-2">
                 <input value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9-]/g, ''))}
                   dir="ltr" inputMode="numeric" className="adm-input text-center" aria-label="amount" />
@@ -775,7 +864,7 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
               <div className="mt-2 grid grid-cols-3 gap-2">
                 <B disabled={busy} tone="green" onClick={() => void after(run('user_points', { user_id: m.kick_user_id, username: m.username, mode: 'add', amount: Number(amount) || 0 }, ar ? 'تمت الإضافة' : 'Points added'))}>+ {ar ? 'إضافة' : 'Add'}</B>
                 <B disabled={busy} tone="blue" onClick={() => void after(run('user_points', { user_id: m.kick_user_id, username: m.username, mode: 'set', amount: Number(amount) || 0 }, ar ? 'تم التعيين' : 'Points set'))}>= {ar ? 'تعيين' : 'Set'}</B>
-                <B disabled={busy} tone="red" onClick={() => void after(run('user_reset', { user_id: m.kick_user_id, username: m.username }, ar ? 'تم التصفير' : 'User reset'))}>♻️ {ar ? 'تصفير' : 'Reset'}</B>
+                <B disabled={busy} tone="red" onClick={() => void after(run('user_reset', { user_id: m.kick_user_id, username: m.username }, ar ? 'تم التصفير' : 'User reset'))} className="inline-flex items-center justify-center gap-1"><Ic n="refresh" size={13} /> {ar ? 'تصفير' : 'Reset'}</B>
               </div>
               <div className="mt-3">
                 <L label={ar ? 'تغيير الرتبة' : 'Change rank'}>
@@ -799,7 +888,7 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
 
             {/* تايم آوت + تعزيز */}
             <div className="adm-card p-4">
-              <p className="text-xs font-black text-white flex items-center gap-2"><span aria-hidden="true">⏱</span> {ar ? 'تايم آوت (يوقف النقاط — حتى للمشرفين)' : 'Timeout (stops points — even mods)'}</p>
+              <p className="text-xs font-black text-white flex items-center gap-2"><span className="adm-ico red"><Ic n="ban" size={15} /></span> {ar ? 'تايم آوت (يوقف النقاط — حتى للمشرفين)' : 'Timeout (stops points — even mods)'}</p>
               <div className="mt-3 grid grid-cols-4 gap-1.5">
                 {['1', '5', '15', '60'].map((v) => (
                   <button key={v} type="button" onClick={() => setMuteMin(v)} dir="ltr"
@@ -810,8 +899,8 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
                 ))}
               </div>
               <div className="mt-2 grid grid-cols-3 gap-1.5">
-                <B disabled={busy} tone="red" onClick={() => void after(run('user_mute', { user_id: m.kick_user_id, username: m.username, minutes: Number(muteMin) || 1 }, ar ? 'تم التايم آوت' : 'Muted'))}>
-                  ⏱ {ar ? 'تايم آوت' : 'Timeout'}
+                <B disabled={busy} tone="red" onClick={() => void after(run('user_mute', { user_id: m.kick_user_id, username: m.username, minutes: Number(muteMin) || 1 }, ar ? 'تم التايم آوت' : 'Muted'))} className="inline-flex items-center justify-center gap-1">
+                  <Ic n="ban" size={13} /> {ar ? 'تايم آوت' : 'Timeout'}
                 </B>
                 <B disabled={busy} tone="ghost" onClick={() => void after(run('user_unmute', { user_id: m.kick_user_id }, ar ? 'تم فك الكتم' : 'Unmuted'))}>
                   {ar ? 'فك الكتم' : 'Unmute'}
@@ -820,13 +909,13 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
                   dir="ltr" inputMode="numeric" placeholder="min" className="adm-input text-center" aria-label="mute minutes" />
               </div>
 
-              <p className="text-xs font-black text-white mt-4 flex items-center gap-2"><span aria-hidden="true">⚡</span> {ar ? 'تعزيز / عقوبة' : 'Boost / punish'}</p>
+              <p className="text-xs font-black text-white mt-4 flex items-center gap-2"><span className="adm-ico"><Ic n="zap" size={15} /></span> {ar ? 'تعزيز / عقوبة' : 'Boost / punish'}</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <select value={boostMult} onChange={(e) => setBoostMult(e.target.value)} className="adm-input" dir="ltr" aria-label="multiplier">
                   <option value="3">×3 {ar ? 'تربل' : 'triple'}</option>
                   <option value="2">×2 {ar ? 'دبل' : 'double'}</option>
                   <option value="0.5">×0.5 {ar ? 'نصف نقطة' : 'half point'}</option>
-                  <option value="0">0 🧊 {ar ? 'تجميد' : 'freeze'}</option>
+                  <option value="0">0 — {ar ? 'تجميد' : 'freeze'}</option>
                 </select>
                 <input value={boostMin} onChange={(e) => setBoostMin(e.target.value.replace(/[^0-9]/g, ''))}
                   dir="ltr" inputMode="numeric" placeholder="min" className="adm-input text-center" aria-label="boost minutes" />
@@ -847,10 +936,10 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
       <Panel delay={120}>
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-black text-white flex items-center gap-2">
-            <span aria-hidden="true">🚨</span> {ar ? 'المكتومين والمعززين الآن' : 'Active mutes & boosts'}
+            <span className="adm-ico red"><Ic n="alert" size={15} /></span> {ar ? 'المكتومين والمعززين الآن' : 'Active mutes & boosts'}
             <span className="rounded-full px-2 py-0.5 text-[10px] font-black" style={{ background: 'rgba(239,68,68,.15)', color: '#FCA5A5' }} dir="ltr">{active.length}</span>
           </h2>
-          <button onClick={() => void loadMods()} className="text-[11px] font-black px-2.5 py-1 rounded-lg hover:text-white transition-colors" style={{ color: GOLD }}>↻</button>
+          <button onClick={() => void loadMods()} className="hover:text-white transition-colors inline-flex" style={{ color: GOLD }} aria-label="reload"><Ic n="refresh" size={14} /></button>
         </div>
         <div className="mt-3 space-y-1.5 adm-scroll max-h-72">
           {active.length === 0 && <p className="text-[11px] text-white/30">{ar ? 'ما فيه أحد' : 'Nobody'}</p>}
@@ -858,10 +947,10 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
             <div key={x.kick_user_id} className="adm-row rounded-xl px-3 py-2.5 flex items-center gap-2 flex-wrap"
               style={{ background: 'rgba(255,255,255,.03)', border: '1px solid rgba(255,255,255,.07)', animationDelay: `${i * 50}ms` }}>
               <p className="flex-1 min-w-[120px] truncate text-xs font-black text-white" dir="ltr">{x.username}</p>
-              {x.muted && <span className="text-[10px] font-black text-red-300" dir="ltr">⏱ {fmtLeft(new Date(x.mute_until).getTime() - now, ar)}</span>}
+              {x.muted && <span className="inline-flex items-center gap-1 text-[10px] font-black text-red-300" dir="ltr"><Ic n="clock" size={10} /> {fmtLeft(new Date(x.mute_until).getTime() - now, ar)}</span>}
               {x.boosted && <span className="text-[10px] font-black text-amber-300" dir="ltr">×{x.multiplier}</span>}
-              {x.muted && <B tone="green" className="!px-2.5 !py-1 !text-[10px]" onClick={() => void after(run('user_unmute', { user_id: x.kick_user_id }, ar ? 'تم' : 'OK'))}>{ar ? 'فك' : 'free'}</B>}
-              {x.boosted && <B tone="ghost" className="!px-2.5 !py-1 !text-[10px]" onClick={() => void after(run('user_boost_clear', { user_id: x.kick_user_id }, ar ? 'تم' : 'OK'))}>{ar ? 'إزالة' : 'clear'}</B>}
+              {x.muted && <B tone="green" className="!px-2.5 !py-1 !text-[10px] inline-flex items-center gap-1" onClick={() => void after(run('user_unmute', { user_id: x.kick_user_id }, ar ? 'تم' : 'OK'))}><Ic n="shield" size={11} /> {ar ? 'فك' : 'free'}</B>}
+              {x.boosted && <B tone="ghost" className="!px-2.5 !py-1 !text-[10px] inline-flex items-center gap-1" onClick={() => void after(run('user_boost_clear', { user_id: x.kick_user_id }, ar ? 'تم' : 'OK'))}><Ic n="x" size={11} /> {ar ? 'إزالة' : 'clear'}</B>}
             </div>
           ))}
         </div>
@@ -875,9 +964,9 @@ const EventsTab: React.FC<{ ar: boolean; now: number; ev: any; busy: boolean; ru
   const [minutes, setMinutes] = useState('10');
   const [customMult, setCustomMult] = useState('2');
   const presets = [
-    { kind: 'double', mult: 2, icon: '🔥', label: ar ? 'الدبل' : 'Double', sub: '×2', tint: '239,68,68' },
-    { kind: 'triple', mult: 3, icon: '⚡', label: ar ? 'التربل' : 'Triple', sub: '×3', tint: '251,191,36' },
-    { kind: 'sabotage', mult: 0.5, icon: '💔', label: ar ? 'التخريب' : 'Sabotage', sub: '×0.5', tint: '168,85,247' },
+    { kind: 'double', mult: 2, icon: 'flame' as const, label: ar ? 'الدبل' : 'Double', sub: '×2', tint: '239,68,68' },
+    { kind: 'triple', mult: 3, icon: 'zap' as const, label: ar ? 'التربل' : 'Triple', sub: '×3', tint: '251,191,36' },
+    { kind: 'sabotage', mult: 0.5, icon: 'trendDown' as const, label: ar ? 'التخريب' : 'Sabotage', sub: '×0.5', tint: '168,85,247' },
   ];
   return (
     <div className="grid gap-4">
@@ -886,10 +975,10 @@ const EventsTab: React.FC<{ ar: boolean; now: number; ev: any; busy: boolean; ru
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
               <p className="text-sm font-black text-white">{ev.label}</p>
-              <p className="mt-1 text-3xl font-black text-red-300 adm-breathe" dir="ltr">⏳ {fmtLeft(new Date(ev.ends_at).getTime() - now, ar)}</p>
+              <p className="mt-1 text-3xl font-black text-red-300 adm-breathe inline-flex items-center gap-2" dir="ltr"><Ic n="clock" size={22} /> {fmtLeft(new Date(ev.ends_at).getTime() - now, ar)}</p>
             </div>
-            <B tone="red" disabled={busy} onClick={() => void run('event_stop', {}, ar ? 'توقفت الفعالية' : 'Event stopped')}>
-              ⏹ {ar ? 'إيقاف' : 'Stop'}
+            <B tone="red" disabled={busy} onClick={() => void run('event_stop', {}, ar ? 'توقفت الفعالية' : 'Event stopped')} className="inline-flex items-center gap-1.5">
+              <Ic n="stop" size={14} /> {ar ? 'إيقاف' : 'Stop'}
             </B>
           </div>
         </Panel>
@@ -898,12 +987,12 @@ const EventsTab: React.FC<{ ar: boolean; now: number; ev: any; busy: boolean; ru
       <div className="grid sm:grid-cols-3 gap-3">
         {presets.map((p, i) => (
           <Panel key={p.kind} delay={i * 70} className="!p-5 text-center">
-            <p className="text-4xl adm-pop" style={{ animationDelay: `${i * 120}ms` }} aria-hidden="true">{p.icon}</p>
+            <div className="flex justify-center"><span className="adm-ico adm-pop" style={{ width: 58, height: 58, borderRadius: 19, animationDelay: `${i * 120}ms` }}><Ic n={p.icon} size={27} /></span></div>
             <p className="mt-2 text-base font-black text-white">{p.label}</p>
             <p className="text-2xl font-black mt-0.5" style={{ color: `rgb(${p.tint})` }} dir="ltr">{p.sub}</p>
             <div className="mt-4">
               <B tone="gold" disabled={busy || !!ev} className="w-full"
-                onClick={() => void run('event_start', { kind: p.kind, mult: p.mult, minutes: Number(minutes) || 10 }, ar ? 'بدأت الفعالية 🔥' : 'Event is live')}>
+                onClick={() => void run('event_start', { kind: p.kind, mult: p.mult, minutes: Number(minutes) || 10 }, ar ? 'بدأت الفعالية' : 'Event is live')}>
                 {ar ? 'تشغيل' : 'Start'}
               </B>
             </div>
@@ -913,7 +1002,7 @@ const EventsTab: React.FC<{ ar: boolean; now: number; ev: any; busy: boolean; ru
 
       <Panel delay={240}>
         <h2 className="text-sm font-black text-white flex items-center gap-2">
-          <span aria-hidden="true">🎚</span> {ar ? 'مدة الفعالية / مضاعف مخصص' : 'Duration / custom multiplier'}
+          <span className="adm-ico"><Ic n="sliders" size={15} /></span> {ar ? 'مدة الفعالية / مضاعف مخصص' : 'Duration / custom multiplier'}
         </h2>
         <div className="mt-3 flex flex-wrap items-end gap-3">
           <div className="w-36">
@@ -935,12 +1024,12 @@ const EventsTab: React.FC<{ ar: boolean; now: number; ev: any; busy: boolean; ru
               <input value={customMult} onChange={(e) => setCustomMult(e.target.value.replace(/[^0-9.]/g, ''))} dir="ltr" inputMode="decimal" className="adm-input text-center" />
             </L>
           </div>
-          <B tone="gold" disabled={busy || !!ev} onClick={() => void run('event_start', { kind: 'custom', mult: Number(customMult) || 2, minutes: Number(minutes) || 10 }, ar ? 'بدأت الفعالية' : 'Custom event live')}>
-            ⚡ {ar ? 'فعالية مخصصة' : 'Custom event'}
+          <B tone="gold" disabled={busy || !!ev} onClick={() => void run('event_start', { kind: 'custom', mult: Number(customMult) || 2, minutes: Number(minutes) || 10 }, ar ? 'بدأت الفعالية' : 'Custom event live')} className="inline-flex items-center gap-1.5">
+            <Ic n="zap" size={14} /> {ar ? 'فعالية مخصصة' : 'Custom event'}
           </B>
         </div>
         <p className="mt-3 text-[10px] text-white/35 font-bold">
-          {ar ? 'الفعالية تضرب نقاط الجميع — وتتراكم مع تعزيز الشخص نفسه. ✕0.5 يعني نص نقطة بالضبط (يدّBank الكسر).' : 'Events multiply everyone and stack with personal boosts. ✕0.5 is exactly half a point (fraction is banked).'}
+          {ar ? 'الفعالية تضرب نقاط الجميع — وتتراكم مع تعزيز الشخص نفسه. ×0.5 يعني نص نقطة بالضبط (الكسر يُجمَع).' : 'Events multiply everyone and stack with personal boosts. ×0.5 is exactly half a point (fraction is banked).'}
         </p>
       </Panel>
     </div>
@@ -974,21 +1063,21 @@ const DropsTab: React.FC<{ ar: boolean; now: number; drop: any; busy: boolean; r
         <Panel delay={0}>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div>
-              <p className="text-sm font-black text-white">🎁 {ar ? 'الكود شغال الآن' : 'Drop is live'}</p>
+              <p className="text-sm font-black text-white flex items-center gap-2"><span className="adm-ico green"><Ic n="gift" size={15} /></span> {ar ? 'الكود شغال الآن' : 'Drop is live'}</p>
               <p className="mt-1 text-[12px] text-white/50 font-bold" dir="ltr">
                 {status ? `${status.claims} ${ar ? 'استلام' : 'claims'} · ${status.users} ${ar ? 'شخص' : 'users'}` : '…'}
               </p>
-              <p className="mt-2 text-3xl font-black text-emerald-300 adm-breathe" dir="ltr">⏳ {fmtLeft(new Date(drop.ends_at).getTime() - now, ar)}</p>
+              <p className="mt-2 text-3xl font-black text-emerald-300 adm-breathe inline-flex items-center gap-2" dir="ltr"><Ic n="clock" size={22} /> {fmtLeft(new Date(drop.ends_at).getTime() - now, ar)}</p>
             </div>
-            <B tone="red" disabled={busy} onClick={() => void run('drop_stop', {}, ar ? 'توقف الكود' : 'Drop stopped')}>
-              ⏹ {ar ? 'إيقاف' : 'Stop'}
+            <B tone="red" disabled={busy} onClick={() => void run('drop_stop', {}, ar ? 'توقف الكود' : 'Drop stopped')} className="inline-flex items-center gap-1.5">
+              <Ic n="stop" size={14} /> {ar ? 'إيقاف' : 'Stop'}
             </B>
           </div>
         </Panel>
       ) : (
         <Panel delay={0}>
           <h2 className="text-sm font-black text-white flex items-center gap-2">
-            <span aria-hidden="true">🎁</span> {ar ? 'كود نقاط مخفي جديد' : 'New hidden drop code'}
+            <span className="adm-ico green"><Ic n="gift" size={15} /></span> {ar ? 'كود نقاط مخفي جديد' : 'New hidden drop code'}
           </h2>
           <p className="mt-1.5 text-[11px] text-white/40 font-bold leading-relaxed">
             {ar
@@ -1011,8 +1100,8 @@ const DropsTab: React.FC<{ ar: boolean; now: number; drop: any; busy: boolean; r
           </div>
           <div className="mt-4">
             <B tone="gold" disabled={busy || word.trim().length < 2}
-              onClick={() => { void run('drop_start', { word: word.trim(), amount: Number(amount) || 10, per_max: Number(perMax) || 1, minutes: Number(minutes) || 10 }, ar ? 'بدأ الكود 🎁' : 'Drop launched'); setWord(''); }}>
-              🚀 {ar ? 'بدء الفعالية' : 'Launch drop'}
+              onClick={() => { void run('drop_start', { word: word.trim(), amount: Number(amount) || 10, per_max: Number(perMax) || 1, minutes: Number(minutes) || 10 }, ar ? 'بدأ الكود' : 'Drop launched'); setWord(''); }} className="inline-flex items-center gap-1.5">
+              <Ic n="play" size={14} /> {ar ? 'بدء الفعالية' : 'Launch drop'}
             </B>
           </div>
         </Panel>
@@ -1045,7 +1134,7 @@ const RanksTab: React.FC<{ ar: boolean; busy: boolean; run: RunFn }> = ({ ar, bu
   return (
     <Panel>
       <h2 className="text-sm font-black text-white flex items-center gap-2">
-        <span aria-hidden="true">🎖️</span> {ar ? 'أسعار الرتب — تتحدث عند الكل فوراً' : 'Rank prices — live everywhere instantly'}
+        <span className="adm-ico"><Ic n="medal" size={15} /></span> {ar ? 'أسعار الرتب — تتحدث عند الكل فوراً' : 'Rank prices — live everywhere instantly'}
       </h2>
       <p className="mt-1 text-[11px] text-white/40 font-bold">
         {ar ? 'البوت + الموقع + أمر !رتب كلها تقرأ من نفس الجدول. لازم تكون تصاعدية (كل رتبة أكبر من اللي قبلها).' : 'Bot, website and !رتب all read the same table. Must ascend.'}
@@ -1067,8 +1156,8 @@ const RanksTab: React.FC<{ ar: boolean; busy: boolean; run: RunFn }> = ({ ar, bu
       <div className="mt-4">
         <B tone="gold" disabled={busy}
           onClick={() => void run('ranks_set', { items: ranks.map((r) => ({ idx: r.idx, min_points: Number(vals[r.idx] ?? r.min_points) })) },
-            ar ? 'تم حفظ الأسعار وتحديث رتب الجميع' : 'Prices saved, everyone recomputed')}>
-          💾 {ar ? 'حفظ الأسعار' : 'Save prices'}
+            ar ? 'تم حفظ الأسعار وتحديث رتب الجميع' : 'Prices saved, everyone recomputed')} className="inline-flex items-center gap-1.5">
+          <Ic n="check" size={14} /> {ar ? 'حفظ الأسعار' : 'Save prices'}
         </B>
       </div>
     </Panel>
@@ -1090,7 +1179,7 @@ const LogTab: React.FC<{ ar: boolean }> = ({ ar }) => {
   return (
     <Panel>
       <h2 className="text-sm font-black text-white flex items-center gap-2">
-        <span aria-hidden="true">📜</span> {ar ? 'سجل كل العمليات' : 'Full audit log'}
+        <span className="adm-ico dim"><Ic n="log" size={15} /></span> {ar ? 'سجل كل العمليات' : 'Full audit log'}
       </h2>
       <div className="mt-3 space-y-1.5 adm-scroll max-h-[520px]">
         {loading && <p className="text-center text-white/40 text-sm">…</p>}

@@ -16,6 +16,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { callAdmin } from './adminApi';
+import { Ic, type IconName } from './AdminIcons';
 
 const GOLD = '#D4AF37';
 const GOLD_LT = '#F5DE84';
@@ -123,13 +124,13 @@ const CSS = `
 
 /* ── القسم الصغير ──────────────────────────────────────────── */
 
-const Sec: React.FC<{ title: string; icon: string; children: React.ReactNode; tone?: string; step?: string; state?: 'todo' | 'on' | 'done' }> = ({
+const Sec: React.FC<{ title: string; icon: IconName; children: React.ReactNode; tone?: string; step?: string; state?: 'todo' | 'on' | 'done' }> = ({
   title, icon, children, tone = GOLD, state,
 }) => (
   <section className="ch-card adm-in rounded-3xl border border-white/10 bg-white/[0.02] p-4 sm:p-5">
     <div className="absolute inset-x-0 top-0 h-px" style={{ background: `linear-gradient(90deg,transparent,${tone}88,transparent)` }} aria-hidden="true" />
     <div className={`ch-step ${state === 'on' ? 'on' : state === 'done' ? 'done' : ''}`}>
-      <span aria-hidden="true">{icon}</span>
+      <span className="adm-ico" style={{ width: 26, height: 26, borderRadius: 9 }}><Ic n={icon} size={14} /></span>
       <span className="ch-bar flex-1" style={{ maxWidth: 34 }}>
         <i style={{ width: state === 'done' ? '100%' : state === 'on' ? '55%' : '0%' }} />
       </span>
@@ -279,20 +280,6 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
       w === 'chat' ? (ar ? 'كسب الشات — الكلمة السرية جاية!' : 'The chat won!') : (ar ? 'كسب ناصر — الكلمة السرية جاية!' : 'Nasser won!'));
   };
 
-  /** وصف مختصر للخط المختار — نعرضه وقت التطبيق. */
-  const presetLabel = winner === 'chat'
-    ? chatReward === 'distribute' ? `${amount} نقطة لكل واحد`
-      : chatReward === 'double' ? `تربل ×2 لمدة ${minutes} دقيقة`
-        : 'ما في جائزة'
-    : penalty === 'sabotage' ? `تخريب ×0.5 لمدة ${penaltyMinutes} دقيقة` : 'ما في عقاب';
-
-  const REWARDS: Array<{ id: RewardKind; icon: string; ar: string; en: string; hint: string }> = [
-    { id: 'none', icon: '😐', ar: 'ما في شيء', en: 'Nothing', hint: 'ما مكافأة ولا عقاب' },
-    { id: 'distribute', icon: '🎁', ar: 'توزيع نقاط', en: 'Distribute', hint: `${amount || 0} نقطة لكل واحد` },
-    { id: 'double', icon: '⚡', ar: 'تربل', en: 'Double', hint: 'نقاط مضاعفة ×2' },
-    { id: 'sabotage', icon: '💥', ar: 'تخريب', en: 'Sabotage', hint: 'نصف نقطة ×0.5' },
-  ];
-
   return (
     <div className="grid gap-4">
       <style>{CSS}</style>
@@ -312,7 +299,7 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0">
             <h2 className="text-lg sm:text-xl font-black flex items-center gap-2">
-              <span aria-hidden="true">⚔️</span>
+              <span className="adm-ico" style={{ width: 36, height: 36, borderRadius: 12 }}><Ic n="swords" size={19} /></span>
               {ch?.title?.trim() || (ar ? 'تحدي رايس' : 'Raees Challenge')}
             </h2>
             <p className="mt-1 text-[12px] text-white/45">
@@ -334,12 +321,13 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
         </div>
 
         {flash && (
-          <div className="mt-4 rounded-2xl px-4 py-3 text-[13px] font-black ch-pop"
+          <div className="mt-4 rounded-2xl px-4 py-3 text-[13px] font-black ch-pop flex items-center gap-2"
             style={{
               background: flash.ok ? 'rgba(16,185,129,.14)' : 'rgba(220,38,38,.14)',
               color: flash.ok ? '#A7F3D0' : '#FCA5A5',
               border: `1px solid ${flash.ok ? 'rgba(16,185,129,.4)' : 'rgba(220,38,38,.4)'}`,
             }}>
+            <Ic n={flash.ok ? 'check' : 'alert'} size={16} />
             {flash.text}
           </div>
         )}
@@ -354,16 +342,16 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
       {!ch && (
         <div className="grid gap-4">
           {/* 1) الاسم */}
-          <Sec title={ar ? 'اسم الفعالية' : 'Activity name'} icon="🏷️" state="on" tone={GOLD}>
+          <Sec title={ar ? 'اسم الفعالية' : 'Activity name'} icon="tag" state="on" tone={GOLD}>
             <input className="ch-inp" dir="auto" value={title} maxLength={60} autoComplete="off"
-              placeholder={ar ? 'مثلاً: كأسandria للتفاعل' : 'e.g. Alexandria Cup'}
+              placeholder={ar ? 'مثلاً: كأس التفاعل' : 'e.g. Interaction Cup'}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && canStart && !saving) void start();
               }} />
             <div className="mt-3 flex items-center gap-3 rounded-2xl px-4 py-3"
               style={{ background: 'rgba(212,175,55,.10)', border: '1px solid rgba(212,175,55,.34)' }}>
-              <span className="text-2xl" aria-hidden="true">👑</span>
+              <span className="adm-ico" style={{ width: 40, height: 40, borderRadius: 13 }}><Ic n="crown" size={21} /></span>
               <div className="min-w-0">
                 <p className="text-[10px] font-black uppercase tracking-[0.18em] text-white/40">
                   {ar ? 'المتحدي' : 'Challenger'}
@@ -375,17 +363,17 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
 
           {/* 2) الجوائز والعقوبات — تتحدد قبل ما تبدأ */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <Sec title={ar ? 'لو الشات كسب' : 'If the chat wins'} icon="🎉" state="on" tone={EMERALD}>
+            <Sec title={ar ? 'لو الشات كسب' : 'If the chat wins'} icon="gift" state="on" tone={EMERALD}>
               <div className="grid gap-2">
                 {([
-                  { id: 'distribute' as ChatReward, icon: '🎁', label: ar ? 'توزيع نقاط' : 'Distribute points' },
-                  { id: 'double' as ChatReward, icon: '⚡', label: ar ? 'تربل — نقاط مضاعفة' : 'Double points' },
-                  { id: 'none' as ChatReward, icon: '😐', label: ar ? 'ما في جائزة' : 'No reward' },
+                  { id: 'distribute' as ChatReward, icon: 'gift' as const, label: ar ? 'توزيع نقاط' : 'Distribute points' },
+                  { id: 'double' as ChatReward, icon: 'zap' as const, label: ar ? 'تربل — نقاط مضاعفة' : 'Double points' },
+                  { id: 'none' as ChatReward, icon: 'none' as const, label: ar ? 'ما في جائزة' : 'No reward' },
                 ]).map((o) => (
                   <button key={o.id} className={`ch-opt ${chatReward === o.id ? 'on' : ''}`}
                     onClick={() => setChatReward(o.id)}>
-                    <p className="text-lg" aria-hidden="true">{o.icon}</p>
-                    <p className="text-[12px] font-black">{o.label}</p>
+                    <span className="adm-ico" style={{ width: 32, height: 32, borderRadius: 10 }}><Ic n={o.icon} size={16} /></span>
+                    <p className="mt-1.5 text-[12px] font-black">{o.label}</p>
                   </button>
                 ))}
               </div>
@@ -411,16 +399,16 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
               )}
             </Sec>
 
-            <Sec title={ar ? 'لو ناصر كسب' : 'If Nasser wins'} icon="⚔️" state="on" tone={BLOOD}>
+            <Sec title={ar ? 'لو ناصر كسب' : 'If Nasser wins'} icon="swords" state="on" tone={BLOOD}>
               <div className="grid gap-2">
                 {([
-                  { id: 'sabotage' as Penalty, icon: '💥', label: ar ? 'تخريب — نص نقطة' : 'Sabotage — half a point' },
-                  { id: 'none' as Penalty, icon: '🕊️', label: ar ? 'ما في عقاب' : 'No penalty' },
+                  { id: 'sabotage' as Penalty, icon: 'trendDown' as const, label: ar ? 'تخريب — نص نقطة' : 'Sabotage — half a point' },
+                  { id: 'none' as Penalty, icon: 'none' as const, label: ar ? 'ما في عقاب' : 'No penalty' },
                 ]).map((o) => (
                   <button key={o.id} className={`ch-opt ${penalty === o.id ? 'on' : ''}`}
                     onClick={() => setPenalty(o.id)}>
-                    <p className="text-lg" aria-hidden="true">{o.icon}</p>
-                    <p className="text-[12px] font-black">{o.label}</p>
+                    <span className="adm-ico" style={{ width: 32, height: 32, borderRadius: 10 }}><Ic n={o.icon} size={16} /></span>
+                    <p className="mt-1.5 text-[12px] font-black">{o.label}</p>
                   </button>
                 ))}
               </div>
@@ -440,11 +428,11 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
             </Sec>
           </div>
 
-          <button className="adm-btn w-full rounded-2xl py-4 text-[15px] font-black"
+          <button className="adm-btn w-full rounded-2xl py-4 text-[15px] font-black inline-flex items-center justify-center gap-2"
             style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
             disabled={!canStart || saving}
             onClick={() => void start()}>
-            {saving ? (ar ? 'جاري…' : '…') : `⚔️ ${ar ? 'ابدأ الفعالية' : 'Start the activity'}`}
+            {saving ? (ar ? 'جاري…' : '…') : (<><Ic n="swords" size={16} /> {ar ? 'ابدأ الفعالية' : 'Start the activity'}</>)}
           </button>
 
           <p className="text-center text-[11px] text-white/35">
@@ -458,10 +446,10 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
       {ch && !finished && (
         <>
           {/* لوح المتنافسين */}
-          <Sec title={ar ? 'المتنافسان' : 'The contenders'} icon="⚔️" state="on" tone={GOLD}>
+          <Sec title={ar ? 'المتنافسان' : 'The contenders'} icon="swords" state="on" tone={GOLD}>
             <div className="ch-vs">
               <div className={`ch-side ${winner === 'challenger' ? 'win' : winner === 'chat' ? 'lose' : ''}`}>
-                <div className="ch-vs-badge" aria-hidden="true">👑</div>
+                <div className="ch-vs-badge flex justify-center" aria-hidden="true"><span className="adm-ico" style={{ width: 44, height: 44, borderRadius: 14 }}><Ic n="crown" size={22} /></span></div>
                 <p className="mt-2 text-sm font-black" dir="ltr">@{ch.challenger}</p>
                 <p className="mt-0.5 text-[10px] font-black uppercase tracking-wider text-white/40">
                   {ar ? 'المتحدي' : 'Challenger'}
@@ -471,7 +459,7 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
               <div className="text-2xl font-black text-white/25" aria-hidden="true">VS</div>
 
               <div className={`ch-side ${winner === 'chat' ? 'win' : winner === 'challenger' ? 'lose' : ''}`}>
-                <div className="ch-vs-badge" aria-hidden="true">👥</div>
+                <div className="ch-vs-badge flex justify-center" aria-hidden="true"><span className="adm-ico" style={{ width: 44, height: 44, borderRadius: 14 }}><Ic n="users" size={22} /></span></div>
                 <p className="mt-2 text-sm font-black">{ar ? 'الشات كله' : 'The whole chat'}</p>
                 <p className="mt-0.5 text-[10px] font-black uppercase tracking-wider text-white/40">
                   {ar ? 'الخصم' : 'The chat'}
@@ -489,16 +477,17 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
 
           {/* اختيار الفائز — القرار نهائي بمجرد الضغط، فنتأكد قبله */}
           {running && (
-            <Sec title={ar ? 'من كسب؟' : 'Who won?'} icon="🏁" state="on" tone={GOLD}>
-              <p className="mb-3 text-center text-[11px] font-black text-amber-300/80">
-                {ar ? '⚠️ هذا القرار نهائي — ما بتقدر ترجع عنه بعد الضغط'
-                  : '⚠️ Final — this cannot be undone once you press it'}
+            <Sec title={ar ? 'من كسب؟' : 'Who won?'} icon="trophy" state="on" tone={GOLD}>
+              <p className="mb-3 text-center text-[11px] font-black text-amber-300/80 flex items-center justify-center gap-1.5">
+                <Ic n="alert" size={13} />
+                {ar ? 'هذا القرار نهائي — ما بتقدر ترجع عنه بعد الضغط'
+                  : 'Final — this cannot be undone once you press it'}
               </p>
               <div className="grid gap-2 sm:grid-cols-2">
                 <button className="ch-opt" disabled={saving}
                   onClick={() => decide('challenger')}>
-                  <p className="text-2xl" aria-hidden="true">👑</p>
-                  <p className="mt-1 text-[13px] font-black">{ar ? 'ناصر كسب' : 'Nasser won'}</p>
+                  <span className="adm-ico" style={{ width: 36, height: 36, borderRadius: 12 }}><Ic n="crown" size={18} /></span>
+                  <p className="mt-1.5 text-[13px] font-black">{ar ? 'ناصر كسب' : 'Nasser won'}</p>
                   <p className="mt-0.5 text-[11px] text-white/45">
                     {ch.penalty_kind === 'sabotage'
                       ? ar ? `يطبق تخريب ×0.5 لمدة ${ch.penalty_minutes} دقيقة` : `sabotage ×0.5 for ${ch.penalty_minutes} min`
@@ -507,8 +496,8 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
                 </button>
                 <button className="ch-opt" disabled={saving}
                   onClick={() => decide('chat')}>
-                  <p className="text-2xl" aria-hidden="true">🎉</p>
-                  <p className="mt-1 text-[13px] font-black">{ar ? 'الشات كسب' : 'The chat won'}</p>
+                  <span className="adm-ico" style={{ width: 36, height: 36, borderRadius: 12 }}><Ic n="spark" size={18} /></span>
+                  <p className="mt-1.5 text-[13px] font-black">{ar ? 'الشات كسب' : 'The chat won'}</p>
                   <p className="mt-0.5 text-[11px] text-white/45">
                     {ch.chat_reward_kind === 'distribute'
                       ? ar ? `يوزع ${ch.chat_reward_amount} نقطة لكل واحد` : `${ch.chat_reward_amount} points each`
@@ -523,7 +512,7 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
 
           {/* مرحلة الكلمة */}
           {collecting && (
-            <Sec title={ar ? 'الكلمة السرية' : 'The secret keyword'} icon="🔑" state="on" tone={EMERALD}>
+            <Sec title={ar ? 'الكلمة السرية' : 'The secret keyword'} icon="key" state="on" tone={EMERALD}>
               <div className="text-center">
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-white/40">
                   {ar ? 'كل واحد يكتب' : 'Everyone writes'}
@@ -537,8 +526,9 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
 
               <div className="ch-list mt-4 pe-1">
                 {entries.length === 0 && (
-                  <p className="py-6 text-center text-[12px] text-white/30">
-                    {ar ? 'ما أحد كتب لسه… البوت شايف 🎯' : 'Nobody yet… the bot is watching 🎯'}
+                  <p className="py-6 text-center text-[12px] text-white/30 flex items-center justify-center gap-1.5">
+                    <Ic n="pulse" size={13} />
+                    {ar ? 'ما أحد كتب لسه… البوت شايف' : 'Nobody yet… the bot is watching'}
                   </p>
                 )}
                 {entries.map((e, i) => (
@@ -556,31 +546,32 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
 
           {/* التطبيق — الخيار انحدد وقت البداية، هنا بس ضغطة واحدة */}
           {collecting && (
-            <Sec title={ar ? 'إنهاء وتطبيق' : 'Finish and apply'} icon="🎯" state="on" tone={GOLD}>
+            <Sec title={ar ? 'إنهاء وتطبيق' : 'Finish and apply'} icon="check" state="on" tone={GOLD}>
               <div className="rounded-2xl p-4 text-center"
                 style={{ background: 'rgba(255,255,255,.035)', border: '1px solid rgba(255,255,255,.09)' }}>
                 <p className="text-[11px] font-black uppercase tracking-[0.18em] text-white/40">
                   {winner === 'chat' ? (ar ? 'الشات كسب' : 'The chat won') : (ar ? 'ناصر كسب' : 'Nasser won')}
                 </p>
-                <p className="mt-1.5 text-lg font-black">
+                <p className="mt-1.5 text-lg font-black flex items-center justify-center gap-2">
+                  <Ic n={winner === 'chat' ? (ch.chat_reward_kind === 'distribute' ? 'gift' : ch.chat_reward_kind === 'double' ? 'zap' : 'none') : (ch.penalty_kind === 'sabotage' ? 'trendDown' : 'none')} size={20} />
                   {winner === 'chat'
-                    ? ch.chat_reward_kind === 'distribute' ? `🎁 ${ch.chat_reward_amount} نقطة لكل واحد`
-                      : ch.chat_reward_kind === 'double' ? `⚡ تربل ×2 لمدة ${ch.chat_reward_minutes} دقيقة`
-                        : '😐 ما في جائزة'
-                    : ch.penalty_kind === 'sabotage' ? `💥 تخريب ×0.5 لمدة ${ch.penalty_minutes} دقيقة`
-                      : '🕊️ ما في عقاب'}
+                    ? ch.chat_reward_kind === 'distribute' ? `${ch.chat_reward_amount} نقطة لكل واحد`
+                      : ch.chat_reward_kind === 'double' ? `تربل ×2 لمدة ${ch.chat_reward_minutes} دقيقة`
+                        : 'ما في جائزة'
+                    : ch.penalty_kind === 'sabotage' ? `تخريب ×0.5 لمدة ${ch.penalty_minutes} دقيقة`
+                      : 'ما في عقاب'}
                 </p>
                 <p className="mt-1 text-[11px] text-white/35">
                   {ar ? 'انتصف على كل من كتب الكلمة' : 'applies to everyone who typed the keyword'}
                 </p>
               </div>
 
-              <button className="mt-4 w-full rounded-2xl py-3.5 text-[14px] font-black"
+              <button className="adm-btn mt-4 w-full rounded-2xl py-3.5 text-[14px] font-black inline-flex items-center justify-center gap-2"
                 style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
                 disabled={saving}
                 onClick={() => void act('challenge_apply', { id: ch.id },
                   ar ? `انفّذ على ${count} واحد` : `Applied to ${count} people`)}>
-                {saving ? (ar ? 'جاري…' : 'Working…') : `🎯 ${ar ? 'إيقاف وتطبيق' : 'Stop & apply'} (${nf(count)})`}
+                {saving ? (ar ? 'جاري…' : 'Working…') : (<><Ic n="check" size={16} /> {ar ? 'إيقاف وتطبيق' : 'Stop & apply'} ({nf(count)})</>)}
               </button>
             </Sec>
           )}
@@ -591,7 +582,7 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
       {collecting && winner && (
         <div className="adm-card adm-in rounded-3xl p-4 flex items-center gap-3"
           style={{ background: 'rgba(16,185,129,.10)', border: '1px solid rgba(16,185,129,.38)' }}>
-          <span className="text-2xl" aria-hidden="true">🔒</span>
+          <span className="adm-ico green" style={{ width: 38, height: 38, borderRadius: 12 }}><Ic n="lock" size={19} /></span>
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-black text-emerald-300">
               {winner === 'chat' ? (ar ? 'النتيجة: الشات كسب' : 'Result: the chat won') : (ar ? 'النتيجة: ناصر كسب' : 'Result: Nasser won')}
@@ -605,9 +596,9 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
 
       {/* ── خلص ── */}
       {ch && finished && (
-        <Sec title={ar ? 'انتهى التحدي' : 'Challenge finished'} icon="🏁" state="done" tone={ch.status === 'done' ? EMERALD : 'rgba(255,255,255,.4)'}>
+        <Sec title={ar ? 'انتهى التحدي' : 'Challenge finished'} icon="trophy" state="done" tone={ch.status === 'done' ? EMERALD : 'rgba(255,255,255,.4)'}>
           <div className="text-center py-4">
-            <p className="text-3xl" aria-hidden="true">{ch.status === 'done' ? '🏆' : '🚫'}</p>
+            <div className="flex justify-center"><span className="adm-ico green" style={{ width: 54, height: 54, borderRadius: 17 }}><Ic n={ch.status === 'done' ? 'trophy' : 'ban'} size={26} /></span></div>
             <p className="mt-2 text-sm font-black">
               {ch.status === 'cancelled'
                 ? (ar ? 'أُلغي التحدي' : 'Challenge cancelled')
@@ -629,7 +620,7 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
               </p>
             )}
           </div>
-          <button className="mt-2 w-full rounded-2xl py-3 text-[13px] font-black"
+          <button className="adm-btn mt-2 w-full rounded-2xl py-3 text-[13px] font-black inline-flex items-center justify-center gap-2"
             style={{ background: `linear-gradient(180deg,${GOLD_LT},${GOLD} 58%,${GOLD_DK})`, color: '#0B0906' }}
             onClick={() => {
               // لا تستدعِ load() هنا: هي رجّعنا لنفس الشاشة المكتملة.
@@ -640,7 +631,7 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
               setCount(0);
               setTitle('');
             }}>
-            ⚔️ {ar ? 'ابدأ فعالية جديدة' : 'Start a new activity'}
+            <Ic n="swords" size={15} /> {ar ? 'ابدأ فعالية جديدة' : 'Start a new activity'}
           </button>
           {ch && (
             <button className="mt-2 w-full rounded-2xl py-2 text-[11px] font-black"
@@ -663,7 +654,7 @@ export const ChallengeTab: React.FC<{ ar: boolean; now: number; busy: boolean }>
           <div className="adm-card ch-card w-full max-w-sm rounded-3xl p-6 text-center ch-pop"
             style={{ border: '1px solid rgba(212,175,55,.45)' }}
             onClick={(e) => e.stopPropagation()}>
-            <p className="text-4xl" aria-hidden="true">{confirmWinner === 'chat' ? '🎉' : '👑'}</p>
+            <div className="flex justify-center"><span className="adm-ico" style={{ width: 58, height: 58, borderRadius: 19 }}><Ic n={confirmWinner === 'chat' ? 'spark' : 'crown'} size={28} /></span></div>
             <p className="mt-3 text-lg font-black">
               {confirmWinner === 'chat' ? (ar ? 'الشات كسب' : 'The chat won') : (ar ? 'ناصر كسب' : 'Nasser won')}
             </p>
