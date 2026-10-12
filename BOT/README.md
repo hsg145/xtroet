@@ -217,6 +217,52 @@ little while, or check `/health`.
 `GET /health` reports the challenge under `challenge`: status, the keyword
 while collecting, and how many people have entered.
 
+## معركة الفرق — the chat against itself
+
+Teams from chat compete against each other (unlike the challenge, which is
+one person against everyone). Nasser sets it all up from the **Teams** tab.
+
+### Required setup — run this once
+
+```
+supabase/migrations/009_team_battle.sql
+```
+
+Idempotent. Without it the tab says which migration to run instead of
+pretending nothing exists.
+
+### The flow
+
+| Step | Who | What happens |
+| --- | --- | --- |
+| 1 | Nasser | Type the battle name, add 2–8 teams, pick the winner reward and the loser penalty, then press **ابدأ التصويت**. The bot announces the teams. |
+| 2 | Chat | Everyone types their exact team name. **One vote each** — the first counts, the rest are ignored, even for a different team. Counters update live every 2s. The bot stays silent. |
+| 3 | Nasser | Press **ابدأ الفعالية**. Points count (live broadcast only, same gate). |
+| 4 | Nasser | Pick the winning team (final, with confirmation). |
+| 5 | Nasser | Press **إنهاء وتطبيق**. Distribution is immediate; double hits **only the winning team's members**; sabotage hits **only the losers**. |
+
+### Voting matches exactly — on purpose
+
+`ناصر`, `الناصر` and `!ناصر` all vote for the same team (the definite
+article and `!` are stripped after Arabic normalization). But `وين ناصر؟`
+does not vote — a vote must be deliberate, so a passing sentence never
+joins anyone to a team.
+
+Two team names that normalize to the same value (like `الأحمر` and
+`الاحمر`) are rejected as duplicates at creation, because one vote would
+match both and nobody could tell them apart.
+
+### No double votes, guaranteed by the database
+
+`team_votes` has `primary key (battle_id, kick_user_id)`. Typing twenty
+times still records one row. Changing your mind is not allowed by design:
+the first vote stands.
+
+`apply_team_reward()` locks the row, returns early on `applied_at`, and
+applies each branch only to that branch's members — winners never receive
+the losers' penalty and vice versa. One active battle per channel, enforced
+by a partial unique index.
+
 ## Commands you may need
 
 | Command | What it does |

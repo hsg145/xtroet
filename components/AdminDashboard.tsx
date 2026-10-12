@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChallengeTab } from './ChallengeTab';
+import { TeamsTab } from './TeamsTab';
 import { callAdmin } from './adminApi';
 import { Ic, type IconName } from './AdminIcons';
 
@@ -411,7 +412,7 @@ const L: React.FC<{ children: React.ReactNode; label: string }> = ({ children, l
 );
 
 /* ── الصفحة الرئيسية للوحة ──────────────────────────────────── */
-type Tab = 'home' | 'users' | 'events' | 'drops' | 'challenge' | 'ranks' | 'log';
+type Tab = 'home' | 'users' | 'events' | 'drops' | 'challenge' | 'teams' | 'ranks' | 'log';
 
 export const AdminDashboard: React.FC = () => {
   const [lang, setLang] = useState<Lang>(() => (navigator.language || 'ar').startsWith('ar') ? 'ar' : 'ar');
@@ -504,6 +505,7 @@ export const AdminDashboard: React.FC = () => {
     { id: 'events', ar: 'الفعاليات', en: 'Events', icon: 'flame' },
     { id: 'drops', ar: 'الأكواد', en: 'Drops', icon: 'gift' },
     { id: 'challenge', ar: 'تحدي رايس', en: 'Challenge', icon: 'swords' },
+    { id: 'teams', ar: 'معركة الفرق', en: 'Teams', icon: 'flag' },
     { id: 'ranks', ar: 'أسعار الرتب', en: 'Rank prices', icon: 'medal' },
     { id: 'log', ar: 'السجل', en: 'Log', icon: 'log' },
   ];
@@ -659,6 +661,7 @@ export const AdminDashboard: React.FC = () => {
                   {tab === 'events' && <EventsTab ar={ar} now={now} ev={ev} busy={busy} run={run} />}
                   {tab === 'drops' && <DropsTab ar={ar} now={now} drop={dr} busy={busy} run={run} />}
                   {tab === 'challenge' && <ChallengeTab ar={ar} now={now} busy={busy} />}
+                  {tab === 'teams' && <TeamsTab ar={ar} busy={busy} />}
                   {tab === 'ranks' && <RanksTab ar={ar} busy={busy} run={run} />}
                   {tab === 'log' && <LogTab ar={ar} />}
                 </main>

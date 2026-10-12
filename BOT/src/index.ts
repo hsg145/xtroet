@@ -8,6 +8,7 @@ import { LiveGate } from './core/livestate.js';
 import { PointsEngine } from './core/points.js';
 import { RankStore } from './core/ranks.js';
 import { MessageRouter } from './core/router.js';
+import { TeamBattleState } from './core/teambattle.js';
 import { createServer, WebhookChatSource, type HttpServer } from './core/server.js';
 import { ChatSender } from './core/sender.js';
 import { messages } from './messages.js';
@@ -179,6 +180,13 @@ async function main(): Promise<void> {
     send: (text) => sender.send(text, 'high'),
   });
 
+  // ── معركة الفرق ────────────────────────────────────────────
+  // نفس النمط: الأدمن ينشئ الفرق من الموقع، والبوت يعلنها ويجمع الأصوات.
+  const teamBattleState = new TeamBattleState({
+    channelId,
+    send: (text) => sender.send(text, 'high'),
+  });
+
   const commands = new Commands({
     channelId,
     broadcasterUserId: channelId,
@@ -208,6 +216,7 @@ async function main(): Promise<void> {
     promo: (ch, uid, content) => adminState.promo(ch, uid, content),
     live: liveGate,
     challenge: challengeState,
+    teams: teamBattleState,
   });
 
   // A wrong PC clock makes every webhook signature fail, which gets the app
@@ -295,6 +304,7 @@ async function main(): Promise<void> {
         transitions: liveTransitions,
       },
       challenge: challengeState.snapshot(),
+      teams: teamBattleState.snapshot(),
       ingest: {
         mode,
         pusher: {
@@ -341,6 +351,7 @@ async function main(): Promise<void> {
   idleWatcher.start();
   liveGate.start();
   challengeState.startRefresh();
+  teamBattleState.startRefresh();
   ranks.startRefresh(e.RANKS_REFRESH_MS);
   tokenManager.startAutoRefresh();
   // Dashboard promos: refresh events/mutes/drops + send queued announcements.
@@ -427,6 +438,7 @@ async function main(): Promise<void> {
     idleWatcher.stop();
     liveGate.stop();
     challengeState.stopRefresh();
+    teamBattleState.stopRefresh();
     ranks.stopRefresh();
     clearInterval(outboxTimer);
     adminState.stopRefresh();

@@ -225,6 +225,34 @@ const num = (v: unknown, dflt = 0): number => {
   return Number.isFinite(n) ? n : dflt;
 };
 
+/**
+ * تطبيع أسماء الفرق — نسخة طبق الأصل من cleanVoteText في البوت
+ * (BOT/src/core/teambattle.ts). لازم يتطابقان حرفياً: لو اسمان يتطبيعان
+ * لنفس القيمة، الصوت لهما غامض، فنرفض المكرر هنا بدل ما نخمّن هناك.
+ */
+const AR_FOLD: Array<[RegExp, string]> = [
+  [/[أإآٱ]/g, 'ا'],
+  [/[ى]/g, 'ي'],
+  [/[ؤ]/g, 'و'],
+  [/[ئ]/g, 'ي'],
+  [/[ة]/g, 'ه'],
+  [/[ء]/g, ''],
+];
+function normTeam(s: string): string {
+  let out = String(s).replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, '');
+  for (const [re, to] of AR_FOLD) out = out.replace(re, to);
+  return out.trim().toLowerCase().replace(/\s+/g, ' ').replace(/^!+/, '').replace(/^ال/, '');
+}
+
+/** خطأ قاعدة بيانات → رسالة مفهومة. الجدول الناقص = migration ما اشتغلت. */
+function dbErr(e: any, migration: string): { error: string; detail: string } {
+  const msg = String(e?.message || e);
+  if (msg.includes('does not exist') || msg === 'db 404' || msg.includes('PGRST')) {
+    return { error: 'db_error', detail: `شغّل ${migration}` };
+  }
+  return { error: 'db_error', detail: msg.slice(0, 160) };
+}
+
 /* ── المعالج ────────────────────────────────────────────────── */
 
 export default async function handler(req: Request) {
@@ -902,6 +930,216 @@ export default async function handler(req: Request) {
       if (!r.ok) return json({ error: 'save_failed' }, 500);
       await outbox(url, key, cur.channel_id, '🚫 أُلغي التحدي');
       await runAudit('challenge_cancel', { id });
+      return json({ ok: true });
+    }
+
+    /* ══════════════════════════════════════════════════════════
+     *  معركة الفرق — الشات ضد بعضه
+     * ══════════════════════════════════════════════════════════ */
+
+    const BATTLE_COLS =
+      'id,channel_id,title,status,winning_option_id,win_reward_kind,win_reward_amount,win_reward_minutes,lose_penalty_kind,lose_penalty_minutes,started_at,ended_at,applied_at';
+
+    /** يقرأ المعركة النشطة أو آخر واحدة، مع الفرق وعدد الأصوات. */
+    if (action === 'teams_get') {
+      const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
+      if (!ch) return json({ error: 'no_channel' }, 500);
+
+      let battle: any = null;
+      try {
+        const rows = (await sbJson(
+          url, key,
+          `team_battles?channel_id=eq.${ch.id}&select=${BATTLE_COLS}&order=id.desc&limit=1`,
+        )) as any[];
+        battle = rows[0] ?? null;
+      } catch (e: any) {
+        const d = dbErr(e, 'supabase/migrations/009_team_battle.sql');
+        return json(d, 500);
+      }
+
+      let options: any[] = [];
+      let votes: Record<number, number> = {};
+      let total = 0;
+      if (battle) {
+        options = (await sbJson(
+          url, key,
+          `team_options?battle_id=eq.${battle.id}&select=id,label,position&order=position.asc`,
+        ).catch(() => [])) as any[];
+        const rows = (await sbJson(
+          url, key,
+          `team_votes?battle_id=eq.${battle.id}&select=option_id`,
+        ).catch(() => [])) as any[];
+        for (const r of rows) {
+          const oid = Number(r.option_id);
+          votes[oid] = (votes[oid] || 0) + 1;
+          total++;
+        }
+      }
+      return json({ battle, options, votes, total, channel: ch });
+    }
+
+    /* ── إنشاء معركة: الاسم + الفرق + الجائزة + العقاب (كلها قبل البدء) ── */
+    if (action === 'teams_create') {
+      const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
+      if (!ch) return json({ error: 'no_channel' }, 500);
+
+      const active = (await sbJson(
+        url, key,
+        `team_battles?channel_id=eq.${ch.id}&status=in.(voting,running)&select=id`,
+      ).catch(() => [])) as any[];
+      if (active?.length) return json({ error: 'battle_already_running' }, 409);
+
+      const title = String(body.title || '').trim().replace(/[\r\n]+/g, ' ');
+      if ([...title].length < 2 || [...title].length > 60) return json({ error: 'bad_title' }, 400);
+
+      const labels = (Array.isArray(body.options) ? body.options : [])
+        .map((s: unknown) => String(s ?? '').trim().replace(/[\r\n]+/g, ' '))
+        .filter((s: string) => [...s].length >= 2 && [...s].length <= 24);
+      // فريقان على الأقل، وثمانية حد أقصى عقلاني للشاشة والشات.
+      if (labels.length < 2) return json({ error: 'need_two_teams' }, 400);
+      if (labels.length > 8) return json({ error: 'too_many_teams' }, 400);
+      // أسماء مكررة (بعد نفس تطبيع التصويت) تُربك المطابقة — نرفض بدل ما نخمّن.
+      // "الأحمر" و"الاحمر" يتطبيعان لنفس القيمة، فصوت واحد سيطابق الاثنين.
+      const seen = new Set(labels.map((s: string) => normTeam(s)));
+      if (seen.size !== labels.length) return json({ error: 'duplicate_teams' }, 400);
+
+      // ── جائزة الفائز ──
+      const winKind = String(body.win_reward_kind || 'none');
+      if (!['none', 'distribute', 'double'].includes(winKind)) return json({ error: 'bad_win_reward' }, 400);
+      const winAmount = Math.trunc(num(body.win_reward_amount, 0));
+      const winMinutes = Math.trunc(num(body.win_reward_minutes, 0));
+      if (winAmount < 0 || winAmount > 1000000 || winMinutes < 0 || winMinutes > 10080) {
+        return json({ error: 'bad_amount' }, 400);
+      }
+      if (winKind === 'distribute' && winAmount < 1) return json({ error: 'need_amount' }, 400);
+      if (winKind === 'double' && winMinutes < 1) return json({ error: 'need_minutes' }, 400);
+
+      // ── عقاب الخاسر ──
+      const loseKind = String(body.lose_penalty_kind || 'none');
+      if (!['none', 'sabotage'].includes(loseKind)) return json({ error: 'bad_lose_penalty' }, 400);
+      const loseMinutes = Math.trunc(num(body.lose_penalty_minutes, 0));
+      if (loseMinutes < 0 || loseMinutes > 10080) return json({ error: 'bad_minutes' }, 400);
+      if (loseKind === 'sabotage' && loseMinutes < 1) return json({ error: 'need_minutes' }, 400);
+
+      const created = await sbJson(url, key, 'team_battles', {
+        method: 'POST',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({
+          channel_id: ch.id,
+          title,
+          status: 'voting',
+          win_reward_kind: winKind,
+          win_reward_amount: winKind === 'distribute' ? winAmount : 0,
+          win_reward_minutes: winKind === 'double' ? winMinutes : 0,
+          lose_penalty_kind: loseKind,
+          lose_penalty_minutes: loseKind === 'sabotage' ? loseMinutes : 0,
+          started_at: new Date().toISOString(),
+        }),
+      });
+      const battle = Array.isArray(created) ? created[0] : created;
+      if (!battle?.id) return json({ error: 'create_failed' }, 500);
+
+      // الفرق — تُنشأ مع المعركة في نفس الطلب المنطقي.
+      const optRows = labels.map((label: string, i: number) => ({
+        battle_id: battle.id, label, position: i,
+      }));
+      const r = await sb(url, key, 'team_options', { method: 'POST', body: JSON.stringify(optRows) });
+      if (!r.ok) {
+        // نصف معركة بلا فرق أسوأ من لا شيء — نمسحها ونقول فشل.
+        await sb(url, key, `team_battles?id=eq.${battle.id}`, { method: 'DELETE' }).catch(() => undefined);
+        return json({ error: 'options_failed' }, 500);
+      }
+
+      await runAudit('teams_create', { id: battle.id, title, teams: labels, winKind, loseKind });
+      return json({ ok: true, battle });
+    }
+
+    /* ── ابدأ الفعالية: voting → running (انتهى التصويت) ── */
+    if (action === 'teams_start') {
+      const id = Math.trunc(num(body.id, 0));
+      if (id <= 0) return json({ error: 'bad_id' }, 400);
+      const rows = (await sbJson(url, key, `team_battles?id=eq.${id}&select=${BATTLE_COLS}`).catch(() => [])) as any[];
+      const cur = rows[0];
+      if (!cur) return json({ error: 'not_found' }, 404);
+      if (cur.status !== 'voting') return json({ error: 'not_voting', status: cur.status }, 409);
+      const r = await sb(url, key, `team_battles?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'running' }) });
+      if (!r.ok) return json({ error: 'save_failed' }, 500);
+      await runAudit('teams_start', { id });
+      return json({ ok: true });
+    }
+
+    /* ── أنهِ واختر الفائز: running → ينتظر التطبيق ── */
+    if (action === 'teams_end') {
+      const id = Math.trunc(num(body.id, 0));
+      const optionId = Math.trunc(num(body.option_id, 0));
+      if (id <= 0 || optionId <= 0) return json({ error: 'bad_id' }, 400);
+      const rows = (await sbJson(url, key, `team_battles?id=eq.${id}&select=${BATTLE_COLS}`).catch(() => [])) as any[];
+      const cur = rows[0];
+      if (!cur) return json({ error: 'not_found' }, 404);
+      if (cur.status !== 'running') return json({ error: 'not_running', status: cur.status }, 409);
+      // الفائز لازم يكون أحد فرق هذه المعركة فعلاً.
+      const opts = (await sbJson(url, key, `team_options?battle_id=eq.${id}&select=id,label`).catch(() => [])) as any[];
+      const win = opts.find((o: any) => Number(o.id) === optionId);
+      if (!win) return json({ error: 'bad_winner' }, 400);
+      const r = await sb(url, key, `team_battles?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ winning_option_id: optionId, ended_at: new Date().toISOString() }),
+      });
+      if (!r.ok) return json({ error: 'save_failed' }, 500);
+      const t = String(cur.title || '').trim();
+      const head = t ? `«${t}» ` : '';
+      await outbox(url, key, cur.channel_id, `🏆 ${head}فريق ${win.label} كسب المعركة!`);
+      await runAudit('teams_end', { id, winner: win.label });
+      return json({ ok: true });
+    }
+
+    /* ── إيقاف وتطبيق: الدالة تختار الفرع من الفائز المخزّن ── */
+    if (action === 'teams_apply') {
+      const id = Math.trunc(num(body.id, 0));
+      if (id <= 0) return json({ error: 'bad_id' }, 400);
+      const rows = (await sbJson(url, key, `team_battles?id=eq.${id}&select=${BATTLE_COLS}`).catch(() => [])) as any[];
+      const cur = rows[0];
+      if (!cur) return json({ error: 'not_found' }, 404);
+      if (cur.status !== 'running') return json({ error: 'not_running', status: cur.status }, 409);
+      if (!cur.winning_option_id) return json({ error: 'no_winner' }, 409);
+
+      const result = await sbJson(url, key, 'rpc/apply_team_reward', {
+        method: 'POST',
+        body: JSON.stringify({ p_battle_id: id }),
+      }).catch((e) => ({ ok: false, error: String(e?.message || e).slice(0, 160) }));
+
+      const opts = (await sbJson(url, key, `team_options?battle_id=eq.${id}&select=id,label`).catch(() => [])) as any[];
+      const win = opts.find((o: any) => Number(o.id) === Number(cur.winning_option_id));
+      const t = String(cur.title || '').trim();
+      const head = t ? `«${t}» ` : '';
+      const n = Number((result as any)?.winners ?? 0);
+      let line: string;
+      if (cur.win_reward_kind === 'distribute') line = `🎁 ${head}وُزّعت ${cur.win_reward_amount} نقطة على ${n} فائز!`;
+      else if (cur.win_reward_kind === 'double') line = `⚡ ${head}تربل! نقاط الفائزين مضاعفة ×2 لمدة ${cur.win_reward_minutes} دقيقة`;
+      else if (cur.lose_penalty_kind === 'sabotage') line = `💥 ${head}تخريب على الخاسرين — نص نقطة ×0.5 لمدة ${cur.lose_penalty_minutes} دقيقة`;
+      else line = `😐 ${head}ما صار شيء`;
+      await outbox(url, key, cur.channel_id, line);
+
+      await runAudit('teams_apply', { id, winner: win?.label, result });
+      return json({ ok: true, result });
+    }
+
+    /* ── إلغاء معركة — مسموح بس قبل اختيار الفائز ── */
+    if (action === 'teams_cancel') {
+      const id = Math.trunc(num(body.id, 0));
+      if (id <= 0) return json({ error: 'bad_id' }, 400);
+      const rows = (await sbJson(url, key, `team_battles?id=eq.${id}&select=id,status,winning_option_id,channel_id`).catch(() => [])) as any[];
+      const cur = rows[0];
+      if (!cur) return json({ error: 'not_found' }, 404);
+      if (cur.status !== 'voting' && cur.status !== 'running') return json({ error: 'not_running', status: cur.status }, 409);
+      if (cur.winning_option_id) return json({ error: 'already_decided' }, 409);
+      const r = await sb(url, key, `team_battles?id=eq.${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'cancelled', ended_at: new Date().toISOString() }),
+      });
+      if (!r.ok) return json({ error: 'save_failed' }, 500);
+      await outbox(url, key, cur.channel_id, '🚫 أُلغيت معركة الفرق');
+      await runAudit('teams_cancel', { id });
       return json({ ok: true });
     }
 

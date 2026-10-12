@@ -302,6 +302,26 @@ export const messages = {
 
   /** ما فيه شيء. */
   challengeNothing: (): string => toSingleLine('😐 ما صار شيء — الشات ما نال شي'),
+
+  // ── معركة الفرق ─────────────────────────────────────────────
+
+  /** إعلان المعركة وخياراتها — أهم رسالة، لازم تكون واضحة. */
+  teamBattleStarted: (title: string, labels: string[]): string =>
+    toSingleLine(
+      `⚔️ معركة «${safeUsername(title, 24)}» — اكتب اسم فريقك بالضبط: ${labels.map((l) => safeUsername(l, 14)).join(' أو ')} — صوت واحد فقط!`,
+    ),
+
+  /** إعلان بدء الفعالية بعد انتهاء التصويت. */
+  teamBattleRunning: (title: string): string =>
+    toSingleLine(`🔴 بدأت فعالية «${safeUsername(title, 24)}» — النقاط تعدّ الآن!`),
+
+  /** فريق فاز. */
+  teamBattleWon: (label: string): string =>
+    toSingleLine(`🏆 فريق ${safeUsername(label, 18)} كسب المعركة!`),
+
+  /** توزيع على الفائزين. */
+  teamDistributed: (amount: number, count: number): string =>
+    toSingleLine(`🎁 وُزّعت ${formatNumber(amount)} نقطة على ${formatNumber(count)} فائز!`),
 };
 
 /**

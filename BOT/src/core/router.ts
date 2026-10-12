@@ -7,6 +7,7 @@ import type { GateVerdict, LiveGate } from './livestate.js';
 import type { PointsEngine, PromoProvider } from './points.js';
 import type { RankStore } from './ranks.js';
 import type { ChatSender } from './sender.js';
+import type { TeamBattleState } from './teambattle.js';
 
 export interface RouterDeps {
   channelId: number;
@@ -30,6 +31,11 @@ export interface RouterDeps {
    * ويسجّل صاحبها. غيابه لا يوقف البوت — بس ما يصير في تحدي.
    */
   challenge?: ChallengeState;
+  /**
+   * معركة الفرق. اختياري مثل التحدي: صوت مفعّل يوقف احتساب النقاط على
+   * رسالة التصويت ويسجّلها.
+   */
+  teams?: TeamBattleState;
 }
 
 /**
@@ -54,6 +60,15 @@ export class MessageRouter {
       // API handed us. The broadcaster themselves is a normal member and does
       // earn points.
       if (this.deps.sender.isOwnMessage(msg.messageId)) return;
+
+      // ── صوت معركة الفرق ───────────────────────────────────
+      // قبل التحدي وقبل النقاط: التصويت لفريق ليس أمراً ولا يستاهل نقطة.
+      // صامت تماماً مثل جمع الكلمة — العدّاد في اللوحة يكفي.
+      const voted = this.deps.teams?.findVote(msg.content);
+      if (voted) {
+        await this.deps.teams?.vote(msg.userId, msg.username, voted.id);
+        return;
+      }
 
       // ── كلمة التحدي ─────────────────────────────────────────
       // قبل الأوامر وقبل احتساب النقاط: الكلمة المعلنة ما هي أمر، ولا

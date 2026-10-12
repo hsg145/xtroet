@@ -351,6 +351,13 @@ export const IcPin: React.FC<IconProps> = (p) => (
   </Svg>
 );
 
+export const IcFlag: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M5 21V4" />
+    <path d="M5 4h13l-3 4 3 4H5" />
+  </Svg>
+);
+
 /** موزّع: اسم نصي ← مكوّن. يخلي التبويبات والعناوين سطراً واحداً. */
 const MAP = {
   home: IcHome,
@@ -395,6 +402,7 @@ const MAP = {
   coins: IcCoins,
   none: IcMinusCircle,
   pin: IcPin,
+  flag: IcFlag,
 } as const;
 
 export type IconName = keyof typeof MAP;
