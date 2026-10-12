@@ -15,6 +15,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { callAdmin } from './adminApi';
 import { Ic } from './AdminIcons';
+import { ARENA_CSS } from './ArenaStyles';
 
 const GOLD = '#D4AF37';
 const GOLD_LT = '#F5DE84';
@@ -189,12 +190,13 @@ export const TeamsTab: React.FC<{ ar: boolean; busy: boolean }> = ({ ar, busy })
 
   return (
     <div className="grid gap-4">
+      <style>{ARENA_CSS}</style>
       {/* العنوان */}
-      <div className="adm-card adm-in ch-card rounded-3xl p-5 sm:p-6 border border-white/10">
+      <div className="adm-card adm-in ch-card arena-hero rounded-3xl p-5 sm:p-6 border border-white/10">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="min-w-0">
-            <h2 className="text-lg sm:text-xl font-black flex items-center gap-2">
-              <span className="adm-ico" style={{ width: 36, height: 36, borderRadius: 12 }}><Ic n="flag" size={19} /></span>
+            <h2 className="arena-title text-xl sm:text-2xl font-black flex items-center gap-2.5">
+              <span className="adm-ico" style={{ width: 38, height: 38, borderRadius: 13 }}><Ic n="flag" size={20} /></span>
               {battle?.title?.trim() || (ar ? 'معركة الفرق' : 'Team Battle')}
             </h2>
             <p className="mt-1 text-[12px] text-white/45">
@@ -248,9 +250,10 @@ export const TeamsTab: React.FC<{ ar: boolean; busy: boolean }> = ({ ar, busy })
           <Sec title={ar ? `الفرق (${cleanLabels.length})` : `Teams (${cleanLabels.length})`} icon={<Tile><Ic n="users" size={14} /></Tile>} state="on" tone={GOLD}>
             <div className="grid gap-2">
               {labels.map((v, i) => (
-                <div key={i} className="flex gap-2">
+                <div key={i} className="team-row">
+                  <span className="team-num" dir="ltr">{i + 1}</span>
                   <input className="ch-inp flex-1" dir="auto" value={v} maxLength={24} autoComplete="off"
-                    placeholder={ar ? `الفريق ${i + 1} — مثلاً: الأحمر` : `Team ${i + 1}`}
+                    placeholder={ar ? `اسم الفريق — مثلاً: الأحمر` : `Team name`}
                     onChange={(e) => {
                       const next = [...labels];
                       next[i] = e.target.value;
@@ -283,13 +286,13 @@ export const TeamsTab: React.FC<{ ar: boolean; busy: boolean }> = ({ ar, busy })
               <div className="grid gap-2">
                 {([
                   { id: 'distribute' as const, icon: 'gift' as const, label: ar ? 'توزيع نقاط' : 'Distribute points' },
-                  { id: 'double' as const, icon: 'zap' as const, label: ar ? 'دبل — نقاط مضاعفة' : 'Double points' },
+                  { id: 'double' as const, icon: 'zap' as const, label: ar ? 'تربل — نقاط مضاعفة' : 'Double points' },
                   { id: 'none' as const, icon: 'none' as const, label: ar ? 'ما في جائزة' : 'No reward' },
                 ]).map((o) => (
-                  <button key={o.id} className={`ch-opt ${winReward === o.id ? 'on' : ''}`}
+                  <button key={o.id} className={`ch-opt ch-opt-h ${winReward === o.id ? 'on' : ''}`}
                     onClick={() => setWinReward(o.id)}>
-                    <span className="adm-ico" style={{ width: 32, height: 32, borderRadius: 10 }}><Ic n={o.icon} size={16} /></span>
-                    <p className="mt-1.5 text-[12px] font-black">{o.label}</p>
+                    <span className="adm-ico shrink-0" style={{ width: 34, height: 34, borderRadius: 11 }}><Ic n={o.icon} size={17} /></span>
+                    <span className="ch-opt-t"><p className="text-[12px] font-black">{o.label}</p></span>
                   </button>
                 ))}
               </div>
@@ -319,10 +322,10 @@ export const TeamsTab: React.FC<{ ar: boolean; busy: boolean }> = ({ ar, busy })
                   { id: 'sabotage' as const, icon: 'trendDown' as const, label: ar ? 'تخريب — نص نقطة' : 'Sabotage — half a point' },
                   { id: 'none' as const, icon: 'none' as const, label: ar ? 'ما في عقاب' : 'No penalty' },
                 ]).map((o) => (
-                  <button key={o.id} className={`ch-opt ${losePenalty === o.id ? 'on' : ''}`}
+                  <button key={o.id} className={`ch-opt ch-opt-h ${losePenalty === o.id ? 'on' : ''}`}
                     onClick={() => setLosePenalty(o.id)}>
-                    <span className="adm-ico" style={{ width: 32, height: 32, borderRadius: 10 }}><Ic n={o.icon} size={16} /></span>
-                    <p className="mt-1.5 text-[12px] font-black">{o.label}</p>
+                    <span className="adm-ico shrink-0" style={{ width: 34, height: 34, borderRadius: 11 }}><Ic n={o.icon} size={17} /></span>
+                    <span className="ch-opt-t"><p className="text-[12px] font-black">{o.label}</p></span>
                   </button>
                 ))}
               </div>
@@ -357,17 +360,22 @@ export const TeamsTab: React.FC<{ ar: boolean; busy: boolean }> = ({ ar, busy })
                 const v = votes[o.id] || 0;
                 const pct = Math.round((v / maxVotes) * 100);
                 const isWinner = battle.winning_option_id === o.id;
+                const isLead = v > 0 && v === maxVotes && !isWinner;
                 return (
-                  <div key={o.id} className="rounded-2xl p-3.5"
+                  <div key={o.id} className={`rounded-2xl p-3.5 ch-pop ${isLead ? 'vote-lead' : ''}`}
                     style={{
                       background: isWinner ? 'rgba(212,175,55,.10)' : 'rgba(255,255,255,.03)',
-                      border: `1px solid ${isWinner ? 'rgba(212,175,55,.5)' : 'rgba(255,255,255,.08)'}`,
+                      border: `1px solid ${isWinner || isLead ? 'rgba(212,175,55,.5)' : 'rgba(255,255,255,.08)'}`,
+                      animationDelay: `${i * 60}ms`,
                     }}>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-[11px] font-black text-white/30 w-5 text-center" dir="ltr">{i + 1}</span>
+                      <span className="team-num" dir="ltr">{i + 1}</span>
                       <p className="flex-1 min-w-0 truncate text-sm font-black" dir="auto">{o.label}</p>
                       {isWinner && <Ic n="crown" size={15} />}
-                      <p className="text-lg font-black" dir="ltr" style={{ color: GOLD }}>{nf(v)}</p>
+                      {isLead && !isWinner && voting && (
+                        <span className="adm-livedot w-2 h-2 rounded-full shrink-0" style={{ background: EMERALD, boxShadow: `0 0 10px ${EMERALD}` }} />
+                      )}
+                      <p className="arena-title text-xl font-black" dir="ltr">{nf(v)}</p>
                     </div>
                     <div className="ch-bar mt-2.5"><i style={{ width: `${pct}%` }} /></div>
                   </div>
