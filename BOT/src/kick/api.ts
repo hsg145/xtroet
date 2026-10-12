@@ -174,6 +174,63 @@ export async function sendChatMessage(
   }
 }
 
+/* ── Channel moderation: real Kick timeouts, not the bot's point mute ── */
+
+export interface TimeoutOptions {
+  /** Minutes, 1–10080. Omit for a permanent ban. */
+  duration?: number;
+  /** Shown in the mod log. Max 100 chars. */
+  reason?: string;
+}
+
+/**
+ * POST /public/v1/moderation/bans — ban or timeout a user from the
+ * broadcaster's chat room.
+ *
+ * This is a REAL channel timeout: the user cannot write in chat until it
+ * expires. It is nothing like the bot's internal mute, which only stops
+ * points while the user keeps chatting normally.
+ *
+ * Needs a USER token carrying the `moderation:ban` scope, and the token's
+ * account must moderate the channel. A token minted before the scope was
+ * added answers 401 Unauthorized — the caller must surface that as
+ * "re-authorize the bot" rather than a generic failure.
+ */
+export async function timeoutUser(
+  token: string,
+  broadcasterUserId: number,
+  userId: number,
+  options: TimeoutOptions = {},
+): Promise<void> {
+  const payload: Record<string, unknown> = {
+    broadcaster_user_id: broadcasterUserId,
+    user_id: userId,
+  };
+  if (options.duration != null) payload.duration = Math.trunc(options.duration);
+  if (options.reason) payload.reason = String(options.reason).slice(0, 100);
+  await request('/public/v1/moderation/bans', {
+    method: 'POST',
+    token,
+    body: JSON.stringify(payload),
+  });
+}
+
+/**
+ * DELETE /public/v1/moderation/bans — unban, or lift a timeout early.
+ * Same scope and token rules as timeoutUser.
+ */
+export async function untimeoutUser(
+  token: string,
+  broadcasterUserId: number,
+  userId: number,
+): Promise<void> {
+  await request('/public/v1/moderation/bans', {
+    method: 'DELETE',
+    token,
+    query: { broadcaster_user_id: broadcasterUserId, user_id: userId },
+  });
+}
+
 export interface EventSubscription {
   id: string;
   event: string;

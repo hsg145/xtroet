@@ -173,6 +173,41 @@ async function defaultChannel(url: string, skey: string, wanted?: number): Promi
   return rows[0] ?? null;
 }
 
+/** أحدث توكن كيك مخزّن — بدونه ما نقدر ننادي moderation. */
+async function kickToken(url: string, skey: string): Promise<string | null> {
+  const rows = (await sbJson(url, skey, 'kick_tokens?select=access_token&order=updated_at.desc&limit=1').catch(() => [])) as Array<{ access_token: string }>;
+  const t = rows?.[0]?.access_token;
+  return typeof t === 'string' && t.length > 0 ? t : null;
+}
+
+/**
+ * نداء moderation في كيك (تثبيت/فك).
+ * 401/403 تعني التوكن قديم أو بلا سكوب moderation:ban — نرجّع needs_reauth
+ * عشان الواجهة تقول "أعد ربط البوت" بدل خطأ عام.
+ */
+async function kickMod(token: string, method: 'POST' | 'DELETE', body?: unknown, query?: string): Promise<void> {
+  const u =
+    method === 'DELETE'
+      ? `https://api.kick.com/public/v1/moderation/bans?${query ?? ''}`
+      : 'https://api.kick.com/public/v1/moderation/bans';
+  const r = await fetch(u, {
+    method,
+    headers: { authorization: `Bearer ${token}`, accept: 'application/json', 'content-type': 'application/json' },
+    body: method === 'POST' ? JSON.stringify(body ?? {}) : undefined,
+  });
+  if (r.status === 401 || r.status === 403) {
+    const e: any = new Error('needs_reauth');
+    e.code = 'needs_reauth';
+    throw e;
+  }
+  if (!r.ok) {
+    const e: any = new Error('kick_error');
+    e.code = 'kick_error';
+    e.detail = (await r.text()).slice(0, 200);
+    throw e;
+  }
+}
+
 async function loadRanks(url: string, skey: string) {
   return (await sbJson(url, skey, 'ranks?select=idx,key,name_ar,name_en,emoji,min_points&order=idx.asc').catch(() => [])) as Array<{
     idx: number; key: string; name_ar: string; name_en: string; emoji: string; min_points: number;
@@ -412,6 +447,55 @@ export default async function handler(req: Request) {
         body: JSON.stringify({ mute_until: null, updated_at: new Date().toISOString() }),
       });
       await runAudit('user_unmute', { user_id: uid });
+      return json({ ok: true });
+    }
+
+    /* ── التثبيت: تايم آوت حقيقي من القناة نفسها — دقيقة واحدة ثابتة ──
+     *  الفرق عن user_mute: هذاك يوقف النقاط داخلياً والشخص يكمل كتابة عادي،
+     *  وهذا يمنعه من الكتابة أصلاً (Kick timeout). المدة ثابتة 1 ولا تُقرأ
+     *  من الطلب عمداً — حتى لو انبعت minutes يتجاهل.
+     */
+    if (action === 'user_pin') {
+      const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
+      if (!ch) return json({ error: 'no_channel' }, 500);
+      const uid = num(body.user_id, 0);
+      if (!uid) return json({ error: 'bad_params' }, 400);
+      const token = await kickToken(url, key);
+      if (!token) return json({ error: 'no_kick_token' }, 500);
+      try {
+        await kickMod(token, 'POST', {
+          broadcaster_user_id: ch.id,
+          user_id: uid,
+          duration: 1,
+          reason: 'تثبيت من غرفة القيادة',
+        });
+      } catch (e: any) {
+        if (e?.code === 'needs_reauth') {
+          return json({ error: 'needs_reauth', detail: 'أعد ربط البوت — التوكن بلا صلاحية moderation:ban' }, 409);
+        }
+        return json({ error: 'kick_error', detail: String(e?.detail || e?.message || e).slice(0, 160) }, 502);
+      }
+      await runAudit('user_pin', { user_id: uid, minutes: 1 });
+      return json({ ok: true, minutes: 1 });
+    }
+
+    /* ── فك التثبيت: يرفع التايم آوت قبل ما تخلص الدقيقة ── */
+    if (action === 'user_unpin') {
+      const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
+      if (!ch) return json({ error: 'no_channel' }, 500);
+      const uid = num(body.user_id, 0);
+      if (!uid) return json({ error: 'bad_params' }, 400);
+      const token = await kickToken(url, key);
+      if (!token) return json({ error: 'no_kick_token' }, 500);
+      try {
+        await kickMod(token, 'DELETE', undefined, `broadcaster_user_id=${ch.id}&user_id=${uid}`);
+      } catch (e: any) {
+        if (e?.code === 'needs_reauth') {
+          return json({ error: 'needs_reauth', detail: 'أعد ربط البوت — التوكن بلا صلاحية moderation:ban' }, 409);
+        }
+        return json({ error: 'kick_error', detail: String(e?.detail || e?.message || e).slice(0, 160) }, 502);
+      }
+      await runAudit('user_unpin', { user_id: uid });
       return json({ ok: true });
     }
 

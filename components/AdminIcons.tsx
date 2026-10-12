@@ -344,6 +344,13 @@ export const IcMinusCircle: React.FC<IconProps> = (p) => (
   </Svg>
 );
 
+export const IcPin: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M9 4h6l-1 7 3 3v2H7v-2l3-3z" />
+    <path d="M12 16v5" />
+  </Svg>
+);
+
 /** موزّع: اسم نصي ← مكوّن. يخلي التبويبات والعناوين سطراً واحداً. */
 const MAP = {
   home: IcHome,
@@ -387,6 +394,7 @@ const MAP = {
   pulse: IcPulse,
   coins: IcCoins,
   none: IcMinusCircle,
+  pin: IcPin,
 } as const;
 
 export type IconName = keyof typeof MAP;

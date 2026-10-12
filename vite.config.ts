@@ -19,7 +19,7 @@ const parseEnvFile = (p: string): Record<string, string> => {
   return out;
 };
 
-const KICK_DEFAULT_SCOPES = 'user:read channel:read chat:write events:subscribe';
+const KICK_DEFAULT_SCOPES = 'user:read channel:read chat:write events:subscribe moderation:ban';
 const b64url = (buf: Buffer) => buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const parseCookies = (h?: string) => {
   const out: Record<string, string> = {};

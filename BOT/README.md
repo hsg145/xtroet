@@ -89,6 +89,35 @@ When the gate opens or closes, the bot announces it in chat once, and the
 `!نقاطي` / `!رتبتي` reply adds a second line reminding everyone that points
 only count while Nasser is broadcasting.
 
+## التثبيت — a real 1-minute channel timeout
+
+The dashboard's **التثبيت** button is not the bot's point mute. It calls
+Kick's moderation API, so the user genuinely cannot write in chat for one
+full minute. The duration is fixed at 1 and cannot be changed from the UI.
+
+### Required once: re-authorize with the new scope
+
+The stored token was minted before `moderation:ban` existed, so Kick answers
+401 until you re-link:
+
+```
+cd BOT
+npm run auth
+```
+
+That flow now requests
+`user:read channel:read chat:write events:subscribe moderation:ban`.
+Until then the button answers `needs_reauth` ("أعد ربط البوت") instead of
+pretending it worked.
+
+### How it is wired
+
+| Layer | What |
+| --- | --- |
+| `src/kick/api.ts` | `timeoutUser()` posts to `/public/v1/moderation/bans` with `duration: 1`; `untimeoutUser()` deletes it. A 401 surfaces as `KickApiError`, never swallowed. |
+| `api/admin.ts` | `user_pin` / `user_unpin`. Reads the Kick token from `kick_tokens`, calls Kick, maps 401/403 to `needs_reauth`. |
+| Dashboard → Users | **التثبيت** (fixed 1m, pin icon) and **فك التثبيت** next to the point mute, plus quick `+10/+50/+100/+500` point buttons, a Kick-profile link, copy-name, full reset (points + boost + unmute) and refresh. |
+
 `GET /health` reports the whole gate state under `live` — open/closed, why,
 last check, viewer count, and how many times it has flipped.
 

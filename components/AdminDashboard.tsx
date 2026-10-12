@@ -472,7 +472,13 @@ export const AdminDashboard: React.FC = () => {
       say(true, okText);
       await reload();
     } catch (e: any) {
-      say(false, e?.data?.error ? `${ar ? 'خطأ' : 'Error'}: ${e.data.error}` : ar ? 'فشلت العملية' : 'Action failed');
+      const code = e?.data?.error;
+      const friendly: Record<string, string> = {
+        needs_reauth: ar ? 'أعد ربط البوت — ناقص صلاحية التثبيت' : 'Re-link the bot — missing the pin permission',
+        no_kick_token: ar ? 'ما فيه توكن كيك مخزّن — اربط البوت أول' : 'No stored Kick token — link the bot first',
+        kick_error: ar ? 'كيك رفضت العملية' : 'Kick rejected the action',
+      };
+      say(false, friendly[code] || (e?.data?.error ? `${ar ? 'خطأ' : 'Error'}: ${e.data.error}` : ar ? 'فشلت العملية' : 'Action failed'));
       if (String(e?.message) === 'unauthorized') {
         sessionStorage.removeItem(TOKEN_KEY);
         setAuthed(false);
@@ -866,6 +872,16 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
                 <B disabled={busy} tone="blue" onClick={() => void after(run('user_points', { user_id: m.kick_user_id, username: m.username, mode: 'set', amount: Number(amount) || 0 }, ar ? 'تم التعيين' : 'Points set'))}>= {ar ? 'تعيين' : 'Set'}</B>
                 <B disabled={busy} tone="red" onClick={() => void after(run('user_reset', { user_id: m.kick_user_id, username: m.username }, ar ? 'تم التصفير' : 'User reset'))} className="inline-flex items-center justify-center gap-1"><Ic n="refresh" size={13} /> {ar ? 'تصفير' : 'Reset'}</B>
               </div>
+              {/* نقاط سريعة: ضغطة واحدة بدل كتابة الرقم */}
+              <div className="mt-2 grid grid-cols-4 gap-1.5">
+                {['10', '50', '100', '500'].map((v) => (
+                  <button key={v} type="button" disabled={busy} dir="ltr"
+                    onClick={() => void after(run('user_points', { user_id: m.kick_user_id, username: m.username, mode: 'add', amount: Number(v) }, ar ? `تمت إضافة ${v}` : `Added ${v}`))}
+                    className="adm-btn ghost rounded-xl py-2 text-[11px] font-black text-white/60 hover:text-white transition-colors">
+                    +{v}
+                  </button>
+                ))}
+              </div>
               <div className="mt-3">
                 <L label={ar ? 'تغيير الرتبة' : 'Change rank'}>
                   <select value={rankSel} onChange={(e) => setRankSel(e.target.value)} className="adm-input" aria-label="rank">
@@ -926,6 +942,60 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
                 </B>
                 <B disabled={busy} tone="ghost" onClick={() => void after(run('user_boost_clear', { user_id: m.kick_user_id }, ar ? 'تمت الإزالة' : 'Cleared'))}>
                   {ar ? 'إزالة' : 'Clear'}
+                </B>
+              </div>
+            </div>
+
+            {/* التثبيت: تايم آوت حقيقي من القناة — دقيقة واحدة ثابتة */}
+            <div className="adm-card p-4 md:col-span-2" style={{ borderColor: 'rgba(239,68,68,.35)' }}>
+              <p className="text-xs font-black text-white flex items-center gap-2">
+                <span className="adm-ico red"><Ic n="pin" size={15} /></span>
+                {ar ? 'التثبيت — تايم آوت من القناة نفسها' : 'Pin — real channel timeout'}
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-black" style={{ background: 'rgba(239,68,68,.15)', color: '#FCA5A5' }} dir="ltr">1m</span>
+              </p>
+              <p className="mt-1.5 text-[11px] text-white/40 font-bold leading-relaxed">
+                {ar
+                  ? 'يمنعه من الكتابة في الشات دقيقة كاملة — من كيك نفسها، مو كتم نقاط البوت.'
+                  : 'Stops them from writing in chat for a full minute — from Kick itself, not the bot point mute.'}
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2">
+                <B disabled={busy} tone="red" onClick={() => void after(run('user_pin', { user_id: m.kick_user_id, username: m.username }, ar ? 'تم التثبيت — دقيقة' : 'Pinned for a minute'))} className="inline-flex items-center justify-center gap-1.5">
+                  <Ic n="pin" size={14} /> {ar ? 'التثبيت' : 'Pin'}
+                </B>
+                <B disabled={busy} tone="ghost" onClick={() => void after(run('user_unpin', { user_id: m.kick_user_id, username: m.username }, ar ? 'انفك التثبيت' : 'Unpinned'))} className="inline-flex items-center justify-center gap-1.5">
+                  <Ic n="check" size={14} /> {ar ? 'فك التثبيت' : 'Unpin'}
+                </B>
+              </div>
+            </div>
+
+            {/* روابط وأدوات */}
+            <div className="adm-card p-4 md:col-span-2">
+              <p className="text-xs font-black text-white flex items-center gap-2"><span className="adm-ico blue"><Ic n="send" size={15} /></span> {ar ? 'أدوات سريعة' : 'Quick tools'}</p>
+              <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <a href={`https://kick.com/${encodeURIComponent(m.username)}`} target="_blank" rel="noreferrer"
+                  className="adm-btn ghost rounded-xl py-2.5 text-[11px] font-black text-white/70 inline-flex items-center justify-center gap-1.5 no-underline">
+                  <Ic n="globe" size={13} /> {ar ? 'بروفايل كيك' : 'Kick profile'}
+                </a>
+                <button type="button" disabled={busy}
+                  onClick={() => { try { void navigator.clipboard.writeText(m.username); } catch { /* ignore */ } }}
+                  className="adm-btn ghost rounded-xl py-2.5 text-[11px] font-black text-white/70 inline-flex items-center justify-center gap-1.5">
+                  <Ic n="log" size={13} /> {ar ? 'نسخ الاسم' : 'Copy name'}
+                </button>
+                <B disabled={busy} tone="ghost"
+                  onClick={() => void after(
+                    run('user_reset', { user_id: m.kick_user_id, username: m.username }, ar ? 'تم التصفير' : 'Reset')
+                      .then(() => callAdmin('user_boost_clear', { user_id: m.kick_user_id }))
+                      .then(() => callAdmin('user_unmute', { user_id: m.kick_user_id })),
+                    ar ? 'تصفير شامل تم' : 'Fully reset',
+                  )} className="inline-flex items-center justify-center gap-1.5">
+                  <Ic n="refresh" size={13} /> {ar ? 'تصفير شامل' : 'Full reset'}
+                </B>
+                <B disabled={busy} tone="ghost"
+                  onClick={() => void after(
+                    callAdmin('user_search', { name: m.username }).then((j) => setRes(j.found ? j : { notFound: true })),
+                    ar ? 'تحدّثت البيانات' : 'Refreshed',
+                  )} className="inline-flex items-center justify-center gap-1.5">
+                  <Ic n="refresh" size={13} /> {ar ? 'تحديث' : 'Refresh'}
                 </B>
               </div>
             </div>

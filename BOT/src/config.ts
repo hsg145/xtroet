@@ -106,7 +106,10 @@ const envSchema = z
     KICK_SCOPES: z
       .string()
       .optional()
-      .transform((v) => (v && v.trim() !== '' ? v.trim() : 'user:read channel:read chat:write events:subscribe')),
+      // moderation:ban powers the dashboard "pin" button (a real 1-minute
+      // channel timeout). Tokens minted before it was added answer 401, so
+      // anyone upgrading must re-run: npm run auth
+      .transform((v) => (v && v.trim() !== '' ? v.trim() : 'user:read channel:read chat:write events:subscribe moderation:ban')),
     KICK_API_BASE: z.string().optional().default('https://api.kick.com'),
     KICK_OAUTH_BASE: z.string().optional().default('https://id.kick.com'),
 
