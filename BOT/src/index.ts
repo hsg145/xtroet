@@ -368,14 +368,29 @@ async function main(): Promise<void> {
 
   // ── نبضة البوت: صف واحد كل 30 ثانية حتى تعرف اللوحة أنه حي ──
   // لا تؤثر على الشغل لو فشلت، ولا تُقرأ هنا أبداً — القراءة للوحة فقط.
+  // نضمّن تشخيص الـ pusher كاملاً: بدونه، "حي بس أصم" لا يُفسَّر عن بُعد.
   const beat = () => {
+    const ps = pusherSource.stats(chatroomId);
     void writeHeartbeat(VERSION, {
       channel: e.KICK_TARGET_CHANNEL_SLUG,
+      channelId,
       uptimeSec: Math.floor((Date.now() - startedAt) / 1000),
       queue: sender.length,
       pending: engine.pendingUsers,
       live: liveGate.snapshot().live,
       ingest: mode,
+      pusher: {
+        state: ps.state,
+        connected: ps.connected,
+        subscribed: ps.subscribed,
+        chatroomId: ps.chatroomId,
+        reconnects: ps.reconnects,
+        lastMessageAt: ps.lastMessageAt?.toISOString() ?? null,
+        lastPusherError: ps.lastPusherError,
+        chatroomError,
+      },
+      lastEventAt: lastEventAt?.toISOString() ?? null,
+      senderStats: sender.stats,
     });
   };
   beat();
