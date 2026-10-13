@@ -689,6 +689,43 @@ const HomeTab: React.FC<{ ar: boolean; data: any; busy: boolean; run: RunFn; got
   ];
   return (
     <div className="grid gap-4">
+      {/* حالة البوت — أهم بطاقة: حي أم ميت وآخر ظهور */}
+      {(() => {
+        const hb = data?.heartbeat ?? null;
+        const at = hb?.updated_at ? new Date(hb.updated_at).getTime() : 0;
+        const ageSec = at > 0 ? Math.floor((now - at) / 1000) : -1;
+        // النبضة كل 30 ثانية — 90 ثانية حد كريم يتحمّل تأخير شبكة.
+        const alive = ageSec >= 0 && ageSec <= 90;
+        const unknown = ageSec < 0;
+        return (
+          <div className="adm-card adm-in p-4 flex items-center gap-3"
+            style={{
+              background: alive ? 'rgba(16,185,129,.08)' : unknown ? 'rgba(255,255,255,.03)' : 'rgba(220,38,38,.10)',
+              border: `1px solid ${alive ? 'rgba(16,185,129,.4)' : unknown ? 'rgba(255,255,255,.1)' : 'rgba(220,38,38,.5)'}`,
+            }}>
+            <span className="adm-ico" style={{ width: 40, height: 40, borderRadius: 13 }}>
+              <Ic n="pulse" size={20} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-black flex items-center gap-2" style={{ color: alive ? '#6EE7B7' : unknown ? 'rgba(255,255,255,.6)' : '#FCA5A5' }}>
+                {!unknown && (
+                  <span className={alive ? 'adm-livedot' : ''} style={{ width: 8, height: 8, borderRadius: 99, background: alive ? EMERALD : '#FCA5A5', boxShadow: alive ? `0 0 10px ${EMERALD}` : 'none', display: 'inline-block' }} />
+                )}
+                {alive ? (ar ? 'البوت حي ويسمع الشات' : 'Bot is alive and listening')
+                  : unknown ? (ar ? 'حالة البوت مجهولة' : 'Bot status unknown')
+                  : (ar ? 'البوت ميت — أعد تشغيله' : 'Bot is down — restart it')}
+              </p>
+              <p className="mt-0.5 text-[11px] text-white/40 font-bold" dir="auto">
+                {unknown
+                  ? (ar ? 'شغّل migration رقم 010 ثم أعد تشغيل البوت' : 'Run migration 010, then restart the bot')
+                  : ar ? `آخر نبضة قبل ${fmtLeft(now - at, ar)}${hb?.version ? ` · v${hb.version}` : ''}`
+                  : `Last beat ${fmtLeft(now - at, ar)} ago${hb?.version ? ` · v${hb.version}` : ''}`}
+              </p>
+            </div>
+          </div>
+        );
+      })()}
+
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {cards.map((c, i) => (
           <div key={c.label} className="adm-card adm-stat adm-in p-4 text-center" style={{ animationDelay: `${i * 70}ms` }}>

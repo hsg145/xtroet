@@ -316,12 +316,14 @@ export default async function handler(req: Request) {
     if (action === 'overview') {
       const ch = await defaultChannel(url, key, num(body.channel_id, 0) || undefined);
       if (!ch) return json({ error: 'no_channel' }, 500);
-      const [members, mods, settings, pending, recent] = await Promise.all([
+      const [members, mods, settings, pending, recent, beat] = await Promise.all([
         sbJson(url, key, `members?channel_id=eq.${ch.id}&select=kick_user_id,points&limit=5000`).catch(() => []),
         sbJson(url, key, `member_modifiers?channel_id=eq.${ch.id}&select=*`).catch(() => []),
         sbJson(url, key, 'bot_settings?select=key,value').catch(() => []),
         sbJson(url, key, `bot_outbox?channel_id=eq.${ch.id}&sent_at=is.null&select=id`).catch(() => []),
         sbJson(url, key, 'admin_audit?select=created_at,action,detail&order=created_at.desc&limit=6').catch(() => []),
+        // النبضة قد لا توجد بعد (migration 010 ما اشتغلت) — null يعني "مجهول".
+        sbJson(url, key, 'bot_heartbeat?id=eq.1&select=updated_at,version,stats').catch(() => null),
       ]);
       const now = Date.now();
       const mutes = (mods as any[]).filter((m) => m.mute_until && new Date(m.mute_until).getTime() > now).length;
@@ -342,6 +344,8 @@ export default async function handler(req: Request) {
         event: get('event'),
         drop: get('drop'),
         recent,
+        // حي = نبضة خلال آخر 90 ثانية. أقدم = ميت أو عالق.
+        heartbeat: Array.isArray(beat) ? beat[0] ?? null : null,
       });
     }
 

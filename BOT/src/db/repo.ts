@@ -76,6 +76,40 @@ export async function upsertChannel(id: number, slug: string): Promise<void> {
   if (error) fail('upsert channels', error);
 }
 
+/**
+ * نبضة البوت — صف واحد يُكتب كل ~30 ثانية.
+ *
+ * لا ترمي أبداً: لو القاعدة ساقطة، البوت يكمل شغله من الذاكرة والنبضة
+ * تتوقف لوحدها، فاللوحة تعرض "ميت" وهذا هو الصح.
+ */
+export async function writeHeartbeat(version: string, stats: Record<string, unknown>): Promise<void> {
+  try {
+    const { error } = await getSupabase()
+      .from('bot_heartbeat')
+      .upsert({ id: 1, updated_at: new Date().toISOString(), version, stats }, { onConflict: 'id' });
+    if (error) throw new Error(error.message);
+  } catch {
+    // مقصود: النبضة تشخيص، مو عصب الحياة.
+  }
+}
+
+/** آخر نبضة — للوحة الإدارة. null تعني "ما نبض أبداً". */
+export async function readHeartbeat(): Promise<{ updated_at: string; version: string; stats: Record<string, unknown> } | null> {
+  try {
+    const { data, error } = await getSupabase().from('bot_heartbeat').select('updated_at, version, stats').eq('id', 1).maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!data) return null;
+    const r = data as { updated_at: string; version: string; stats: unknown };
+    return {
+      updated_at: String(r.updated_at ?? ''),
+      version: String(r.version ?? ''),
+      stats: (r.stats && typeof r.stats === 'object' ? r.stats : {}) as Record<string, unknown>,
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchRanks(): Promise<RankRow[]> {
   const { data, error } = await getSupabase().from('ranks').select('*').order('idx');
   if (error) fail('fetch ranks', error);

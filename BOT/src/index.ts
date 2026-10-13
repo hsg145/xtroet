@@ -12,7 +12,7 @@ import { TeamBattleState } from './core/teambattle.js';
 import { createServer, WebhookChatSource, type HttpServer } from './core/server.js';
 import { ChatSender } from './core/sender.js';
 import { messages } from './messages.js';
-import { fetchRanks, upsertChannel, type RankChangeRow } from './db/repo.js';
+import { fetchRanks, upsertChannel, writeHeartbeat, type RankChangeRow } from './db/repo.js';
 import { getChannelBySlug, getRawChannelBySlug } from './kick/api.js';
 import { exchangeCode, tokenManager } from './kick/oauth.js';
 import { IdleWatcher, SubscriptionReconciler } from './kick/subscriptions.js';
@@ -366,6 +366,22 @@ async function main(): Promise<void> {
   }, 5_000);
   outboxTimer.unref();
 
+  // ── نبضة البوت: صف واحد كل 30 ثانية حتى تعرف اللوحة أنه حي ──
+  // لا تؤثر على الشغل لو فشلت، ولا تُقرأ هنا أبداً — القراءة للوحة فقط.
+  const beat = () => {
+    void writeHeartbeat(VERSION, {
+      channel: e.KICK_TARGET_CHANNEL_SLUG,
+      uptimeSec: Math.floor((Date.now() - startedAt) / 1000),
+      queue: sender.length,
+      pending: engine.pendingUsers,
+      live: liveGate.snapshot().live,
+      ingest: mode,
+    });
+  };
+  beat();
+  const beatTimer = setInterval(beat, 30_000);
+  beatTimer.unref();
+
   if (useWebhook && channelId) {
     const result = await reconciler.check();
     checks.push({
@@ -441,6 +457,7 @@ async function main(): Promise<void> {
     teamBattleState.stopRefresh();
     ranks.stopRefresh();
     clearInterval(outboxTimer);
+    clearInterval(beatTimer);
     adminState.stopRefresh();
     tokenManager.stopAutoRefresh();
     flusher.stop();
