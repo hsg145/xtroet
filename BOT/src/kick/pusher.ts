@@ -296,6 +296,8 @@ export interface PusherStats {
   /** Latest pusher:error frame, if any. A subscribe rejection here almost always
    * means the chatroom id is wrong or stale — use a new KICK_CHATROOM_ID. */
   lastPusherError: string | null;
+  /** True after a 4001: the public key is dead, reconnecting is pointless. */
+  deadKey: boolean;
 }
 
 export class PusherChatSource implements ChatSource {
@@ -313,6 +315,13 @@ private state: PusherState = 'idle';
   private lastMessageAt: Date | null = null;
   private reconnects = 0;
   private lastPusherError: string | null = null;
+  /**
+   * قاطع الدائرة: 4001 يعني مفتاح Pusher ميت على كل العناقيد (حصل فعلاً
+   * في أكتوبر 2026 — كيك سحبت المفاتيح العامة). إعادة الاتصال حينها عاصفة
+   * بلا معنى (30+ محاولة/دقيقة)، فنقف نهائياً ونقولها بصوت عالٍ بدل
+   * الصمت. الحل البديل: webhooks (INGEST_MODE=webhook).
+   */
+  private deadKey = false;
 
   constructor(deps: PusherChatSourceDeps) {
     this.deps = deps;
@@ -330,8 +339,9 @@ stats(chatroomId: number | null = null): PusherStats {
       chatroomId,
       lastMessageAt: this.lastMessageAt,
       reconnects: this.reconnects,
-      state: this.state,
+      state: this.deadKey ? 'closed' : this.state,
       lastPusherError: this.lastPusherError,
+      deadKey: this.deadKey,
     };
   }
 
@@ -428,10 +438,25 @@ stats(chatroomId: number | null = null): PusherStats {
         return;
 
 case PUSHER_EVENT_ERROR: {
-        const detail = JSON.stringify(parseFrameData(frame)).slice(0, 200);
+        const data = parseFrameData(frame);
+        const detail = JSON.stringify(data).slice(0, 200);
         this.lastPusherError = detail;
+        const code = Number((data as Record<string, unknown>)?.code ?? 0);
+        if (code === 4001) {
+          // المفتاح ميت — لا فائدة من إعادة المحاولة. نقف ونصرخ.
+          this.deadKey = true;
+          try {
+            this.ws?.close();
+          } catch {
+            /* already closing */
+          }
+          this.log().error(
+            'pusher app key is dead on every cluster (4001) — chat intake over pusher is OFF. Switch to webhooks: expose the service, set PUBLIC_BASE_URL_BOT and INGEST_MODE_BOT=webhook, then restart',
+          );
+          return;
+        }
         this.log().error(
-          { data: parseFrameData(frame) },
+          { data },
           'pusher returned an error frame — a subscribe rejection usually means the chatroom id is wrong; set a fresh KICK_CHATROOM_ID',
         );
         return;
@@ -502,7 +527,7 @@ case PUSHER_EVENT_ERROR: {
   }
 
   private scheduleReconnect(): void {
-    if (this.stopped) return;
+    if (this.stopped || this.deadKey) return;
     if (this.reconnectTimer) return;
     const delay = this.backoffMs();
     this.reconnects += 1;

@@ -25,6 +25,23 @@ class RootBoundary extends React.Component<{ children: React.ReactNode }, { erro
 
     componentDidCatch(error: Error, info: unknown) {
         console.error('[xtroet] render failed', error, info);
+        // بلّغ السيرفر حتى يُقرأ الخطأ من لوحة التشخيص بدون ما ينسخه المستخدم.
+        // fire-and-forget: التبليغ نفسه لا يكسر شيئاً أبداً.
+        try {
+            const stack = (error as Error)?.stack || '';
+            fetch('/api/client-error', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: String((error as Error)?.message || error).slice(0, 500),
+                    stack: String(stack).slice(0, 2000),
+                    url: window.location.pathname.slice(0, 200),
+                    ua: navigator.userAgent.slice(0, 200),
+                }),
+            }).catch(() => undefined);
+        } catch {
+            /* ignore */
+        }
     }
 
     render() {
