@@ -656,7 +656,7 @@ export const AdminDashboard: React.FC = () => {
                 )}
 
                 <main key={tab}>
-                  {tab === 'home' && <HomeTab ar={ar} data={data} busy={busy} run={run} goto={setTab} />}
+                  {tab === 'home' && <HomeTab ar={ar} data={data} busy={busy} run={run} goto={setTab} now={now} />}
                   {tab === 'users' && <UsersTab ar={ar} now={now} busy={busy} run={run} />}
                   {tab === 'events' && <EventsTab ar={ar} now={now} ev={ev} busy={busy} run={run} />}
                   {tab === 'drops' && <DropsTab ar={ar} now={now} drop={dr} busy={busy} run={run} />}
@@ -677,7 +677,7 @@ export const AdminDashboard: React.FC = () => {
 type RunFn = (action: string, params: Record<string, unknown>, okText: string) => Promise<void>;
 
 /* ── نظرة عامة ──────────────────────────────────────────────── */
-const HomeTab: React.FC<{ ar: boolean; data: any; busy: boolean; run: RunFn; goto: (t: Tab) => void }> = ({ ar, data, busy, run, goto }) => {
+const HomeTab: React.FC<{ ar: boolean; data: any; busy: boolean; run: RunFn; goto: (t: Tab) => void; now: number }> = ({ ar, data, busy, run, goto, now }) => {
   const [text, setText] = useState('');
   const s = data?.stats;
   const cards = [
@@ -1023,17 +1023,15 @@ const UsersTab: React.FC<{ ar: boolean; now: number; busy: boolean; run: RunFn }
                 </button>
                 <B disabled={busy} tone="ghost"
                   onClick={() => void after(
-                    run('user_reset', { user_id: m.kick_user_id, username: m.username }, ar ? 'تم التصفير' : 'Reset')
+                    run('user_reset', { user_id: m.kick_user_id, username: m.username }, ar ? 'تصفير شامل تم' : 'Fully reset')
                       .then(() => callAdmin('user_boost_clear', { user_id: m.kick_user_id }))
                       .then(() => callAdmin('user_unmute', { user_id: m.kick_user_id })),
-                    ar ? 'تصفير شامل تم' : 'Fully reset',
                   )} className="inline-flex items-center justify-center gap-1.5">
                   <Ic n="refresh" size={13} /> {ar ? 'تصفير شامل' : 'Full reset'}
                 </B>
                 <B disabled={busy} tone="ghost"
                   onClick={() => void after(
                     callAdmin('user_search', { name: m.username }).then((j) => setRes(j.found ? j : { notFound: true })),
-                    ar ? 'تحدّثت البيانات' : 'Refreshed',
                   )} className="inline-flex items-center justify-center gap-1.5">
                   <Ic n="refresh" size={13} /> {ar ? 'تحديث' : 'Refresh'}
                 </B>
