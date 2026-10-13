@@ -14,6 +14,9 @@ process.env.KICK_TARGET_CHANNEL_SLUG = 'testchannel';
 process.env.SUPABASE_URL = 'https://project.supabase.co';
 process.env.SUPABASE_SECRET_KEY = 'test-secret-key';
 process.env.LOG_LEVEL = 'silent';
+// webhook is the default INGEST_MODE and it demands a public https URL; the
+// tests never open a socket, they only need the config to validate.
+process.env.PUBLIC_BASE_URL = 'https://bot.example.test';
 
 const members = new Map<string, { points: number; message_count: number; rank_idx: number; username: string }>();
 

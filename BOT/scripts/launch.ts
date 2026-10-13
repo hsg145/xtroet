@@ -21,23 +21,32 @@ const TUNNEL_URL_RE = /https:\/\/[a-z0-9-]+\.trycloudflare\.com/;
 const CLOUDFLARED = `${process.env.LOCALAPPDATA}\\Programs\\cloudflared\\cloudflared.exe`;
 const PORT = 3000;
 
-function patchEnv(url: string): void {
-  const src = readFileSync(ENV_FILE, 'utf8');
-  const next = /^PUBLIC_BASE_URL=.*$/m.test(src)
-    ? src.replace(/^PUBLIC_BASE_URL=.*$/m, `PUBLIC_BASE_URL=${url}`)
-    : `${src.trimEnd()}\nPUBLIC_BASE_URL=${url}\n`;
-  writeFileSync(ENV_FILE, next, 'utf8');
-}
-
-/** Read INGEST_MODE without zod; defaults to pusher like config.ts. */
+/** Read INGEST_MODE without zod; defaults to webhook like config.ts. */
 function readDotenv(): { INGEST_MODE: string } {
   try {
-    const m = /^INGEST_MODE\s*=\s*(\S+)\s*$/m.exec(readFileSync(ENV_FILE, 'utf8'));
+    const m = /^INGEST_MODE(?:_BOT)?\s*=\s*(\S+)\s*$/m.exec(readFileSync(ENV_FILE, 'utf8'));
     const mode = m?.[1]?.trim().toLowerCase();
-    return { INGEST_MODE: mode === 'webhook' || mode === 'both' ? mode : 'pusher' };
+    return { INGEST_MODE: mode === 'pusher' || mode === 'both' ? mode : 'webhook' };
   } catch {
-    return { INGEST_MODE: 'pusher' };
+    return { INGEST_MODE: 'webhook' };
   }
+}
+
+/**
+ * Write the tunnel URL into .env.
+ *
+ * The key must be `PUBLIC_BASE_URL_BOT`: every other bot variable carries the
+ * `_BOT` suffix, and config.ts strips it before the bot reads it. Writing the
+ * bare name worked only by accident (dotenv still loaded it) and broke the
+ * moment the suffixed variable was ever set.
+ */
+function patchEnv(url: string): void {
+  const src = readFileSync(ENV_FILE, 'utf8');
+  const line = `PUBLIC_BASE_URL_BOT=${url}`;
+  const next = /^(PUBLIC_BASE_URL|PUBLIC_BASE_URL_BOT)\s*=.*$/m.test(src)
+    ? src.replace(/^(PUBLIC_BASE_URL|PUBLIC_BASE_URL_BOT)\s*=.*$/m, line)
+    : `${src.trimEnd()}\n${line}\n`;
+  writeFileSync(ENV_FILE, next, 'utf8');
 }
 
 function get<T>(path: string): Promise<T> {

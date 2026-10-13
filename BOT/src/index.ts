@@ -262,6 +262,19 @@ async function main(): Promise<void> {
     },
   );
 
+  // The wiring is the whole intake: a source with no handler verifies every
+  // event and drops it, so /health reports `delivering: true` while the bot
+  // answers nothing. Report it as a readiness check instead of a silent truth.
+  if (useWebhook) {
+    checks.push({
+      label: 'Chat intake wiring',
+      ok: webhookSource.wired,
+      detail: webhookSource.wired
+        ? 'webhook → router connected'
+        : 'BROKEN: the webhook source has no message handler — every message would be dropped',
+    });
+  }
+
   // Resolve the chatroom id before mounting anything so a bad id fails loudly
   // and early instead of silently never receiving messages.
   let chatroomId: number | null = null;
@@ -321,8 +334,16 @@ async function main(): Promise<void> {
           enabled: useWebhook,
           subscribed: reconciler.ok,
           delivering: reconciler.delivering(),
+          /**
+           * FALSE = deaf. Kick's events are arriving and being thrown away,
+           * which used to look identical to a healthy bot from far away.
+           */
+          wired: webhookSource.wired,
+          dropped: webhookSource.droppedMessages,
           lastHitAt: webhookLastHitAt,
           lastEventAt: webhookLastEventAt,
+          /** Events that reached the router — proves the chain end to end. */
+          lastRoutedAt: lastEventAt?.toISOString() ?? null,
           lastRejectReason: webhookLastRejectReason,
         },
       },
@@ -396,6 +417,8 @@ async function main(): Promise<void> {
         lastRejectReason: webhookLastRejectReason,
         delivering: reconciler.delivering(),
         subscriptionOk: reconciler.ok,
+        wired: webhookSource.wired,
+        dropped: webhookSource.droppedMessages,
       },
       lastEventAt: lastEventAt?.toISOString() ?? null,
       senderStats: sender.stats,
@@ -426,6 +449,7 @@ async function main(): Promise<void> {
       await new Promise((r) => setTimeout(r, 500));
     }
     const s = pusherSource.stats(chatroomId);
+    const deadKey = /4001/.test(s.lastPusherError ?? '');
     checks.push({
       label: 'Chat source (pusher)',
       ok: s.subscribed,
@@ -433,8 +457,15 @@ async function main(): Promise<void> {
         ? `no chatroom id — run: npm run doctor (it prints the browser instructions)`
         : s.subscribed
           ? `subscribed to chatrooms.${chatroomId}.v2`
-          : `connecting to chatrooms.${chatroomId}.v2 (state: ${s.state})`,
+          : deadKey
+            ? '❌ RETIRED: Kick removed the public pusher key (4001) — this source receives NOTHING. Switch to INGEST_MODE=webhook with a public https URL.'
+            : `connecting to chatrooms.${chatroomId}.v2 (state: ${s.state})`,
     });
+    if (deadKey) {
+      log.error(
+        'pusher intake is retired (4001 App key not in this cluster) — no chat will arrive through it. Set INGEST_MODE=webhook + PUBLIC_BASE_URL_BOT and restart.',
+      );
+    }
   }
 
   if (useWebhook) {

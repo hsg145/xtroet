@@ -17,23 +17,29 @@ source; just use the `_BOT` name in the env file and on your host's dashboard.
 The site's own OAuth (`/api/kick-login`) reads the **unsuffixed** names in the
 site's Vercel project — that is intentional, they are two separate deployments.
 
-## Run it locally (normal way — no tunnel, no public URL)
+## Run it locally (with a tunnel — the only mode left)
 
 ```powershell
 npm install
 npm run doctor      # one command that finds whichever stage is broken
-npm start
+npm run launch      # starts a Cloudflare tunnel, writes the URL, starts the bot
 ```
 
-The default `INGEST_MODE=pusher` reads chat from the same WebSocket feed
-kick.com's own website uses. **Nothing is exposed to the internet and no tunnel
-is involved**, so the bot works on a laptop and survives without any DNS or
-dashboard changes.
+Chat intake uses Kick's **official webhooks** (`INGEST_MODE=webhook`, the
+default), because that is the only path that still delivers. Kick removed the
+public Pusher app key from its cluster on 2026-10-13, so the old
+`INGEST_MODE=pusher` socket now opens and is closed immediately with
+`4001 App key not in this cluster` and receives nothing. It is kept in the code
+only so `npm run doctor` can explain exactly why it cannot work.
 
-If you do not know your chatroom id yet, `npm run doctor` and `npm start` will
-print instructions: open `https://kick.com/api/v2/channels/<slug>` in your
-browser, find `"chatroom":{"id":NUMBER`, and put that number in `.env` as
-`KICK_CHATROOM_ID_BOT`.
+`npm run launch` gives you a quick tunnel, and a quick tunnel changes hostname
+on every restart — so after each restart, paste the printed
+`<url>/webhooks/kick` into the Kick developer dashboard again. For a URL that
+never changes, run it on Railway (see "Hosting the bot" below) and the tunnel
+disappears entirely.
+
+To prove intake end to end at any time, read `/health`:
+`ingest.webhook.wired` true, `lastRoutedAt` moving when someone writes.
 
 ## Commands
 
@@ -292,38 +298,48 @@ by a partial unique index.
 | `npm run simulate -- --dry --user alice --msg hello` | Feeds fake messages through the real router + real database with no Kick connection at all. If this works but live chat does not, the fault is ingestion, not the engine. |
 | `npm run auth` | OAuth (PKCE) login. Authorise with the account that **owns** the channel. |
 | `npm run resubscribe` | Deletes and recreates the `chat.message.sent` webhook subscription, re-binding it to the current URL. |
-| `npm run launch` | **webhook mode only.** Starts a Cloudflare quick tunnel, updates `PUBLIC_BASE_URL`, then starts the bot. |
+| `npm run launch` | **webhook mode.** Starts a Cloudflare quick tunnel, updates `PUBLIC_BASE_URL_BOT`, then starts the bot. |
 | `npm run typecheck` / `npm test` | Strict TypeScript check and the test suite. |
 
-## Webhook mode (optional, for a VPS)
+## Webhook mode (the only working intake)
 
-Kick's official webhooks need a stable public HTTPS URL, so they do not work
-from a laptop with a changing tunnel hostname. Set `INGEST_MODE=webhook`, give
-the bot a fixed URL on a VPS, put `<url>/webhooks/kick` in the Kick developer
-dashboard with the **Enable webhooks** switch on, then `npm start`. `both` runs
-the two sources together; a shared dedupe means a message is never counted
-twice.
+Kick's official webhooks need a public HTTPS URL. Set `INGEST_MODE=webhook` (the
+default), put `<url>/webhooks/kick` in the Kick developer dashboard with the
+**Enable webhooks** switch on, then `npm start`. `both` runs the two sources
+together; a shared dedupe means a message is never counted twice.
 
-`GET /health` reports `ingest.pusher` and `ingest.webhook`, including
-`lastHitAt`, `lastRejectReason` and whether any event has actually been
-delivered — a listed subscription is not proof of delivery, so the readiness
-banner says so instead of claiming success.
+`GET /health` reports `ingest.webhook` with `wired`, `dropped`, `lastHitAt`,
+`lastEventAt`, `lastRoutedAt` and `lastRejectReason`:
+
+| Field | What it proves |
+| --- | --- |
+| `lastHitAt` | Kick's request reached us at all (bad URL / tunnel down) |
+| `lastRejectReason` | it arrived and we refused it (signature, headers) |
+| `lastEventAt` | we accepted and parsed it as a chat event |
+| `lastRoutedAt` | **it reached the router** — commands, points, saving |
+| `wired` | a handler is attached; `false` means everything is dropped |
+| `dropped` | must stay 0; anything else is a wiring bug |
+
+`delivering: true` only means a subscription exists plus something arrived. The
+bot stayed silent for days with every one of those flags green, because the
+events were accepted and then thrown away before the router — `lastRoutedAt` is
+the flag that would have shown it.
 
 ## Setup
 
 1. Create a Kick app at <https://kicks.com/developer>. Add
    `https://ixtroet.vercel.app/api/kick-callback` as a redirect URI (plus
    `http://localhost:3000/callback` for local `npm run auth`) and enable the
-   scopes `user:read channel:read chat:write events:subscribe`. Leave
-   "webhook" off — pusher mode needs no public URL.
+   scopes `user:read channel:read chat:write events:subscribe`. Turn
+   **Enable webhooks** on and save your `<url>/webhooks/kick`.
 2. Create a Supabase project and run `supabase/migrations/001_init.sql`, then
    `002_fix_rpc.sql`, then `003_rank_emoji.sql`, then `004_first_lieutenant.sql`,
    then `005_double_points.sql`, then `006_admin.sql` in the SQL editor.
 3. Link the channel from the website (`/api/kick-login` on the site). That writes
    the `channels` and `kick_tokens` rows — without the `channels` row the
    `apply_points` RPC fails its foreign key.
-4. Copy `.env.example` to `.env`, fill it in (keep every `_BOT` suffix), and put
-   the chatroom id from step "chatroom id" above into `KICK_CHATROOM_ID_BOT`.
+4. Copy `.env.example` to `.env`, fill it in (keep every `_BOT` suffix), and set
+   `PUBLIC_BASE_URL_BOT` to the URL you saved in the Kick dashboard.
 5. `npm run doctor`, then `npm run auth` if the token check fails.
 
 ## Admin dashboard (site section `#admin`, owner only)
@@ -343,7 +359,10 @@ points), and drains `bot_outbox` into chat every 5s. No bot restart needed.
 
 Root directory `BOT` — Railway reads `railway.json` automatically. Add the same
 variables **with the `_BOT` suffix** in Railway's Variables tab, then set
-`PUBLIC_BASE_URL_BOT` to the generated Railway domain.
+`PUBLIC_BASE_URL_BOT` to the generated Railway domain and save
+`<domain>/webhooks/kick` in the Kick dashboard. `INGEST_MODE_BOT=webhook` is the
+only intake that works, and a Railway domain never changes — so nothing has to
+be re-saved after a redeploy.
 
 ## Notes
 
@@ -351,6 +370,9 @@ variables **with the `_BOT` suffix** in Railway's Variables tab, then set
   They are never written to disk or to logs.
 - The only server key used is the Supabase secret key; the bot never uses the
   publishable/anon key.
+- Every `_BOT` variable is also published under its plain name in
+  `process.env` at startup, so code that reads `process.env` directly sees the
+  same value the operator set.
 - Unofficial Pusher constants live in exactly one file,
-  `src/kick/pusher-constants.ts`, with the verification log. If Kick rotates the
-  host or app key, that is the only file to update.
+  `src/kick/pusher-constants.ts`, with the verification log. That path is
+  retired (4001 since 2026-10-13) and kept only as documentation.

@@ -6,7 +6,31 @@
  *  to update when Kick rotates something.
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * VERIFICATION LOG (2026-10-07, this machine, live network calls):
+ * ⚠️ RETIRED (2026-10-13, verified on the live network from this machine):
+ *
+ *    OPEN → {"event":"pusher:error","data":{"code":4001,
+ *             "message":"App key 32cbd69e4b950bf97679 not in this cluster."}}
+ *    CLOSE 4001
+ *
+ *    The key Kick ships to every browser no longer exists on the hosted
+ *    Pusher cluster. The socket opens, then Kick closes it immediately, so the
+ *    whole intake was silent — no messages, no commands, no points, and every
+ *    local diagnostic reading "connected".
+ *
+ *    Kick moved chat to its own gateway, `wss://websockets.kick.com/viewer/v1/
+ *    connect?token=…`, which still speaks the Pusher protocol (same
+ *    `pusher:subscribe` frames, same `chatrooms.<id>.v2` channels, same
+ *    `App\Events\ChatMessageEvent` payloads) but requires a viewer session
+ *    token from a logged-in browser. That cannot run from a server, so this
+ *    path stays retired.
+ *
+ *    WHAT TO USE INSTEAD: Kick's official webhooks (`INGEST_MODE=webhook`),
+ *    which need a public https URL. The constants below are kept only so
+ *    `npm run doctor` can tell you precisely WHY pusher cannot work instead
+ *    of leaving you guessing. Do not spend time re-deriving a new key.
+ *
+ * VERIFICATION LOG (2026-10-07, this machine, live network calls) — the state
+ * of the world BEFORE the key was retired:
  *
  *  1. WebSocket URL + app key — CONFIRMED WORKING.
  *     `wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=8.4.0&flash=false`
@@ -46,15 +70,18 @@
  *     active_subscribers_count, active_gifted_subscribers_count,
  *     canceled_subscribers_count).
  *
- *  REJECTED: a third-party README (Pkkls/kick-core) claimed Kick "left the
- *  hosted Pusher cloud" and that this endpoint returns `4001 App key not in
- *  this cluster`, suggesting `wss://websockets.kick.com/viewer/v1/connect`.
- *  Empirically FALSE as of the verification date: this endpoint connected and
- *  subscribed successfully. That project also documents its own gateway as
- *  browser-extension-only. We do not implement the token-based gateway: it
- *  requires session cookies, so it cannot run server-side, and Kick's own
- *  docs state webhooks + the public API are the supported server paths.
+ *  REJECTED (as of 2026-10-07, later CONFIRMED on 2026-10-13): a third-party
+ *  README (Pkkls/kick-core) claimed Kick "left the hosted Pusher cloud" and
+ *  that this endpoint returns `4001 App key not in this cluster`, suggesting
+ *  `wss://websockets.kick.com/viewer/v1/connect`. It worked on the 7th and
+ *  stopped on the 13th — see the RETIRED note at the top. That project's own
+ *  gateway is browser-extension-only and we do not implement it: it requires
+ *  session cookies, so it cannot run server-side, and Kick's docs state
+ *  webhooks + the public API are the supported server paths.
  */
+
+/** True: pusher intake is retired. Kept so callers can say WHY, not to branch on. */
+export const PUSHER_RETIRED = true;
 
 /** Pusher cluster host used by kick.com. */
 export const PUSHER_HOST = 'ws-us2.pusher.com';

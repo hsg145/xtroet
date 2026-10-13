@@ -45,6 +45,7 @@ export interface RouterDeps {
 export class MessageRouter {
   private deps: RouterDeps;
   private e = env();
+  private warnedNoChannel = false;
 
   constructor(deps: RouterDeps) {
     this.deps = deps;
@@ -53,7 +54,18 @@ export class MessageRouter {
   async route(msg: NormalizedMessage): Promise<void> {
     const log = getLogger();
     try {
-      if (msg.broadcasterUserId !== this.deps.channelId) return;
+      if (msg.broadcasterUserId !== this.deps.channelId) {
+        // channelId 0 means the Kick channel never resolved at boot, and that
+        // would drop EVERY message with no trace at all. Say it once, loudly.
+        if (this.deps.channelId <= 0 && !this.warnedNoChannel) {
+          this.warnedNoChannel = true;
+          log.error(
+            { got: msg.broadcasterUserId },
+            'the Kick channel was never resolved (channel id 0) — every incoming message is being dropped. Check the "Kick token + channel" readiness check.',
+          );
+        }
+        return;
+      }
 
       // Our own replies echo back on the feed carrying the broadcaster's user
       // id, so the only reliable way to spot them is the message id the send

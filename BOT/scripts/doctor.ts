@@ -170,7 +170,7 @@ async function main(): Promise<void> {
   } else {
     const result = await probePusher(chatroomId);
     if (result.ok) ok('pusher', `subscribed to ${chatroomChannel(chatroomId)}`);
-    else bad('pusher', result.reason, 're-run; if it keeps failing the pusher host/app key may have changed (see src/kick/pusher-constants.ts)');
+    else bad('pusher', result.reason, 'pusher intake is RETIRED: Kick removed the public app key from its Pusher cluster (4001). Chat intake only works with INGEST_MODE=webhook + a public https URL saved in the Kick dashboard. Do not retry the pusher key.');
   }
 
   // ── 7. clock skew ─────────────────────────────────────────────────────────
@@ -318,9 +318,9 @@ async function probePusher(chatroomId: number): Promise<{ ok: boolean; reason: s
       done(false, `socket closed with code ${code}`);
     });
     ws.on('message', (raw: WebSocket.RawData) => {
-      let frame: { event?: string };
+      let frame: { event?: string; data?: unknown };
       try {
-        frame = JSON.parse(raw.toString()) as { event?: string };
+        frame = JSON.parse(raw.toString()) as { event?: string; data?: unknown };
       } catch {
         return;
       }
@@ -330,8 +330,17 @@ async function probePusher(chatroomId: number): Promise<{ ok: boolean; reason: s
         clearTimeout(timer);
         done(true, '');
       } else if (frame.event === 'pusher:error') {
+        const detail = (() => {
+          try {
+            const raw = frame.data;
+            const data = (typeof raw === 'string' ? JSON.parse(raw) : raw) as { code?: number; message?: string };
+            return data?.code ? `code ${data.code}: ${data.message ?? ''}` : 'error frame';
+          } catch {
+            return 'error frame';
+          }
+        })();
         clearTimeout(timer);
-        done(false, `pusher returned an error frame (app key may have rotated)`);
+        done(false, `pusher rejected us (${detail})`);
       }
     });
   });

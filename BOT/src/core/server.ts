@@ -39,14 +39,32 @@ export class WebhookChatSource implements ChatSource {
   private last: Date | null = null;
   private cb?: (msg: NormalizedMessage) => void;
   private built?: Router;
+  private dropped = 0;
 
   constructor(
     private deps: ChatSourceDeps,
     private diagnostics: WebhookDiagnostics = {},
-  ) {}
+  ) {
+    // The handler handed to the constructor IS the sink. index.ts wires the
+    // router there, and it never called onMessage() on this source, so the
+    // callback stayed undefined: Kick's events were verified and accepted, then
+    // thrown away. Every command, every point and every rank-up was silently
+    // lost while /health said `delivering: true`.
+    this.cb = deps.onMessage;
+  }
 
   onMessage(cb: (msg: NormalizedMessage) => void): void {
     this.cb = cb;
+  }
+
+  /** True once something is listening. A source without one is a mute bot. */
+  get wired(): boolean {
+    return typeof this.cb === 'function';
+  }
+
+  /** Messages that arrived with nowhere to go. Anything but 0 is a bug. */
+  get droppedMessages(): number {
+    return this.dropped;
   }
 
   /** Hand this to createServer({ webhookRouter }) before it starts listening. */
@@ -55,7 +73,16 @@ export class WebhookChatSource implements ChatSource {
       this.built = createWebhookRouter({
         onMessage: (msg) => {
           this.last = new Date();
-          this.cb?.(msg);
+          const sink = this.cb;
+          if (!sink) {
+            this.dropped += 1;
+            getLogger().error(
+              { user: msg.username, dropped: this.dropped },
+              'webhook message had no handler — dropping it (wire the source before starting the server)',
+            );
+            return;
+          }
+          sink(msg);
         },
         broadcasterUserId: this.deps.broadcasterUserId,
         dedupe: this.deps.dedupe ?? new MessageDedupe(),
@@ -66,7 +93,16 @@ export class WebhookChatSource implements ChatSource {
   }
 
   async start(): Promise<void> {
-    getLogger().info({ path: '/webhooks/kick' }, 'webhook chat source ready');
+    const log = getLogger();
+    if (!this.wired) {
+      // Refuse to look healthy while deaf: this is exactly the failure that
+      // kept the bot silent for days with every diagnostic reading "fine".
+      log.error(
+        'webhook chat source has NO message handler — Kick will deliver events and every one of them will be dropped',
+      );
+      return;
+    }
+    log.info({ path: '/webhooks/kick' }, 'webhook chat source ready');
   }
 
   async stop(): Promise<void> {

@@ -13,9 +13,21 @@ export interface OutgoingMessage {
 
 interface QueueItem extends OutgoingMessage {
   seq: number;
+  /** Failed delivery attempts so far. Bounded — see MAX_QUEUE_ATTEMPTS. */
+  attempts: number;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * How many times ONE message may be re-queued before it is given up on.
+ *
+ * Without a bound, a message Kick rejects permanently (400) is unshifted back
+ * onto the queue forever: the drain loop retries it every ~1.2s for the life of
+ * the process, hammering the API and starving every message behind it. One bad
+ * message must never cost the channel its voice.
+ */
+const MAX_QUEUE_ATTEMPTS = 3;
 
 /** Trim to Kick's limits: <=500 graphemes and <=2048 UTF-8 bytes. */
 export function fitToKickLimits(text: string): string {
@@ -82,7 +94,7 @@ export class ChatSender {
   /** Enqueue one single-line message. Never throws. */
   send(text: string, priority: Priority = 'low', replyToMessageId?: string): void {
     if (!text) return;
-    const item: QueueItem = { text: fitToKickLimits(text), priority, seq: this.seq++, replyToMessageId };
+    const item: QueueItem = { text: fitToKickLimits(text), priority, seq: this.seq++, attempts: 0, replyToMessageId };
     if (item.text) this.push(item);
   }
 
@@ -111,12 +123,21 @@ export class ChatSender {
       while (this.queue.length > 0) {
         const item = this.queue.shift()!;
         const ok = await this.deliver(item);
-        if (!ok) {
-          this.failed += 1;
-          // High-priority failures are re-queued once at the front.
-          if (item.priority === 'high') this.queue.unshift(item);
-        } else {
+        if (ok) {
           this.sent += 1;
+        } else {
+          this.failed += 1;
+          item.attempts += 1;
+          // Retry a bounded number of times, then give up loudly. High
+          // priority earns retries, it does not earn an infinite loop.
+          if (item.priority === 'high' && item.attempts < MAX_QUEUE_ATTEMPTS) {
+            this.queue.unshift(item);
+          } else {
+            getLogger().error(
+              { attempts: item.attempts, priority: item.priority, text: item.text.slice(0, 60) },
+              'message dropped after repeated send failures — Kick rejected it and it will NOT be retried again',
+            );
+          }
         }
         if (this.queue.length > 0) await sleep(this.intervalMs);
       }
@@ -126,24 +147,37 @@ export class ChatSender {
   }
 
   private async deliver(item: QueueItem): Promise<boolean> {
+    // A reply we cannot attach must never cost us the answer.
+    let replyTo = item.replyToMessageId;
     for (let attempt = 0; attempt < 4; attempt++) {
       try {
         const token = await tokenManager.accessToken();
         const res = await sendChatMessage(item.text, token, {
           broadcasterUserId: this.broadcasterUserId,
-          replyToMessageId: item.replyToMessageId,
+          replyToMessageId: replyTo,
         });
         this.rememberOwn(res.message_id);
         // Logged at info, not debug: whether messages go out as the bot or as
         // the broadcaster is the first thing anyone asks, and debug is off in
         // production so the answer would be invisible.
         getLogger().info(
-          { chars: item.text.length, via: res.via ?? 'user' },
+          { chars: item.text.length, via: res.via ?? 'user', asReply: Boolean(replyTo) },
           'chat message sent',
         );
         return true;
       } catch (err) {
         const status = err instanceof KickApiError ? err.status : 0;
+        // Kick answers 400 "Invalid request" when the message being replied to
+        // is gone, deleted, or not replyable. The answer matters far more than
+        // the thread, so drop the reference and send it plainly.
+        if (status === 400 && replyTo) {
+          getLogger().warn(
+            { status, err: err instanceof Error ? err.message : String(err) },
+            'reply rejected by Kick — resending as a plain message',
+          );
+          replyTo = undefined;
+          continue;
+        }
         const retryable = status === 429 || status >= 500 || status === 0;
         getLogger().warn({ attempt, status, err: err instanceof Error ? err.message : String(err) }, 'send failed');
         if (!retryable || attempt === 3) return false;

@@ -114,10 +114,13 @@ const envSchema = z
     KICK_OAUTH_BASE: z.string().optional().default('https://id.kick.com'),
 
     // --- Chat ingestion ---
-    // pusher  = WebSocket only (default; no tunnel, no public URL)
-    // webhook = official webhooks only (needs PUBLIC_BASE_URL)
+    // webhook = official Kick webhooks (the ONLY path that still delivers:
+    //           needs a public https URL; Kick pulled the public pusher key)
+    // pusher  = the old unofficial WebSocket. RETIRED 2026-10-13 — the socket
+    //           opens and is closed with 4001 "App key not in this cluster",
+    //           so it receives nothing. Kept for the record only.
     // both    = run both sources; MessageDedupe keeps them from double counting
-    INGEST_MODE: z.enum(['pusher', 'webhook', 'both']).default('pusher'),
+    INGEST_MODE: z.enum(['pusher', 'webhook', 'both']).default('webhook'),
     /** Pusher needs the chatroom id, which is NOT the broadcaster user id. */
     KICK_CHATROOM_ID: z
       .string()
@@ -202,7 +205,8 @@ export type Env = z.infer<typeof envSchema>;
 let cached: Env | undefined;
 
 export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
-  const parsed = envSchema.safeParse(normalizeBotEnv(source));
+  const normalized = normalizeBotEnv(source);
+  const parsed = envSchema.safeParse(normalized);
   if (!parsed.success) {
     const details = parsed.error.issues
       .map((i) => `  - ${i.path.join('.') || '(root)'}: ${i.message}`)
@@ -210,6 +214,19 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env): Env {
     throw new Error(`Invalid environment configuration:\n${details}`);
   }
   cached = parsed.data;
+
+  // Publish the `_BOT` values under their real names too.
+  //
+  // normalizeBotEnv() only builds a copy for validation, so anything that reads
+  // process.env directly (KICK_PUBLIC_KEY_PEM in kick/signature.ts, the npm
+  // scripts, any future debugging) saw the un-suffixed name and never the value
+  // the operator actually set. Mirroring here is what the naming convention
+  // promises, and it is the difference between "I set the variable" and "the
+  // bot ignores it".
+  for (const key of BOT_ENV_KEYS) {
+    const suffixed = source[`${key}${BOT_SUFFIX}`];
+    if (suffixed !== undefined && suffixed !== '') process.env[key] = suffixed;
+  }
   return parsed.data;
 }
 
