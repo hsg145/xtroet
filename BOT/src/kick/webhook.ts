@@ -142,11 +142,13 @@ export function createWebhookRouter(deps: WebhookDeps): Router {
 
       if (!dedupe.admit(messageId)) {
         log.debug({ messageId }, 'duplicate webhook delivery ignored');
+        auditReject('duplicate', { messageId: String(messageId).slice(0, 40) });
         res.status(200).json({ ok: true, duplicate: true });
         return;
       }
 
       if (eventType !== EVENT_CHAT_MESSAGE_SENT) {
+        auditReject('wrong_type', { eventType: String(eventType).slice(0, 60) });
         res.status(200).json({ ok: true, ignored: eventType });
         return;
       }
@@ -180,6 +182,9 @@ export function createWebhookRouter(deps: WebhookDeps): Router {
           deps.onMessage(msg);
         } catch (err) {
           log.error({ err, messageId }, 'webhook handler threw (caught)');
+          auditReject('handler_threw', {
+            error: err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200),
+          });
         }
       })();
     },
