@@ -5,6 +5,39 @@ import { EVENT_CHAT_MESSAGE_SENT, chatMessageSentSchema, normalizeChatMessage, t
 
 const MAX_BODY_BYTES = 100 * 1024;
 
+/**
+ * يوثّق رفض رسالة في admin_audit حتى يُقرأ عن بُعد.
+ *
+ * fire-and-forget ولا يرمي أبداً: لو فشل التوثيق نفسه، نسكت ونكمل —
+ * التشخيص لا يجب أن يكسر الاستقبال.
+ */
+function auditReject(reason: string, detail: Record<string, unknown>): void {
+  void (async () => {
+    try {
+      const { getSupabase } = await import('../db/supabase.js');
+      await getSupabase().from('admin_audit').insert({
+        action: 'webhook_reject',
+        detail: { reason, ...detail },
+        device_id: 'bot',
+      });
+    } catch {
+      /* ignore */
+    }
+  })();
+}
+
+/** شكل الحمولة بدون محتوى المستخدم — مفاتيح وأنواع فقط (لا رسائل خاصة). */
+function shapeOf(value: unknown, depth = 0): unknown {
+  if (depth > 2 || value === null || value === undefined) return typeof value;
+  if (Array.isArray(value)) return value.length === 0 ? [] : [shapeOf(value[0], depth + 1)];
+  if (typeof value === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = shapeOf(v, depth + 1);
+    return out;
+  }
+  return typeof value;
+}
+
 /** LRU-ish dedupe on Kick-Event-Message-Id (Kick may deliver duplicates). */
 export class MessageDedupe {
   private seen = new Map<string, number>();
@@ -123,15 +156,25 @@ export function createWebhookRouter(deps: WebhookDeps): Router {
 
       void (async () => {
         try {
-          const parsed = chatMessageSentSchema.safeParse(JSON.parse(raw.toString('utf8')));
+          const text = raw.toString('utf8');
+          const parsed = chatMessageSentSchema.safeParse(JSON.parse(text));
           if (!parsed.success) {
-            log.warn({ issues: parsed.error.issues.slice(0, 3) }, 'invalid chat.message.sent payload');
+            const issues = parsed.error.issues.slice(0, 5).map((i) => ({
+              path: i.path.join('.'),
+              code: i.code,
+              expected: (i as { expected?: unknown }).expected ?? null,
+              received: typeof (i as { received?: unknown }).received !== 'undefined' ? typeof (i as { received?: unknown }).received : 'missing',
+            }));
+            log.warn({ issues }, 'invalid chat.message.sent payload');
+            // سجّل الشكل حتى يُشخَّص عن بُعد — بدون محتوى الرسائل أبداً.
+            auditReject('parse_failed', { issues, shape: shapeOf(JSON.parse(text)) });
             return;
           }
           const msg = normalizeChatMessage(parsed.data);
           const target = deps.broadcasterUserId();
           if (target !== null && msg.broadcasterUserId !== target) {
             log.debug({ channel: msg.broadcasterUserId, target }, 'event for another channel, ignored');
+            auditReject('wrong_channel', { got: msg.broadcasterUserId, want: target });
             return;
           }
           deps.onMessage(msg);
