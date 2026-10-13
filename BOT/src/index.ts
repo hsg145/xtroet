@@ -369,6 +369,7 @@ async function main(): Promise<void> {
   // ── نبضة البوت: صف واحد كل 30 ثانية حتى تعرف اللوحة أنه حي ──
   // لا تؤثر على الشغل لو فشلت، ولا تُقرأ هنا أبداً — القراءة للوحة فقط.
   // نضمّن تشخيص الـ pusher كاملاً: بدونه، "حي بس أصم" لا يُفسَّر عن بُعد.
+  // ونضمّن تشخيص الـ webhook: hit يعني كيك تصل للباب، وreject يشرح الرفض.
   const beat = () => {
     const ps = pusherSource.stats(chatroomId);
     void writeHeartbeat(VERSION, {
@@ -388,6 +389,13 @@ async function main(): Promise<void> {
         lastMessageAt: ps.lastMessageAt?.toISOString() ?? null,
         lastPusherError: ps.lastPusherError,
         chatroomError,
+      },
+      webhook: {
+        lastHitAt: webhookLastHitAt,
+        lastEventAt: webhookLastEventAt,
+        lastRejectReason: webhookLastRejectReason,
+        delivering: reconciler.delivering(),
+        subscriptionOk: reconciler.ok,
       },
       lastEventAt: lastEventAt?.toISOString() ?? null,
       senderStats: sender.stats,
