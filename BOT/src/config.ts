@@ -181,6 +181,13 @@ const envSchema = z
     LIVE_OFFLINE_GRACE_MS: int(30_000).pipe(z.number().min(0)),
     /** كم فحص ضعيف متتالي (is_live بدون url/key) لازم قبل ما نصدّقه بثاً. */
     LIVE_CONFIRM_CHECKS: int(2).pipe(z.number().min(1)),
+    /**
+     * كم مرة تتكرر رسالة "النقاط وقت البث بس" (ms). 3600000 = ساعة.
+     *
+     * كانت ترافق كل `!رتبتي`، فتكثر مئات المرات في القناة وتغرق الشات.
+     * صفر = السلوك القديم (مع كل أمر).
+     */
+    LIVE_NOTICE_INTERVAL_MS: int(3_600_000).pipe(z.number().min(0)),
   })
   .superRefine((env, ctx) => {
     if (!env.SUPABASE_SECRET_KEY && !env.SUPABASE_SERVICE_ROLE_KEY) {

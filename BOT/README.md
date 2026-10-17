@@ -56,6 +56,11 @@ To prove intake end to end at any time, read `/health`:
 
 `!نقاط` (without the ي) stays BotRix's and is deliberately not registered here.
 
+`!رتبتي` also prints the "points only count during a broadcast" reminder, but at
+most once an hour (`LIVE_NOTICE_INTERVAL_MS`, default 3600000). It used to follow
+every single command and buried the chat in identical messages. Set it to `0` to
+restore one reminder per command.
+
 ## Points only count during a live broadcast
 
 **Nobody earns a point unless the channel owner has an actual live broadcast

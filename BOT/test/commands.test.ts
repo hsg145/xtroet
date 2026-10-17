@@ -1,5 +1,11 @@
-import { describe, expect, it } from 'vitest';
-import { normalizeArabic, parseCommand, parseTarget, COMMAND_ALIASES } from '../src/core/commands.js';
+import { describe, expect, it, vi } from 'vitest';
+import { Commands, normalizeArabic, parseCommand, parseTarget, COMMAND_ALIASES } from '../src/core/commands.js';
+import type { ChatSender } from '../src/core/sender.js';
+import { CooldownMap } from '../src/core/cooldown.js';
+import type { LiveGate } from '../src/core/livestate.js';
+import type { PointsEngine } from '../src/core/points.js';
+import type { RankStore } from '../src/core/ranks.js';
+import type { NormalizedMessage } from '../src/kick/types.js';
 
 describe('normalizeArabic', () => {
   it('strips tashkeel', () => {
@@ -126,5 +132,77 @@ describe('parseTarget', () => {
   it('returns null for empty input', () => {
     expect(parseTarget(undefined)).toBeNull();
     expect(parseTarget('  @  ')).toBeNull();
+  });
+});
+
+/**
+ * The live-only notice used to follow EVERY `!رتبتي`, and a channel where people
+ * ask for their rank constantly turned into a wall of identical messages. It is
+ * now a reminder, at most once per LIVE_NOTICE_INTERVAL_MS.
+ */
+describe('live-only notice throttling', () => {
+  function build(intervalMs: number) {
+    const sent: string[] = [];
+    const deps = {
+      channelId: 6095331,
+      broadcasterUserId: 6095331,
+      engine: {
+        ensure: vi.fn(async (_c: number, _u: number, username: string) => ({ username, points: 0 })),
+      } as unknown as PointsEngine,
+      ranks: { all: () => [{ idx: 1, key: 'cadet', name_ar: 'كاديت', name_en: 'Cadet', emoji: '▪️', min_points: 0 }] } as unknown as RankStore,
+      sender: { send: (t: string) => sent.push(t) } as unknown as ChatSender,
+      live: { allowsAward: () => ({ allowed: true, reason: 'live' }) } as unknown as LiveGate,
+      statusInfo: () => ({
+        uptime: '0s',
+        queue: 0,
+        pending: 0,
+        lastFlush: 'لم',
+        lastEvent: 'لم',
+        subscriptionOk: true,
+      }),
+    };
+    const commands = new Commands(deps);
+    const inner = commands as unknown as {
+      e: { LIVE_NOTICE_INTERVAL_MS: number };
+      deps: { live: LiveGate };
+      userCooldown: unknown;
+      globalCooldown: unknown;
+    };
+    // The interval is read from the cached env, so patch it per test.
+    inner.e.LIVE_NOTICE_INTERVAL_MS = intervalMs;
+    // The per-user and global command cooldowns would swallow most of the
+    // commands in this test; they are not what is under test here.
+    inner.userCooldown = new CooldownMap(0);
+    inner.globalCooldown = new CooldownMap(0);
+    return { commands, sent };
+  }
+
+  const msg = (id: number) =>
+    ({ messageId: `m${id}`, userId: id, username: `user${id}`, content: '!رتبتي' }) as NormalizedMessage;
+
+  it('sends it once, not once per command', async () => {
+    const { commands, sent } = build(3_600_000);
+    for (let i = 1; i <= 5; i++) await commands.handle(msg(i));
+    const notices = sent.filter((t) => t.includes('النقاط فقط تنحسب'));
+    expect(notices).toHaveLength(1);
+    // ...while the rank card itself still answers every time.
+    expect(sent.length).toBeGreaterThanOrEqual(5);
+  });
+
+  it('sends it again once the hour is up', async () => {
+    const { commands, sent } = build(0);
+    await commands.handle(msg(1));
+    await commands.handle(msg(2));
+    // Interval 0 = the old behaviour, restored for anyone who wants it.
+    expect(sent.filter((t) => t.includes('النقاط فقط تنحسب'))).toHaveLength(2);
+  });
+
+  it('never sends it while the broadcast is not the reason', async () => {
+    const { commands, sent } = build(3_600_000);
+    (commands as unknown as { deps: { live: LiveGate } }).deps.live = {
+      allowsAward: () => ({ allowed: false, reason: 'offline' }),
+    } as unknown as LiveGate;
+    await commands.handle(msg(1));
+    expect(sent.filter((t) => t.includes('النقاط فقط تنحسب'))).toHaveLength(0);
   });
 });

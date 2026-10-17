@@ -54,12 +54,30 @@ export class Commands {
   private globalCooldown: CooldownMap;
   private deps: CommandDeps;
   private e = env();
+  /** آخر مرة انرسلت فيها رسالة "النقاط وقت البث بس" (ms). 0 = ما انرسلت. */
+  private lastLiveNoticeAt = 0;
 
   constructor(deps: CommandDeps) {
     this.deps = deps;
     this.userCooldown = new CooldownMap(this.e.COMMAND_COOLDOWN_SECONDS * 1000);
     // One global slot: rate limit for the whole channel.
     this.globalCooldown = new CooldownMap(this.e.GLOBAL_COMMAND_COOLDOWN_MS);
+  }
+
+  /**
+   * الرسالة التوضيحية عن قاعدة "النقاط وقت البث بس" — مرة كل ساعة، مو بعد كل أمر.
+   *
+   * كانت تُرسل مع كل `!رتبتي`، والقناة يكثر فيها السؤال عن الرتبة، فتكثر
+   * نفس الرسالة آلاف المرات وتغرق الشات وتخسر معناها. تذكير كل ساعة يكفي ويبقى
+   * موجود لمن يقرأ الشات متأخر.
+   *
+   * LIVE_NOTICE_INTERVAL_MS=0 يرجّعها لكل أمر (السلوك القديم) لو احتجت.
+   */
+  private maybeSendLiveNotice(): void {
+    const now = Date.now();
+    if (now - this.lastLiveNoticeAt < this.e.LIVE_NOTICE_INTERVAL_MS) return;
+    this.lastLiveNoticeAt = now;
+    this.deps.sender.send(messages.liveOnlyNotice(), 'low');
   }
 
   /**
@@ -137,10 +155,10 @@ export class Commands {
         'high',
         msg.messageId,
       );
-      // الرسالة الثانية: تُرسل بس إذا كان البث مفتوح فعلياً — لأنها هي
-      // اللي تشرح للناس ليش نقاطهم تتحرك وقت البث بس.
+      // الرسالة الثانية: تُرسل مرة كل ساعة فقط — لأنها هي اللي تشرح للناس
+      // ليش نقاطهم تتحرك وقت البث بس، وتكرارها مع كل أمر يغرق الشات.
       if (this.deps.live.allowsAward().allowed) {
-        this.deps.sender.send(messages.liveOnlyNotice(), 'low');
+        this.maybeSendLiveNotice();
       }
       return;
     }
@@ -168,7 +186,7 @@ export class Commands {
       'high',
     );
     if (this.deps.live.allowsAward().allowed) {
-      this.deps.sender.send(messages.liveOnlyNotice(), 'low');
+      this.maybeSendLiveNotice();
     }
   }
 
